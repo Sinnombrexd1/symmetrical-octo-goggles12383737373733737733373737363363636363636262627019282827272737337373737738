@@ -23,7 +23,7 @@ if not hookmetamethod or not setreadonly or not newcclosure or not getnamecallme
     return
 end
 
-if game.PlaceId ~= 142823291 and game.PlaceId ~= 84724689063885 then 
+if game.PlaceId ~= 142823291 and game.PlaceId ~= 100742383703997 then 
     notify("Error", "Unsupported game. Supported Games: Murder Mystery 2 / MM2 Assassin")
     return
 end
@@ -39,7 +39,7 @@ notify("Script Loaded", "The script has been executed successfully and is ready 
 
 local redzlib = loadstring(game:HttpGet("https://raw.githubusercontent.com/REDzHUB/RedzLibV5/main/Source.Lua"))()
 
-local Window = redzlib:MakeWindow({"CapybaraScript", "BY CapybaritaYT.  v7.5.3", "testando-redzLibv5.json"})
+local Window = redzlib:MakeWindow({"CapybaraScript", "BY CapybaritaYT.  v7.5.9", "testando-redzLibv5.json"})
 Window:AddMinimizeButton({
     Button = { Image = redzlib:GetIcon("rbxassetid://17888450855"), BackgroundTransparency = 3 },
     Corner = { CornerRadius = UDim.new(0, 6) },
@@ -256,7 +256,6 @@ Tab1:AddToggle({
                 end
                 transparentParts = {}
 
-                -- Restablecer el tipo de cámara
                 local camera = game.Workspace.CurrentCamera
                 camera.CameraType = Enum.CameraType.Custom
             end
@@ -880,7 +879,229 @@ Tab7:AddToggle({
         toggleJumpFeature(state)
     end
 })
+Tab3:AddButton({
+	Name = "FAKE SPEED GLICH",
+	Default = false,
+	Callback = function()    
+local existingGui = game:GetService("CoreGui"):FindFirstChild("fakespeed")
+if existingGui then
+    return
+end
 
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "fakespeed"
+screenGui.Parent = game:GetService("CoreGui")
+
+local button = Instance.new("TextButton")
+local UICorner = Instance.new("UICorner")
+
+button.Name = "Button"
+button.Size = UDim2.new(0, 50, 0, 50)
+button.Position = UDim2.new(0.5, -10, 0.5, -25)
+button.Text = "OFF"
+button.Font = Enum.Font.Gotham
+button.TextSize = 14
+button.TextColor3 = Color3.fromRGB(255, 255, 255)
+button.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+button.BackgroundTransparency = 0.6
+button.Draggable = true
+button.BorderSizePixel = 0
+button.Parent = screenGui
+
+UICorner.CornerRadius = UDim.new(0, 15)
+UICorner.Parent = button
+
+local isActive = false
+local slidingConnection
+
+local function toggleButton()
+    isActive = not isActive
+    if isActive then
+        button.Text = "ON"
+        button.BackgroundColor3 = Color3.fromRGB(173, 216, 230)
+    else
+        button.Text = "OFF"
+        button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    end
+end
+
+button.MouseButton1Click:Connect(toggleButton)
+
+local player = game.Players.LocalPlayer
+local slidingSpeed = 3
+local maxSlidingSpeed = 15 
+local acceleration = 0.2
+local deceleration = 0.1
+local landingDeceleration = 0.05
+local slideAfterLandSpeed = 2
+local slideAfterLandDuration = 0.3
+
+local function setupCharacter(character)
+    local humanoid = character:WaitForChild("Humanoid")
+    local landed = false
+    local slideTime = 0
+
+    local function isInAir()
+        return humanoid:GetState() == Enum.HumanoidStateType.Freefall
+    end
+
+    local function isLanding()
+        return humanoid:GetState() == Enum.HumanoidStateType.Landed
+    end
+
+    if slidingConnection then
+        slidingConnection:Disconnect()
+    end
+
+    slidingConnection = game:GetService("RunService").RenderStepped:Connect(function(deltaTime)
+        if isInAir() and isActive then
+            local direction = humanoid.MoveDirection
+            if direction.Magnitude > 0 then
+                slidingSpeed = math.min(slidingSpeed + acceleration, maxSlidingSpeed)
+                character:TranslateBy(direction * slidingSpeed * deltaTime)
+            else
+                slidingSpeed = math.max(slidingSpeed - deceleration, 0)
+            end
+        elseif isLanding() then
+            if not landed then
+                slidingSpeed = slideAfterLandSpeed
+                slideTime = 0
+                landed = true
+            end
+        elseif landed then
+            if slideTime < slideAfterLandDuration then
+                character:TranslateBy(humanoid.MoveDirection * slidingSpeed * deltaTime)
+                slideTime = slideTime + deltaTime
+                slidingSpeed = math.max(slidingSpeed - landingDeceleration, 0)
+            else
+                landed = false
+            end
+        else
+            slidingSpeed = math.max(slidingSpeed - deceleration, 0)
+        end
+    end)
+end
+
+player.CharacterAdded:Connect(setupCharacter)
+if player.Character then
+    setupCharacter(player.Character)
+end
+end})
+Tab3:AddButton({
+	Name = "FAKE Fake bomb trick",
+	Default = false,
+	Callback = function()    
+local existingGui = game:GetService("CoreGui"):FindFirstChild("bomb")
+if existingGui then
+    return
+end
+
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "bomb"
+screenGui.Parent = game:GetService("CoreGui")
+
+local button = Instance.new("TextButton")
+local UICorner = Instance.new("UICorner")
+
+button.Name = "Button"
+button.Size = UDim2.new(0, 100, 0, 100)
+button.Position = UDim2.new(1, -110, 0, 10)
+button.Text = "Fake bomb trick"
+button.Font = Enum.Font.Gotham
+button.TextSize = 14
+button.TextColor3 = Color3.fromRGB(255, 255, 255)
+button.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+button.BackgroundTransparency = 0.6
+button.Draggable = true
+button.BorderSizePixel = 0
+button.Parent = screenGui
+
+UICorner.CornerRadius = UDim.new(0, 15)
+UICorner.Parent = button
+
+local canJump = true
+local canUseButton = true
+local isGreen = false
+
+local function toggleColor()
+    if not isGreen then
+        button.BackgroundColor3 = Color3.fromRGB(0, 0, 255)
+        wait(0.5)
+        button.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+    else
+        button.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+    end
+end
+
+button.MouseButton1Click:Connect(toggleColor)
+
+local function changeButtonColorToGreen()
+    button.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+    isGreen = true
+end
+
+local function useFakeBomb()
+    if not canJump or not canUseButton then return end
+
+    canUseButton = false
+
+    local player = game:GetService("Players").LocalPlayer
+    local backpack = player:WaitForChild("Backpack")
+    local character = player.Character or player.CharacterAdded:Wait()
+
+    local fakeBomb = backpack:FindFirstChild("FakeBomb")
+
+    if not fakeBomb then
+        local args = {
+            [1] = "FakeBomb"
+        }
+        game:GetService("ReplicatedStorage").Remotes.Extras.ReplicateToy:InvokeServer(unpack(args))
+        fakeBomb = backpack:WaitForChild("FakeBomb")
+    end
+
+    fakeBomb.Parent = character
+
+    if character:FindFirstChild("FakeBomb") then
+        local humanoid = character:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+        end
+
+        local rootPart = character:WaitForChild("HumanoidRootPart")
+        if rootPart then
+            local launchArgs = {
+                [1] = rootPart.CFrame * CFrame.new(0, -3, 0),
+                [2] = 50
+            }
+            fakeBomb.Remote:FireServer(unpack(launchArgs))
+            wait(0.5)
+            fakeBomb.Parent = backpack
+            canJump = false
+            wait(22)
+            canJump = true
+            changeButtonColorToGreen()
+        end
+    end
+    
+    wait(0.5)
+    canUseButton = true
+end
+
+button.MouseButton1Click:Connect(useFakeBomb)
+
+local player = game:GetService("Players").LocalPlayer
+
+local function resetVariables()
+    canJump = true
+    canUseButton = true
+end
+
+player.CharacterAdded:Connect(function(character)
+    resetVariables()
+end)
+
+resetVariables()
+end})
 Tab3:AddButton({
 	Name = "Wallhop (beta)",
 	Default = false,
@@ -1168,6 +1389,11 @@ Tab1:AddButton({
     Description = "Disparar al asesino(no está completo)",
     Default = false,
     Callback = function(value)
+    local existingGui = game:GetService("CoreGui"):FindFirstChild("ShootMurdererGui")
+        if existingGui then
+            return
+        end
+        
 local screenGui = Instance.new("ScreenGui")
 local shootButton = Instance.new("TextButton")
 local UICorner = Instance.new("UICorner")
@@ -1446,6 +1672,33 @@ Tab2:AddButton({
         end
     end
 })
+
+local isAnchored = false
+
+Tab3:AddToggle({
+    Name = "anchor shoot gui",
+    Description = "Anclar el GUI de disparo",
+    Default = savedConfig.anchor or false,
+    Callback = function(state)
+        savedConfig.anchor = state
+        saveConfig(savedConfig)
+        local existingGui = game:GetService("CoreGui"):FindFirstChild("ShootMurdererGui")
+        local buttonGui = script.Parent -- Asegúrate de que este script está en el botón
+
+        if existingGui and buttonGui then
+            if state then
+                existingGui.AnchorPoint = Vector2.new(0.5, 0.5)
+                existingGui.Position = buttonGui.Position
+                isAnchored = true
+            else
+                existingGui.AnchorPoint = Vector2.new(0, 0)
+                -- Si deseas restablecer la posición o hacer algo más, agrégalo aquí
+                isAnchored = false
+            end
+        end
+    end
+})
+
 Tab2:AddSlider({
     Name = "Adjust Button shoot Size",
     MinValue = 120,
@@ -2541,14 +2794,13 @@ local Toggle = Tab5:AddToggle({
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
 local StarterGui = game:GetService("StarterGui")
 local notifiedRoles = {}
 local loopConnection
 local savedConfig = {}
+local checkHero = false
 
 local function saveConfig(config)
-    -- Implementa la lógica para guardar la configuración
 end
 
 local function getAvatarImage(userId)
@@ -2573,15 +2825,34 @@ local function updateRoleNotifications()
     end)
 
     if success and roles then
+        local foundSheriff = false
+        local foundMurderer = false
+
         for playerName, playerData in pairs(roles) do
             local player = Players:FindFirstChild(playerName)
             if player and playerData and playerData.Role then
                 local role = playerData.Role
-                if (role == "Murderer" or role == "Sheriff" or role == "Hero") and not notifiedRoles[player.UserId] then
+
+                if (role == "Murderer" or role == "Sheriff" or (checkHero and role == "Hero")) and not notifiedRoles[player.UserId] then
                     showNotification("Rol: " .. role, player.Name .. " es el " .. role, player)
                     notifiedRoles[player.UserId] = true
+
+                    if role == "Murderer" then
+                        foundMurderer = true
+                    elseif role == "Sheriff" then
+                        foundSheriff = true
+                    elseif role == "Hero" then
+                        checkHero = false
+                    end
                 end
             end
+        end
+
+        if foundSheriff and foundMurderer then
+            loopConnection:Disconnect()
+            loopConnection = nil
+        elseif foundMurderer and not foundSheriff then
+            checkHero = true
         end
     end
 end
@@ -2596,13 +2867,19 @@ local Toggle = Tab2:AddToggle({
 
         if state then
             notifiedRoles = {}
-            loopConnection = RunService.Heartbeat:Connect(updateRoleNotifications)
+            checkHero = false
+            loopConnection = game:GetService("RunService").Heartbeat:Connect(function()
+                if tick() % 2 < 0.1 then
+                    updateRoleNotifications()
+                end
+            end)
         else
             if loopConnection then
                 loopConnection:Disconnect()
                 loopConnection = nil
             end
             notifiedRoles = {}
+            checkHero = false
         end
     end
 })
@@ -3941,19 +4218,14 @@ local ResetToggle = Tab4:AddToggle({
     end
 })
 
-local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
-local VirtualUser = game:GetService("VirtualUser")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local player = Players.LocalPlayer
 local autofarmSpeed = 20
 local running = false
-local noclipConnection
-local roles = {}
-local Murderer
+local teleportDistance = 100
 
 -- Slider para ajustar la velocidad del autofarm
 local SpeedSlider = Tab4:AddSlider({
@@ -3969,134 +4241,70 @@ local SpeedSlider = Tab4:AddSlider({
     end
 })
 
-local CoinCollectedEvent = ReplicatedStorage:WaitForChild("CoinCollectedEvent", 5)
-if CoinCollectedEvent then
-    CoinCollectedEvent.OnClientEvent:Connect(function(cointype, current, max)
-        -- Se ha eliminado la funcionalidad relacionada con resetWhenFullBag
-    end)
-end
-
-local function murdererExists()
-    return Murderer ~= nil
-end
-
-local function anchorCharacterHorizontally(anchor)
-    local character = player.Character
-    if character then
-        local rootPart = character:FindFirstChild("HumanoidRootPart")
-        if rootPart then
-            rootPart.Anchored = anchor
-            if anchor then
-                rootPart.CFrame = CFrame.new(rootPart.Position) * CFrame.Angles(math.rad(90), 0, 0)
-            end
-        end
-    end
-end
-
-local function OnNewRound(CoinContainer)
-    if not running or not CoinContainer then return end
+-- Función para moverse a la moneda más cercana
+local function moveToClosestCoin()
+    if not running then return end  -- Asegura que solo funcione si el autofarm está activado
 
     local Character = player.Character or player.CharacterAdded:Wait()
     local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+    local CoinContainer = Workspace:FindFirstChild("CoinContainer")
 
-    while running do
-        if not CoinContainer.Parent or not murdererExists() then
-            stopAutoFarm()
-            break
-        end
+    if not CoinContainer then return end
 
-        local closestCoin = nil
-        local closestDistance = math.huge
+    local closestCoin = nil
+    local closestDistance = math.huge
 
-        for _, Coin in pairs(CoinContainer:GetChildren()) do
-            if Coin.Name == "Coin_Server" and Coin.Parent then
-                local distance = (Coin.Position - HumanoidRootPart.Position).magnitude
-                if distance < closestDistance then
-                    closestDistance = distance
-                    closestCoin = Coin
-                end
+    for _, Coin in pairs(CoinContainer:GetChildren()) do
+        if Coin.Name == "Coin_Server" and Coin.Parent then
+            local distance = (Coin.Position - HumanoidRootPart.Position).magnitude
+            if distance < closestDistance then
+                closestDistance = distance
+                closestCoin = Coin
             end
         end
+    end
 
-        -- Verificar si closestCoin es nil antes de continuar
-        if closestCoin then
-            if closestDistance > teleportDistance then
-                -- Teletransportarse si la moneda está lejos
-                HumanoidRootPart.CFrame = CFrame.new(closestCoin.Position - Vector3.new(0, 3, 0))
-            else
-                -- Anclar el HumanoidRootPart en posición horizontal y mover inmediatamente a la moneda
-                anchorCharacterHorizontally(true)
-                local targetPosition = closestCoin.Position - Vector3.new(0, 2, 0)
-                HumanoidRootPart.CFrame = CFrame.new(targetPosition) * CFrame.Angles(math.rad(90), 0, 0) -- Orientación horizontal
+    if closestCoin then
+        local targetPosition = closestCoin.Position - Vector3.new(0, 2, 0)
 
-                -- Verificar posición exacta y destruir la moneda
-                if (HumanoidRootPart.Position - closestCoin.Position).magnitude < 2 and closestCoin.Parent then
-                    closestCoin:Destroy()
+        if closestDistance > teleportDistance then
+            -- Teletransporte si está lejos
+            HumanoidRootPart.CFrame = CFrame.new(targetPosition)
+        else
+            -- Movimiento con tween si está cerca
+            local distance = (HumanoidRootPart.Position - targetPosition).magnitude
+            local tweenDuration = distance / autofarmSpeed
+
+            local tween = TweenService:Create(
+                HumanoidRootPart,
+                TweenInfo.new(tweenDuration, Enum.EasingStyle.Linear),
+                {CFrame = CFrame.new(targetPosition)}
+            )
+            tween:Play()
+            tween.Completed:Connect(function()
+                -- Al completar el tween, la moneda se vuelve transparente y no colisionable
+                if closestCoin.Parent then
+                    closestCoin.Transparency = 1
+                    closestCoin.CanCollide = false
                 end
-
-                anchorCharacterHorizontally(false)
-            end
+                moveToClosestCoin()  -- Llama de nuevo a la función para seguir a la siguiente moneda
+            end)
         end
-
-        wait(0.05)
     end
 end
 
-RunService.RenderStepped:Connect(function()
-    local getPlayerData = ReplicatedStorage:FindFirstChild("GetPlayerData", true)
-    if getPlayerData then
-        roles = getPlayerData:InvokeServer()
-        for i, v in pairs(roles) do
-            if v.Role == "Murderer" then
-                Murderer = i
-                break
-            end
-        end
-    end
-end)
-
+-- Función para iniciar el autofarm
 local function startAutoFarm()
     running = true
-
-    player.CharacterAdded:Connect(function(character)
-        if running then
-            wait(0.1)
-            startAutoFarm()
-        end
-    end)
-
-    while running do
-        local CoinContainer = Workspace:FindFirstChild("CoinContainer", true)
-        if CoinContainer then
-            OnNewRound(CoinContainer)
-        end
-        wait(0.1)
-    end
+    moveToClosestCoin()
 end
 
+-- Función para detener el autofarm
 local function stopAutoFarm()
     running = false
-    anchorCharacterHorizontally(false)
-
-    -- Desconectar el modo noclip y restaurar colisiones
-    if noclipConnection then
-        noclipConnection:Disconnect()
-        noclipConnection = nil
-    end
 end
 
-local function simulateMouseActivity()
-    local camera = workspace.CurrentCamera
-    local position = Vector2.new(0, 0)
-    local cframe = camera.CFrame
-
-    VirtualUser:Button2Down(position, cframe)
-    wait(1)
-    VirtualUser:Button2Up(position, cframe)
-end
-
-player.Idled:Connect(simulateMouseActivity)
-
+-- Toggle para activar/desactivar el autofarm
 local Toggle = Tab4:AddToggle({
     Name = "Autofarm (normal)",
     Description = "Autofarm mejorado.",
@@ -4846,7 +5054,7 @@ local Section = Tab6:AddSection({"beta script 🤙🏻"})
 local CoreGui = game:GetService("StarterGui")
 
 CoreGui:SetCore("SendNotification", {
-    Title = "v7.5.3",
+    Title = "v7.5.9",
     Text = "I already loaded the script completely ",
     Duration = 8,
     Button1 = "OK",
