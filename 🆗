@@ -23,8 +23,10 @@ if not hookmetamethod or not setreadonly or not newcclosure or not getnamecallme
     return
 end
 
-if game.PlaceId ~= 142823291 and game.PlaceId ~= 100742383703997 then 
-    notify("Error", "Unsupported game. Supported Games: Murder Mystery 2 / MM2 Assassin")
+local supportedGameIds = {142823291, 100742383703997, 72489591238825, 93513494432870} -- Agrega los nuevos IDs aquí
+
+if not table.find(supportedGameIds, game.PlaceId) then 
+    notify("Error", "Unsupported game. Supported Games: Murder Mystery 2 / MM2 Assassin / OtroJuego1 / OtroJuego2")
     return
 end
 
@@ -39,7 +41,7 @@ notify("Script Loaded", "The script has been executed successfully and is ready 
 
 local redzlib = loadstring(game:HttpGet("https://raw.githubusercontent.com/REDzHUB/RedzLibV5/main/Source.Lua"))()
 
-local Window = redzlib:MakeWindow({"CapybaraScript", "BY CapybaritaYT.  v7.5.9", "testando-redzLibv5.json"})
+local Window = redzlib:MakeWindow({"CapybaraScript", "BY CapybaritaYT.  v7.6.9", "testando-redzLibv5.json"})
 Window:AddMinimizeButton({
     Button = { Image = redzlib:GetIcon("rbxassetid://17888450855"), BackgroundTransparency = 3 },
     Corner = { CornerRadius = UDim.new(0, 6) },
@@ -58,7 +60,7 @@ local Paragraph = Tab1:AddParagraph({"BEFORE TALKING SHIT ABOUT MY SCRIPT READ T
 local configFileName = "mm2Config.txt"
 
 local function saveConfig(stateTable)
-    writefile(configFileName, game.HttpService:JSONEncode(stateTable)) -- Guardar el estado como JSON
+    writefile(configFileName, game.HttpService:JSONEncode(stateTable))
 end
 
 local function loadConfig()
@@ -187,81 +189,6 @@ end
 
 deleteConfigFile()
 end})
-    
-local noclipConnection
-local transparentParts = {}
-
-local function setTransparencyBasedOnObstacles()
-    local player = game.Players.LocalPlayer
-    local character = player.Character
-    local camera = game.Workspace.CurrentCamera
-
-    if character and character:FindFirstChild("Humanoid") then
-        local origin = camera.CFrame.Position
-        local direction = -camera.CFrame.LookVector * 10
-
-        local hits = workspace:FindPartsInRegion3(Region3.new(origin - Vector3.new(5, 5, 5), origin + direction + Vector3.new(5, 5, 5)), nil, math.huge)
-
-        for _, hitPart in pairs(hits) do
-            if hitPart:IsDescendantOf(workspace) and not hitPart:IsDescendantOf(character) and hitPart.Transparency ~= 0.7 then
-                hitPart.Transparency = 0.7
-                transparentParts[hitPart] = true
-            end
-        end
-
-        for part in pairs(transparentParts) do
-            local rayCheck = Ray.new(origin, (part.Position - origin).unit * 10)
-            local blockingPart = workspace:FindPartOnRay(rayCheck, character)
-
-            if not blockingPart then
-                part.Transparency = 0
-                transparentParts[part] = nil
-            end
-        end
-    end
-end
-
-local function setCameraNoclip()
-    local player = game.Players.LocalPlayer
-    local camera = game.Workspace.CurrentCamera
-
-    camera.CameraType = Enum.CameraType.Scriptable
-    camera.CFrame = camera.CFrame * CFrame.new(0, 0, 0) -- Asegúrate de que la cámara no se vea afectada por la física
-
-    -- Permitir que la cámara atraviese obstáculos
-    noclipConnection = game:GetService("RunService").Stepped:Connect(function()
-        setTransparencyBasedOnObstacles()
-    end)
-end
-
-Tab1:AddToggle({
-    Name = "noclip camara",
-    Description = "",
-    Default = savedConfig.aims or false,
-    Callback = function(state)
-        savedConfig.aims = state
-        saveConfig(savedConfig)
-
-        if state then
-            setCameraNoclip()
-        else
-            if noclipConnection then
-                noclipConnection:Disconnect()
-                noclipConnection = nil
-
-                for part in pairs(transparentParts) do
-                    if part:IsA("BasePart") then
-                        part.Transparency = 0
-                    end
-                end
-                transparentParts = {}
-
-                local camera = game.Workspace.CurrentCamera
-                camera.CameraType = Enum.CameraType.Custom
-            end
-        end
-    end
-})
 
 local hitboxSize = 1
 local hitboxTransparency = 0.7
@@ -1388,12 +1315,12 @@ Tab1:AddButton({
     Name = "Shoot the murderer(is not complete)",
     Description = "Disparar al asesino(no está completo)",
     Default = false,
-    Callback = function(value)
-    local existingGui = game:GetService("CoreGui"):FindFirstChild("ShootMurdererGui")
-        if existingGui then
-            return
-        end
-        
+    Callback = function(state)
+local existingGui = game:GetService("CoreGui"):FindFirstChild("ShootMurdererGui")
+if existingGui then
+    return
+end
+
 local screenGui = Instance.new("ScreenGui")
 local shootButton = Instance.new("TextButton")
 local UICorner = Instance.new("UICorner")
@@ -1440,19 +1367,18 @@ local function predictPosition(murderer)
         local murdererPosition = humanoidRootPart.Position
         local murdererVelocity = humanoidRootPart.Velocity
         local distanceToPlayer = (murdererPosition - localplayer.Character.HumanoidRootPart.Position).Magnitude
-        
-        -- Ajuste de predicción basado en la distancia
-        local predictionTime = distanceToPlayer > 25 and 0.1 or 0.02  -- Mayor predicción para distancia lejana
+
+        -- Ajustes de precisión
+        local predictionTime = math.clamp(distanceToPlayer / 50, 0.02, 0.1)
         local predictedPosition = murdererPosition + murdererVelocity * predictionTime
 
-        -- Ajuste lateral basado en la dirección de movimiento
         if murdererVelocity.Magnitude > 15 then
-            local lateralAdjustment = murdererVelocity.Unit * 0.4  -- Ajuste lateral
+            local lateralAdjustment = murdererVelocity.Unit * 0.35  -- Ajuste lateral ligero para precisión
             predictedPosition = predictedPosition + lateralAdjustment
         end
 
-        -- Ajuste vertical para apuntar al torso y evitar desviaciones hacia arriba
-        return Vector3.new(predictedPosition.X, murdererPosition.Y + -1, predictedPosition.Z) -- Ajusta la altura aquí
+        -- Ajuste de altura más preciso para evitar desviaciones
+        return Vector3.new(predictedPosition.X, murdererPosition.Y + 0.5, predictedPosition.Z)
     end
     return nil
 end
@@ -1487,7 +1413,7 @@ end
 shootButton.MouseButton1Click:Connect(function()
     local gun = localplayer.Character:FindFirstChild("Gun")
     
-    if gun then
+    if gun or autoEquipGun() then
         local murderer = getMurderer()
         if murderer then
             while murderer and murderer.Parent do
@@ -1495,19 +1421,10 @@ shootButton.MouseButton1Click:Connect(function()
                 if predictedPosition then
                     shootAtMurderer(predictedPosition)
                 end
-                wait(0.05)  -- Ajusta el tiempo del bucle para precisión
-            end
-        end
-    else
-        if autoEquipGun() then
-            local murderer = getMurderer()
-            if murderer then
-                while murderer and murderer.Parent do
-                    local predictedPosition = predictPosition(murderer)
-                    if predictedPosition then
-                        shootAtMurderer(predictedPosition)
-                    end
-                    wait(0.05)  -- Ajusta el tiempo del bucle para precisión
+                wait(0.05)
+                
+                if not murderer.Parent then
+                    break
                 end
             end
         end
@@ -1575,35 +1492,30 @@ function StartKnifeAura()
     local player = game.Players.LocalPlayer
     local character = player.Character or player.CharacterAdded:Wait()
     local knifeEquipped = false
+    local auraCoroutine
 
     local function equipKnife()
-        if not knifeEquipped then
-            local tool = player.Backpack:FindFirstChild("Knife")
-            if tool then
-                tool.Parent = character
-                knifeEquipped = true
-            end
+        if not knifeEquipped and player.Backpack:FindFirstChild("Knife") then
+            player.Backpack.Knife.Parent = character
+            knifeEquipped = true
         end
     end
 
     local function unequipKnife()
-        if knifeEquipped then
-            local tool = character:FindFirstChild("Knife")
-            if tool then
-                tool.Parent = player.Backpack
-                knifeEquipped = false
-            end
+        if knifeEquipped and character:FindFirstChild("Knife") then
+            character.Knife.Parent = player.Backpack
+            knifeEquipped = false
         end
     end
 
     local function attackNearbyPlayers()
-        while auraActive do
+        while auraActive and character and character.Parent do
             local nearestPlayer = nil
             local nearestDistance = 8
 
             for _, otherPlayer in ipairs(game.Players:GetPlayers()) do
                 if otherPlayer ~= player and otherPlayer.Character and otherPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                    local distance = (character.HumanoidRootPart.Position - otherPlayer.Character.HumanoidRootPart.Position).magnitude
+                    local distance = (character.HumanoidRootPart.Position - otherPlayer.Character.HumanoidRootPart.Position).Magnitude
                     if distance <= nearestDistance then
                         nearestPlayer = otherPlayer
                         break
@@ -1613,37 +1525,48 @@ function StartKnifeAura()
 
             if nearestPlayer then
                 equipKnife()
-                for attackCount = 1, 10 do
-                    game:GetService("VirtualInputManager"):SendMouseButtonEvent(0, 0, 0, true, game, false, 0)
-                    wait(0.1)
+                if knifeEquipped then
+                    for attackCount = 1, 5 do
+                        game:GetService("VirtualInputManager"):SendMouseButtonEvent(0, 0, 0, true, game, false, 0)
+                        wait(0.1)
+                    end
                 end
             else
-                if not knifeEquipped then
-                    unequipKnife()
-                end
+                unequipKnife()
             end
 
             wait(0.5)
         end
     end
 
-    coroutine.wrap(attackNearbyPlayers)()
+    -- Iniciar y reiniciar el aura con una coroutine
+    local function startAuraCoroutine()
+        if auraCoroutine and coroutine.status(auraCoroutine) ~= "dead" then
+            coroutine.close(auraCoroutine)
+        end
+        auraCoroutine = coroutine.create(attackNearbyPlayers)
+        coroutine.resume(auraCoroutine)
+    end
 
+    startAuraCoroutine()
+
+    -- Reiniciar el aura tras el respawn
     player.CharacterAdded:Connect(function(newCharacter)
         character = newCharacter
         knifeEquipped = false
         if auraActive then
-            coroutine.wrap(attackNearbyPlayers)()
+            startAuraCoroutine()
         end
     end)
 
-    player.Character.ChildAdded:Connect(function(child)
+    -- Detectar cambios en el cuchillo en el personaje
+    character.ChildAdded:Connect(function(child)
         if child.Name == "Knife" then
             knifeEquipped = true
         end
     end)
 
-    player.Character.ChildRemoved:Connect(function(child)
+    character.ChildRemoved:Connect(function(child)
         if child.Name == "Knife" then
             knifeEquipped = false
         end
@@ -1652,6 +1575,9 @@ end
 
 function StopKnifeAura()
     auraActive = false
+    if auraCoroutine and coroutine.status(auraCoroutine) ~= "dead" then
+        coroutine.close(auraCoroutine)
+    end
     unequipKnife()
 end
 
@@ -1673,33 +1599,7 @@ Tab2:AddButton({
     end
 })
 
-local isAnchored = false
-
-Tab3:AddToggle({
-    Name = "anchor shoot gui",
-    Description = "Anclar el GUI de disparo",
-    Default = savedConfig.anchor or false,
-    Callback = function(state)
-        savedConfig.anchor = state
-        saveConfig(savedConfig)
-        local existingGui = game:GetService("CoreGui"):FindFirstChild("ShootMurdererGui")
-        local buttonGui = script.Parent -- Asegúrate de que este script está en el botón
-
-        if existingGui and buttonGui then
-            if state then
-                existingGui.AnchorPoint = Vector2.new(0.5, 0.5)
-                existingGui.Position = buttonGui.Position
-                isAnchored = true
-            else
-                existingGui.AnchorPoint = Vector2.new(0, 0)
-                -- Si deseas restablecer la posición o hacer algo más, agrégalo aquí
-                isAnchored = false
-            end
-        end
-    end
-})
-
-Tab2:AddSlider({
+Tab6:AddSlider({
     Name = "Adjust Button shoot Size",
     MinValue = 120,
     MaxValue = 200,
@@ -1726,6 +1626,22 @@ if screenGui then
         shootButton.Size = UDim2.new(0, initialSize, 0, initialSize)
     end
 end
+
+Tab6:AddButton({
+    Name = "Anchor GUI Shoot",
+    Description = "Anclar GUI Shoot.",
+    Default = false,
+    Callback = function()
+local existingGui = game:GetService("CoreGui"):FindFirstChild("ShootMurdererGui")
+if not existingGui then
+    return
+end
+
+local shootButton = existingGui:FindFirstChild("DispararButton")
+if shootButton then
+    shootButton.Draggable = not shootButton.Draggable
+end
+end})
 
  Tab3:AddButton({
 	Name = "Fling sheriff",
@@ -2470,74 +2386,84 @@ Tab3:AddButton({
 loadstring(game:HttpGet('https://raw.githubusercontent.com/Jorgelinea/Invs/refs/heads/main/Protected_7357404662946645.txt'))()
     end})
  
-Tab3:AddButton({
+local Toggle = Tab3:AddToggle({
     Name = "tp wing Last Death Position",
     Description = "transportarse hacía la última posición de la muerte",
-    Default = false,
-    Callback = function()
-local screenGui = Instance.new("ScreenGui")
-local teleportButton = Instance.new("TextButton")
+    Default = savedConfig.Death or false,
+    Callback = function(state)
+        savedConfig.Death = state
+        saveConfig(savedConfig)
 
-screenGui.Name = "TeleportGui"
-screenGui.Parent = game:GetService("CoreGui")
+        if state then
+            local screenGui = Instance.new("ScreenGui")
+            screenGui.Name = "TeleportGui"
+            screenGui.Parent = game:GetService("CoreGui")
 
-teleportButton.Name = "TeleportButton"
-teleportButton.Size = UDim2.new(0, 60, 0, 50)
-teleportButton.Position = UDim2.new(0.5, -170, 0, 10)  
-teleportButton.Text = "Teleport"
-teleportButton.Font = Enum.Font.Gotham
-teleportButton.TextSize = 10
-teleportButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-teleportButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-teleportButton.BackgroundTransparency = 0.6
-teleportButton.Draggable = true
-teleportButton.BorderSizePixel = 5
-teleportButton.Parent = screenGui
+            local teleportButton = Instance.new("TextButton")
+            teleportButton.Name = "TeleportButton"
+            teleportButton.Size = UDim2.new(0, 60, 0, 50)
+            teleportButton.Position = UDim2.new(0.5, -170, 0, 10)  
+            teleportButton.Text = "Teleport"
+            teleportButton.Font = Enum.Font.Gotham
+            teleportButton.TextSize = 10
+            teleportButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+            teleportButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+            teleportButton.BackgroundTransparency = 0.6
+            teleportButton.Draggable = true
+            teleportButton.BorderSizePixel = 5
+            teleportButton.Parent = screenGui
 
-local UICorner = Instance.new("UICorner")
-UICorner.CornerRadius = UDim.new(0, 15) 
-UICorner.Parent = teleportButton
+            local UICorner = Instance.new("UICorner")
+            UICorner.CornerRadius = UDim.new(0, 15) 
+            UICorner.Parent = teleportButton
 
-local player = game.Players.LocalPlayer
-local lastDeathPosition = nil
+            local player = game.Players.LocalPlayer
+            local lastDeathPosition = nil
 
-local function recordDeathPosition()
-    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-        lastDeathPosition = player.Character.HumanoidRootPart.Position
-        print("Recorded death position:", lastDeathPosition)
+            local function recordDeathPosition()
+                if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                    lastDeathPosition = player.Character.HumanoidRootPart.Position
+                    print("Recorded death position:", lastDeathPosition)
+                end
+            end
+
+            local function onCharacterDied()
+                recordDeathPosition()
+            end
+
+            local function onCharacterAdded(character)
+                local humanoid = character:WaitForChild("Humanoid", 5)
+                if humanoid then
+                    humanoid.Died:Connect(onCharacterDied)
+                else
+                    warn("No se encontró el Humanoid en el personaje.")
+                end
+            end
+
+            player.CharacterAdded:Connect(onCharacterAdded)
+
+            if player.Character then
+                onCharacterAdded(player.Character)
+            end
+
+            local function teleportToLastDeathPosition()
+                if lastDeathPosition and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                    player.Character.HumanoidRootPart.CFrame = CFrame.new(lastDeathPosition)
+                    print("Teleported to the final death position:", lastDeathPosition)
+                else
+                    print("No death position has been recorded or the player is in an invalid state.")
+                end
+            end
+
+            teleportButton.MouseButton1Click:Connect(teleportToLastDeathPosition)
+        else
+            local existingGui = game:GetService("CoreGui"):FindFirstChild("TeleportGui")
+            if existingGui then
+                existingGui:Destroy()
+            end
+        end
     end
-end
-
-local function onCharacterDied()
-    recordDeathPosition()
-end
-
-local function onCharacterAdded(character)
-    local humanoid = character:WaitForChild("Humanoid", 5)
-    if humanoid then
-        humanoid.Died:Connect(onCharacterDied)
-    else
-        warn("No se encontró el Humanoid en el personaje.")
-    end
-end
-
-player.CharacterAdded:Connect(onCharacterAdded)
-
-if player.Character then
-    onCharacterAdded(player.Character)
-end
-
-local function teleportToLastDeathPosition()
-    if lastDeathPosition and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-        player.Character.HumanoidRootPart.CFrame = CFrame.new(lastDeathPosition)
-        print("Teleported to the final death position:", lastDeathPosition)
-    else
-        print("No death position has been recorded or the player is in an invalid state.")
-    end
-end
-
-teleportButton.MouseButton1Click:Connect(teleportToLastDeathPosition)
-    end})
+})
 
 local isAnchored = false
 
@@ -2565,7 +2491,8 @@ Tab5:AddButton({
             end
             isAnchored = false
         end
-    end})
+    end
+})
 
 local canCollide = false
 local toggleCollisions = false
@@ -3471,7 +3398,7 @@ local Toggle = Tab2:AddToggle({
     Description = "Inicia la cuenta regresiva.",
     Default = savedConfig.Countdown or false,
     Callback = function(toggleState)
-        savedConfig.Countdown = toggleState
+        savedConfig.Countdown1 = toggleState
         saveConfig(savedConfig)
         state = toggleState
 
@@ -3714,23 +3641,21 @@ Tab5:AddToggle({
 
         local player = game.Players.LocalPlayer
         local StarterGui = game:GetService("StarterGui")
-        local secondLifeActivated = false
-        local notificationShown = false
-        local mapConnection
-        local characterConnection
+        local secondLifeActivated, notificationShown = false, false
+        local mapConnection, characterConnection
 
         local function activateSecondLife()
-            if secondLifeActivated then return end
-            if player.Character and player.Character:FindFirstChild("Humanoid") then
-                secondLifeActivated = true
-                local humanoid = player.Character.Humanoid
+            if not toggleState or secondLifeActivated then return end
+            secondLifeActivated = true
+            local humanoid = player.Character:FindFirstChild("Humanoid")
+            if humanoid then
                 humanoid.Name = "1"
                 local clonedHumanoid = humanoid:Clone()
                 clonedHumanoid.Parent = player.Character
                 clonedHumanoid.Name = "Humanoid"
                 wait(0.1)
                 humanoid:Destroy()
-                workspace.CurrentCamera.CameraSubject = player.Character.Humanoid
+                workspace.CurrentCamera.CameraSubject = clonedHumanoid
                 player.Character.Animate.Disabled = true
                 wait(0.1)
                 player.Character.Animate.Disabled = false
@@ -3753,14 +3678,23 @@ Tab5:AddToggle({
         end
 
         local function resetSecondLife()
-            secondLifeActivated = false
-            notificationShown = false
+            secondLifeActivated, notificationShown = false, false
+        end
+
+        local function disconnectConnections()
+            if mapConnection then 
+                mapConnection:Disconnect() 
+                mapConnection = nil 
+            end
+            if characterConnection then 
+                characterConnection:Disconnect() 
+                characterConnection = nil 
+            end
         end
 
         if toggleState then
-            if mapConnection then mapConnection:Disconnect() end
-            if characterConnection then characterConnection:Disconnect() end
             resetSecondLife()
+            disconnectConnections()
 
             mapConnection = workspace.DescendantAdded:Connect(function(descendant)
                 if toggleState and (descendant.Name == "Spawn" or descendant.Name == "PlayerSpawn") then
@@ -3769,17 +3703,12 @@ Tab5:AddToggle({
             end)
 
             characterConnection = player.CharacterAdded:Connect(function()
-                resetSecondLife()
+                if toggleState then
+                    resetSecondLife()
+                end
             end)
         else
-            if mapConnection then 
-                mapConnection:Disconnect() 
-                mapConnection = nil
-            end
-            if characterConnection then 
-                characterConnection:Disconnect() 
-                characterConnection = nil
-            end
+            disconnectConnections()
             resetSecondLife()
         end
     end
@@ -4694,96 +4623,48 @@ Tab9:AddSlider({
     end
 })
 
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local LP = Players.LocalPlayer
+local Character = LP.Character
+
+local function GetPlayerByRole(roleName)
+    local roles = ReplicatedStorage:FindFirstChild("GetPlayerData", true):InvokeServer()
+    for i, v in pairs(roles) do
+        if v.Role == roleName then
+            return Players:FindFirstChild(i)
+        end
+    end
+    return nil
+end
+
+local function TeleportToRole(roleName)
+    local targetPlayer = GetPlayerByRole(roleName)
+    if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        Character:SetPrimaryPartCFrame(targetPlayer.Character.HumanoidRootPart.CFrame)
+    end
+end
+
 Tab3:AddButton({
     Name = "tp Sheriff",
     Callback = function()
-local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-
-local LP = Players.LocalPlayer
-local Character = LP.Character
-local HumanoidRootPart = Character:FindFirstChild("HumanoidRootPart")
-
-local function GetSheriff()
-    local roles = ReplicatedStorage:FindFirstChild("GetPlayerData", true):InvokeServer()
-    for i, v in pairs(roles) do
-        if v.Role == "Sheriff" then
-            return Players:FindFirstChild(i)
-        end
+        TeleportToRole("Sheriff")
     end
-    return nil
-end
-
-local function TeleportToSheriff()
-    local sheriffPlayer = GetSheriff()
-    if sheriffPlayer and sheriffPlayer.Character and sheriffPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        Character:SetPrimaryPartCFrame(sheriffPlayer.Character.HumanoidRootPart.CFrame)
-    end
-end
-
-TeleportToSheriff()
-    end})
+})
 
 Tab3:AddButton({
     Name = "tp Murderer",
-    Description = "",
     Callback = function()
-local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-
-local LP = Players.LocalPlayer
-local Character = LP.Character
-local HumanoidRootPart = Character:FindFirstChild("HumanoidRootPart")
-
-local function GetMurderer()
-    local roles = ReplicatedStorage:FindFirstChild("GetPlayerData", true):InvokeServer()
-    for i, v in pairs(roles) do
-        if v.Role == "Murderer" then
-            return Players:FindFirstChild(i)
-        end
+        TeleportToRole("Murderer")
     end
-    return nil
-end
-
-local function TeleportToMurderer()
-    local murdererPlayer = GetMurderer()
-    if murdererPlayer and murdererPlayer.Character and murdererPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        Character:SetPrimaryPartCFrame(murdererPlayer.Character.HumanoidRootPart.CFrame)
-    end
-end
-
-TeleportToMurderer()
-    end})
+})
 
 Tab3:AddButton({
-    Name = "tp hero",
+    Name = "tp Hero",
     Callback = function()
-local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-
-local LP = Players.LocalPlayer
-local Character = LP.Character
-local HumanoidRootPart = Character:FindFirstChild("HumanoidRootPart")
-
-local function GetHero()
-    local roles = ReplicatedStorage:FindFirstChild("GetPlayerData", true):InvokeServer()
-    for i, v in pairs(roles) do
-        if v.Role == "Hero" then
-            return Players:FindFirstChild(i)
-        end
+        TeleportToRole("Hero")
     end
-    return nil
-end
-
-local function TeleportToHero()
-    local heroPlayer = GetHero()
-    if heroPlayer and heroPlayer.Character and heroPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        Character:SetPrimaryPartCFrame(heroPlayer.Character.HumanoidRootPart.CFrame)
-    end
-end
-
-TeleportToHero()
-    end})
+})
 
 Tab2:AddButton({
     Name = "see Murderer",
@@ -4916,6 +4797,8 @@ Tab7:AddButton({
 local defaultGravity = 190
 local increasedGravity = 400
 local isGravityActive = false
+local speedConnection
+local jumpConnection
 
 game.Workspace.Gravity = defaultGravity
 
@@ -4939,7 +4822,6 @@ Tab5:AddToggle({
     end
 })
 
-local speedConnection
 local function updateWalkSpeed(value)
     local player = game:GetService("Players").LocalPlayer
     if player.Character and player.Character:FindFirstChildOfClass("Humanoid") then
@@ -4984,7 +4866,6 @@ Tab5:AddToggle({
     end
 })
 
-local jumpConnection
 local function updateJumpPower(value)
     local player = game:GetService("Players").LocalPlayer
     if player.Character and player.Character:FindFirstChildOfClass("Humanoid") then
@@ -5054,7 +4935,7 @@ local Section = Tab6:AddSection({"beta script 🤙🏻"})
 local CoreGui = game:GetService("StarterGui")
 
 CoreGui:SetCore("SendNotification", {
-    Title = "v7.5.9",
+    Title = "v7.6.9",
     Text = "I already loaded the script completely ",
     Duration = 8,
     Button1 = "OK",
