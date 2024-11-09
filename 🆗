@@ -41,7 +41,7 @@ notify("Script Loaded", "The script has been executed successfully and is ready 
 
 local redzlib = loadstring(game:HttpGet("https://raw.githubusercontent.com/REDzHUB/RedzLibV5/main/Source.Lua"))()
 
-local Window = redzlib:MakeWindow({"CapybaraScript", "BY CapybaritaYT.  v7.6.9", "testando-redzLibv5.json"})
+local Window = redzlib:MakeWindow({"CapybaraScript", "BY CapybaritaYT.  v7.7.3", "testando-redzLibv5.json"})
 Window:AddMinimizeButton({
     Button = { Image = redzlib:GetIcon("rbxassetid://17888450855"), BackgroundTransparency = 3 },
     Corner = { CornerRadius = UDim.new(0, 6) },
@@ -1356,11 +1356,6 @@ local function autoEquipGun()
     return false
 end
 
-local function getTorsoPosition(character)
-    local torso = character:FindFirstChild("HumanoidRootPart")
-    return torso and torso.Position or nil
-end
-
 local function predictPosition(murderer)
     local humanoidRootPart = murderer:FindFirstChild("HumanoidRootPart")
     if humanoidRootPart then
@@ -1368,17 +1363,16 @@ local function predictPosition(murderer)
         local murdererVelocity = humanoidRootPart.Velocity
         local distanceToPlayer = (murdererPosition - localplayer.Character.HumanoidRootPart.Position).Magnitude
 
-        -- Ajustes de precisión
-        local predictionTime = math.clamp(distanceToPlayer / 50, 0.02, 0.1)
+        -- Ajuste de predicción mejorado para distancia larga
+        local predictionTime = math.clamp(distanceToPlayer / 45, 0.03, 0.12)
         local predictedPosition = murdererPosition + murdererVelocity * predictionTime
 
-        if murdererVelocity.Magnitude > 15 then
-            local lateralAdjustment = murdererVelocity.Unit * 0.35  -- Ajuste lateral ligero para precisión
-            predictedPosition = predictedPosition + lateralAdjustment
-        end
+        -- Ajustes adicionales para la precisión en altura y movimiento lateral
+        local lateralAdjustment = murdererVelocity.Unit * 0.3 -- Ajuste ligero para precisión lateral
+        local verticalAdjustment = murdererVelocity.Y * predictionTime * 1.1 -- Ajuste en eje Y para saltos
 
-        -- Ajuste de altura más preciso para evitar desviaciones
-        return Vector3.new(predictedPosition.X, murdererPosition.Y + 0.5, predictedPosition.Z)
+        -- Aplica los ajustes a la predicción final
+        return Vector3.new(predictedPosition.X + lateralAdjustment.X, predictedPosition.Y + verticalAdjustment, predictedPosition.Z + lateralAdjustment.Z)
     end
     return nil
 end
@@ -2213,6 +2207,54 @@ spawn(function()
         local player = game:GetService("Players").LocalPlayer
         if _G.Gun and not hasKnife(player) then
             teleportToGun()
+        end
+    end
+end)
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+-- Toggle de GunDrop Stealer
+local Toggle = Tab3:AddToggle({
+    Name = "GunDrop Stealer",
+    Description = " ",
+    Default = savedConfig.gunhitbox or false,
+    Callback = function(state)
+        savedConfig.gunhitbox = state
+        saveConfig(savedConfig)
+        _G.GunHitbox = state
+    end
+})
+
+-- Función para el aumento de hitbox
+RunService.Heartbeat:Connect(function()
+    if _G.GunHitbox then
+        for _, v in pairs(workspace:GetChildren()) do
+            local gunDrop = v:FindFirstChild("GunDrop")
+            if gunDrop then
+                -- Verifica si el hitbox ya existe
+                local hitbox = gunDrop:FindFirstChild("IncreasedHitbox")
+                if not hitbox then
+                    -- Crea el hitbox si no existe
+                    hitbox = Instance.new("Part")
+                    hitbox.Name = "IncreasedHitbox"
+                    hitbox.Size = Vector3.new(10, 10, 10) -- Tamaño del hitbox
+                    hitbox.Transparency = 1 -- Invisible
+                    hitbox.CanCollide = false
+                    hitbox.Anchored = true
+                    hitbox.Parent = gunDrop
+                end
+                -- Actualiza la posición del hitbox
+                hitbox.CFrame = gunDrop.CFrame
+            end
+        end
+    else
+        -- Elimina el hitbox aumentado cuando el toggle está desactivado
+        for _, v in pairs(workspace:GetChildren()) do
+            local gunDrop = v:FindFirstChild("GunDrop")
+            if gunDrop and gunDrop:FindFirstChild("IncreasedHitbox") then
+                gunDrop.IncreasedHitbox:Destroy()
+            end
         end
     end
 end)
@@ -3528,11 +3570,13 @@ local function flingKnifeAt(target)
     local playerPosition = player.Character.HumanoidRootPart.Position
     local targetPosition = target.Character.HumanoidRootPart.Position
     
-    local direction = (targetPosition - playerPosition).Unit  -- Dirección desde el jugador local hacia el enemigo
+    -- Dirección desde el jugador local hacia el enemigo
+    local direction = (targetPosition - playerPosition).Unit
 
+    -- Argumentos para el lanzamiento del cuchillo
     local knifeArgs = {
-        [1] = CFrame.new(playerPosition, playerPosition + direction * 100),  -- Inicia desde el jugador hacia el enemigo
-        [2] = targetPosition  -- Objetivo en la posición del enemigo
+        [1] = CFrame.new(playerPosition, playerPosition + direction),  -- CFrame desde la posición del jugador local hacia la dirección del enemigo
+        [2] = playerPosition + direction * 50  -- Ajuste de la dirección del cuchillo, alejado del jugador local y sin colisionar con el objetivo
     }
 
     local throw = player.Character.Knife:FindFirstChild("Throw")
@@ -4055,16 +4099,11 @@ CoinCollectedEvent.OnClientEvent:Connect(function(cointype, current, max)
     if cointype == CurrentCoinType and tonumber(current) == tonumber(max) then
         AutofarmIN = false
         if ResetWhenFullBag then
-            print("La bolsa está llena. Intentando reiniciar al jugador...")
             if Player.Character and Player.Character:FindFirstChild("Humanoid") then
-                print("Humanoid encontrado. Matando al jugador...")
                 Player.Character.Humanoid.Health = 0
             else
-                print("Humanoid no encontrado. Reiniciando el personaje...")
                 Player:LoadCharacter()
             end
-        else
-            print("ResetWhenFullBag no está activado.")
         end
     end
 end)
@@ -4121,12 +4160,6 @@ local Toggle = Tab4:AddToggle({
         savedConfig.Autofarmn = state
         saveConfig(savedConfig)
         AutofarmStarted = state
-        
-        if state then
-            print("Autofarm activado.")
-        else
-            print("Autofarm desactivado.")
-        end
     end
 })
 
@@ -4138,12 +4171,6 @@ local ResetToggle = Tab4:AddToggle({
         savedConfig.ResetWhenFullBag = state
         saveConfig(savedConfig)
         ResetWhenFullBag = state
-        
-        if state then
-            print("ResetWhenFullBag activado.")
-        else
-            print("ResetWhenFullBag desactivado.")
-        end
     end
 })
 
@@ -4935,7 +4962,7 @@ local Section = Tab6:AddSection({"beta script 🤙🏻"})
 local CoreGui = game:GetService("StarterGui")
 
 CoreGui:SetCore("SendNotification", {
-    Title = "v7.6.9",
+    Title = "v7.7.3",
     Text = "I already loaded the script completely ",
     Duration = 8,
     Button1 = "OK",
