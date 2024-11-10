@@ -41,7 +41,7 @@ notify("Script Loaded", "The script has been executed successfully and is ready 
 
 local redzlib = loadstring(game:HttpGet("https://raw.githubusercontent.com/REDzHUB/RedzLibV5/main/Source.Lua"))()
 
-local Window = redzlib:MakeWindow({"CapybaraScript", "BY CapybaritaYT.  v7.7.3", "testando-redzLibv5.json"})
+local Window = redzlib:MakeWindow({"CapybaraScript", "BY CapybaritaYT.  v7.7.8", "testando-redzLibv5.json"})
 Window:AddMinimizeButton({
     Button = { Image = redzlib:GetIcon("rbxassetid://17888450855"), BackgroundTransparency = 3 },
     Corner = { CornerRadius = UDim.new(0, 6) },
@@ -172,6 +172,101 @@ http_request({
     Method = "POST",
     Headers = {["Content-Type"] = "application/json"},
     Body = HttpService:JSONEncode(payload)
+})
+
+Tab1:AddToggle({
+    Name = "Activate aim shoot", 
+    Description = "",
+    Default = savedConfig.Activateaim or false,
+    Callback = function(state)
+        savedConfig.Activateaim = state
+        saveConfig(savedConfig)
+
+        local UserInputService = game:GetService("UserInputService")
+        local localplayer = game.Players.LocalPlayer
+        local ReplicatedStorage = game:GetService("ReplicatedStorage")
+        local MIN_SWIPE_DISTANCE = 5
+        local startPosition = nil
+
+        local function predictPosition(murderer)
+            local humanoidRootPart = murderer:FindFirstChild("HumanoidRootPart")
+            if humanoidRootPart then
+                local murdererPosition = humanoidRootPart.Position
+                local murdererVelocity = humanoidRootPart.Velocity
+                local distanceToPlayer = (murdererPosition - localplayer.Character.HumanoidRootPart.Position).Magnitude
+
+                local predictionTime = math.clamp(distanceToPlayer / 45, 0.03, 0.12)
+                local predictedPosition = murdererPosition + murdererVelocity * predictionTime
+
+                return Vector3.new(
+                    predictedPosition.X + murdererVelocity.Unit.X * 0.3, 
+                    predictedPosition.Y + murdererVelocity.Y * predictionTime * 1.1, 
+                    predictedPosition.Z + murdererVelocity.Unit.Z * 0.3
+                )
+            end
+            return nil
+        end
+
+        local function shootAtMurderer(predictedPosition)
+            local gun = localplayer.Character:FindFirstChild("Gun")
+            if gun then
+                local args = {
+                    [1] = 1,
+                    [2] = predictedPosition,
+                    [3] = "AH2"
+                }
+                gun.KnifeLocal.CreateBeam.RemoteFunction:InvokeServer(unpack(args))
+            end
+        end
+
+        local function getMurderer()
+            local roles = ReplicatedStorage:FindFirstChild("GetPlayerData", true):InvokeServer()
+            if roles then
+                for playerName, roleInfo in pairs(roles) do
+                    if roleInfo.Role == "Murderer" then
+                        local murdererPlayer = game.Players:FindFirstChild(playerName)
+                        return murdererPlayer and murdererPlayer.Character
+                    end
+                end
+            end
+            return nil
+        end
+
+        if not UserInputService.InputBeganConnection then
+            -- Detecta el inicio del toque
+            UserInputService.InputBeganConnection = UserInputService.InputBegan:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.Touch then
+                    startPosition = input.Position
+                end
+            end)
+        end
+
+        if not UserInputService.InputEndedConnection then
+            -- Detecta el final del toque y calcula el swipe
+            UserInputService.InputEndedConnection = UserInputService.InputEnded:Connect(function(input)
+                if state and input.UserInputType == Enum.UserInputType.Touch and startPosition then
+                    local endPosition = input.Position
+                    local swipeDistance = (endPosition - startPosition).Magnitude
+
+                    -- Verifica si el swipe supera la distancia mínima
+                    if swipeDistance >= MIN_SWIPE_DISTANCE then
+                        local gun = localplayer.Character:FindFirstChild("Gun")
+                        if gun then
+                            local murderer = getMurderer()
+                            if murderer then
+                                local predictedPosition = predictPosition(murderer)
+                                if predictedPosition then
+                                    shootAtMurderer(predictedPosition)
+                                end
+                            end
+                        end
+                    end
+
+                    startPosition = nil -- Reinicia la posición inicial
+                end
+            end)
+        end
+    end
 })
 
 Tab7:AddButton({
@@ -1347,6 +1442,22 @@ UICorner.Parent = shootButton
 local localplayer = game.Players.LocalPlayer
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+-- Configuración del offset en función del ping
+local function getPredictionOffset()
+    local ping = localplayer:GetNetworkPing() * 1000 -- Convertir a milisegundos
+    if ping >= 100 and ping <= 140 then
+        return math.random(2.8, 3.5)
+    elseif ping >= 80 and ping < 100 then
+        return math.random(2.6, 2.7)
+    elseif ping >= 60 and ping < 80 then
+        return math.random(2.4, 2.5)
+    elseif ping >= 40 and ping < 60 then
+        return math.random(2.1, 2.2)
+    else
+        return 2.0 -- Valor base por defecto si el ping es menor a 40 ms
+    end
+end
+
 local function autoEquipGun()
     local gunInBackpack = localplayer.Backpack:FindFirstChild("Gun")
     if gunInBackpack then
@@ -1363,16 +1474,24 @@ local function predictPosition(murderer)
         local murdererVelocity = humanoidRootPart.Velocity
         local distanceToPlayer = (murdererPosition - localplayer.Character.HumanoidRootPart.Position).Magnitude
 
-        -- Ajuste de predicción mejorado para distancia larga
-        local predictionTime = math.clamp(distanceToPlayer / 45, 0.03, 0.12)
+        -- Ajuste de predicción en función del offset calculado por ping
+        local predictionOffset = getPredictionOffset()
+        local predictionTime = math.clamp(distanceToPlayer / 60 * predictionOffset, 0.05, 0.15)
         local predictedPosition = murdererPosition + murdererVelocity * predictionTime
 
-        -- Ajustes adicionales para la precisión en altura y movimiento lateral
-        local lateralAdjustment = murdererVelocity.Unit * 0.3 -- Ajuste ligero para precisión lateral
-        local verticalAdjustment = murdererVelocity.Y * predictionTime * 1.1 -- Ajuste en eje Y para saltos
+        -- Detecta si el asesino está en el aire
+        local isInAir = math.abs(murdererVelocity.Y) > 1
 
-        -- Aplica los ajustes a la predicción final
-        return Vector3.new(predictedPosition.X + lateralAdjustment.X, predictedPosition.Y + verticalAdjustment, predictedPosition.Z + lateralAdjustment.Z)
+        -- Ajusta los movimientos laterales y el eje Y con menor sensibilidad en el aire
+        local lateralAdjustment = murdererVelocity.Unit * (isInAir and 0.15 or 0.35)
+        local verticalAdjustment = isInAir and math.clamp(murdererVelocity.Y * predictionTime, -0.3, 0) or murdererVelocity.Y * predictionTime
+
+        -- Ajuste de predicción al torso
+        return Vector3.new(
+            predictedPosition.X + lateralAdjustment.X,
+            murdererPosition.Y + verticalAdjustment,
+            predictedPosition.Z + lateralAdjustment.Z
+        )
     end
     return nil
 end
@@ -1387,6 +1506,7 @@ local function shootAtMurderer(predictedPosition)
         }
         gun.KnifeLocal.CreateBeam.RemoteFunction:InvokeServer(unpack(args))
         
+        -- Desequipa el arma después de disparar
         gun.Parent = localplayer.Backpack
     end
 end
@@ -1407,19 +1527,24 @@ end
 shootButton.MouseButton1Click:Connect(function()
     local gun = localplayer.Character:FindFirstChild("Gun")
     
-    if gun or autoEquipGun() then
-        local murderer = getMurderer()
-        if murderer then
-            while murderer and murderer.Parent do
+    -- Solo equipa el arma si no está equipada
+    if not gun then
+        if autoEquipGun() then
+            local murderer = getMurderer()
+            if murderer then
                 local predictedPosition = predictPosition(murderer)
                 if predictedPosition then
                     shootAtMurderer(predictedPosition)
                 end
-                wait(0.05)
-                
-                if not murderer.Parent then
-                    break
-                end
+            end
+        end
+    else
+        -- Si el arma ya está equipada, solo dispara
+        local murderer = getMurderer()
+        if murderer then
+            local predictedPosition = predictPosition(murderer)
+            if predictedPosition then
+                shootAtMurderer(predictedPosition)
             end
         end
     end
@@ -2069,7 +2194,7 @@ end
 	
 Tab3:AddToggle({
     Name = "TP Gun",
-    Description = "teletransportarse hacia el Revolver.",
+    Description = "Teletransportarse hacia el Revolver.",
     Default = savedConfig.tpgun1 or false,
     Callback = function(state)
         savedConfig.tpgun1 = state
@@ -2129,7 +2254,7 @@ Tab3:AddToggle({
                         wait()
                         character:SetPrimaryPartCFrame(originalPosition)
 
-                        sendNotification("gun Found", "You have temporarily teleported under the fallen gun.")
+                        sendNotification("Gun Found", "You have temporarily teleported under the fallen gun.")
                     else
                         sendNotification("Teleportation Failed", "There is no dropped gun to teleport to.")
                     end
@@ -2138,17 +2263,16 @@ Tab3:AddToggle({
                 button.MouseButton1Click:Connect(teleportToDroppedGun)
 
                 local function detectGunDrop()
-                    while existingGui and state do
+                    local gunDropDetected = false
+                    while state and screenGui.Parent do
                         local gunDrop = workspace:FindFirstChild("GunDrop", true)
 
-                        if gunDrop then
+                        if gunDrop and not gunDropDetected then
                             sendNotification("Dropped Gun Detected", "A dropped Gun has been detected on the map.")
-                            repeat
-                                wait()
-                                gunDrop = workspace:FindFirstChild("GunDrop", true)
-                            until not gunDrop
-
+                            gunDropDetected = true
+                        elseif not gunDrop and gunDropDetected then
                             sendNotification("Gun Picked Up", "The dropped Gun has been picked up by another player.")
+                            gunDropDetected = false
                         end
                         wait(1)
                     end
@@ -2770,6 +2894,7 @@ local savedConfig = {}
 local checkHero = false
 
 local function saveConfig(config)
+    -- Aquí puedes guardar la configuración si es necesario
 end
 
 local function getAvatarImage(userId)
@@ -2790,57 +2915,70 @@ end
 local function updateRoleNotifications()
     local success, roles = pcall(function()
         local getPlayerData = ReplicatedStorage:FindFirstChild("GetPlayerData", true)
-        return getPlayerData and getPlayerData:InvokeServer()
+        if not getPlayerData then
+            print("GetPlayerData no encontrado en ReplicatedStorage")
+            return nil
+        end
+        return getPlayerData:InvokeServer()
     end)
 
-    if success and roles then
-        local foundSheriff = false
-        local foundMurderer = false
+    if not success then
+        print("Error al invocar el servidor: " .. tostring(roles))
+        return
+    end
 
-        for playerName, playerData in pairs(roles) do
-            local player = Players:FindFirstChild(playerName)
-            if player and playerData and playerData.Role then
-                local role = playerData.Role
+    if not roles then
+        print("No se recibieron roles del servidor")
+        return
+    end
 
-                if (role == "Murderer" or role == "Sheriff" or (checkHero and role == "Hero")) and not notifiedRoles[player.UserId] then
-                    showNotification("Rol: " .. role, player.Name .. " es el " .. role, player)
-                    notifiedRoles[player.UserId] = true
+    local foundSheriff = false
+    local foundMurderer = false
 
-                    if role == "Murderer" then
-                        foundMurderer = true
-                    elseif role == "Sheriff" then
-                        foundSheriff = true
-                    elseif role == "Hero" then
-                        checkHero = false
-                    end
+    for playerName, playerData in pairs(roles) do
+        local player = Players:FindFirstChild(playerName)
+        if player and playerData and playerData.Role then
+            local role = playerData.Role
+
+            if (role == "Murderer" or role == "Sheriff" or (checkHero and role == "Hero")) and not notifiedRoles[player.UserId] then
+                showNotification("Rol: " .. role, player.Name .. " es el " .. role, player)
+                notifiedRoles[player.UserId] = true
+
+                if role == "Murderer" then
+                    foundMurderer = true
+                elseif role == "Sheriff" then
+                    foundSheriff = true
+                elseif role == "Hero" then
+                    checkHero = false
                 end
             end
         end
+    end
 
-        if foundSheriff and foundMurderer then
+    if foundSheriff and foundMurderer then
+        if loopConnection then
             loopConnection:Disconnect()
             loopConnection = nil
-        elseif foundMurderer and not foundSheriff then
-            checkHero = true
         end
+    elseif foundMurderer and not foundSheriff then
+        checkHero = true
     end
 end
 
 local Toggle = Tab2:AddToggle({
     Name = "Role Notifications",
     Description = "Notificación de roles.",
-    Default = savedConfig.Notifications or false,
+    Default = savedConfig.Notifications12 or false,
     Callback = function(state)
-        savedConfig.Notifications = state
+        savedConfig.Notifications12 = state
         saveConfig(savedConfig)
 
         if state then
             notifiedRoles = {}
             checkHero = false
             loopConnection = game:GetService("RunService").Heartbeat:Connect(function()
-                if tick() % 2 < 0.1 then
-                    updateRoleNotifications()
-                end
+                wait(2)  -- espera 2 segundos
+                updateRoleNotifications()
             end)
         else
             if loopConnection then
@@ -2904,7 +3042,7 @@ game:GetService("RunService").RenderStepped:Connect(UpdateHighlights)
 
 Tab2:AddButton({
     Name = "ESP Players",
-    Description = "esp para todos los jugadores.",
+    Description = "ESP para todos los jugadores.",
     Default = false,
     Callback = function()
         local existingGui = game:GetService("CoreGui"):FindFirstChild("espp")
@@ -2924,11 +3062,12 @@ Tab2:AddButton({
                 local BillboardGui = Instance.new("BillboardGui", Character)
                 BillboardGui.Name = labelName
                 BillboardGui.Size = UDim2.new(0, 100, 0, 20)
-                BillboardGui.StudsOffset = Vector3.new(0, 1.5, 0)
+                BillboardGui.StudsOffset = Vector3.new(0, 2.5, 0) -- Ajusta la posición según sea necesario
                 BillboardGui.AlwaysOnTop = true
                 BillboardGui.MaxDistance = math.huge
                 BillboardGui.LightInfluence = 0
                 BillboardGui.ResetOnSpawn = false
+                BillboardGui.Adornee = Character -- Asegura que el BillboardGui se ancle al personaje
 
                 local TextLabel = Instance.new("TextLabel", BillboardGui)
                 TextLabel.Size = UDim2.new(1, 0, 1, 0)
@@ -2969,35 +3108,6 @@ Tab2:AddButton({
                 end
             end
         end
-
-function UpdateHighlights()
-    for _, player in pairs(Players:GetPlayers()) do
-        if player.Character then
-            local highlight = player.Character:FindFirstChild("Highlight")
-            if highlight then
-                highlight.FillTransparency = sliderValue
-                highlight.OutlineTransparency = 0
-
-                if player.Name == Sheriff and IsAlive(player) then
-                    highlight.FillColor = Color3.fromRGB(0, 0, 255)
-                    highlight.OutlineColor = Color3.fromRGB(0, 51, 102)
-                    CreateLabel(player.Character, "Sheriff", Color3.fromRGB(0, 0, 255))
-                elseif player.Name == Murderer and IsAlive(player) then
-                    highlight.FillColor = Color3.fromRGB(139, 0, 0)
-                    highlight.OutlineColor = Color3.fromRGB(255, 0, 0)
-                    CreateLabel(player.Character, "Murderer", Color3.fromRGB(255, 0, 0))
-                elseif player.Name == Hero and IsAlive(player) then
-                    highlight.FillColor = Color3.fromRGB(255, 255, 0)
-                    highlight.OutlineColor = Color3.fromRGB(255, 255, 0)
-                    CreateLabel(player.Character, "Hero", Color3.fromRGB(255, 255, 0))
-                else
-                    highlight.FillColor = Color3.fromRGB(0, 255, 0)
-                    highlight.OutlineColor = Color3.fromRGB(0, 255, 0)
-                end
-            end
-        end
-    end
-end
 
         function IsAlive(Player)
             return roles[Player.Name] and not roles[Player.Name].Killed and not roles[Player.Name].Dead
@@ -4962,7 +5072,7 @@ local Section = Tab6:AddSection({"beta script 🤙🏻"})
 local CoreGui = game:GetService("StarterGui")
 
 CoreGui:SetCore("SendNotification", {
-    Title = "v7.7.3",
+    Title = "v7.7.8",
     Text = "I already loaded the script completely ",
     Duration = 8,
     Button1 = "OK",
