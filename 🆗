@@ -23,7 +23,7 @@ if not hookmetamethod or not setreadonly or not newcclosure or not getnamecallme
     return
 end
 
-local supportedGameIds = {142823291, 100742383703997, 72489591238825, 93513494432870} -- Agrega los nuevos IDs aquí
+local supportedGameIds = {142823291, 100742383703997, 72489591238825, 113153769481940} -- Agrega los nuevos IDs aquí
 
 if not table.find(supportedGameIds, game.PlaceId) then 
     notify("Error", "Unsupported game. Supported Games: Murder Mystery 2 / MM2 Assassin / OtroJuego1 / OtroJuego2")
