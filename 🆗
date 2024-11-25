@@ -1,14 +1,15 @@
 local CoreGui = game:GetService("CoreGui")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local StarterGui = game:GetService("StarterGui")
 local Players = game:GetService("Players")
-local TeleportService = game:GetService("TeleportService")
 
 function notify(title, msg)
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = title;
-        Text = msg;
-    })
+    pcall(function()
+        StarterGui:SetCore("SendNotification", {
+            Title = title;
+            Text = msg;
+            Duration = 5;
+        })
+    end)
 end
 
 if not game:IsLoaded() then
@@ -18,45 +19,103 @@ if not game:IsLoaded() then
     message:Destroy()
 end
 
-if not hookmetamethod or not setreadonly or not newcclosure or not getnamecallmethod or not getgenv then -- Checks if executor is supported
+if not (hookmetamethod and setreadonly and newcclosure and getnamecallmethod and getgenv) then
     notify("Error", "Incompatible Executor! Functions are not supported by this executor.")
     return
 end
 
-local supportedGameIds = {142823291, 100742383703997, 72489591238825, 100742383703997} -- Agrega los nuevos IDs aquí
+local supportedGameIds = {
+    [142823291] = "Murder Mystery 2",
+    [100742383703997] = "MMV",
+    [72489591238825] = "",
+    [6924758805] = ""
+}
 
-if not table.find(supportedGameIds, game.PlaceId) then 
-    notify("Error", "Unsupported game. Supported Games: Murder Mystery 2 / MM2 Assassin / OtroJuego1 / OtroJuego2")
+local vipPlayerId = 2784663867
+
+if Players.LocalPlayer.UserId ~= vipPlayerId and not supportedGameIds[game.PlaceId] then
+    local supportedNames = table.concat(table.values(supportedGameIds), " / ")
+    notify("Error", "Unsupported game. Supported Games: " .. supportedNames)
     return
 end
 
 if _G.mm2hacksalreadyloadedbyCITY512 then
-    notify("Error", "Already Executed!")
+    notify("Error", "Script Already Executed!")
     return
 end
-
 _G.mm2hacksalreadyloadedbyCITY512 = true
 
 notify("Script Loaded", "The script has been executed successfully and is ready to go.")
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/natoloe009/SCRIPT-ROBLOX/main/kavo%20mobile.txt", true))()
 
-local redzlib = loadstring(game:HttpGet("https://pastebin.com/raw/0nmYbera"))()
+local Window = Library.CreateLib("​​​​​CapybaraScript", colors)
 
-local Window = redzlib:MakeWindow({"CapybaraScript", "BY CapybaritaYT.  v7.7.8", "testando-redzLibv5.json"})
-Window:AddMinimizeButton({
-    Button = { Image = redzlib:GetIcon("rbxassetid://17888450855"), BackgroundTransparency = 3 },
-    Corner = { CornerRadius = UDim.new(0, 6) },
-})
+local colors = {
+    SchemeColor = Color3.fromRGB(255, 87, 34),
+    Background = Color3.fromRGB(36, 36, 36),
+    Header = Color3.fromRGB(54, 54, 54),
+    TextColor = Color3.fromRGB(255, 255, 255),
+    ElementColor = Color3.fromRGB(121, 85, 72)
+}
 
-local Tab1 = Window:MakeTab({"Combat", ""})
-local Tab9 = Window:MakeTab({"Hitbox expander", ""})
-local Tab2 = Window:MakeTab({"Visual", ""})
-local Tab3 = Window:MakeTab({"Teleport", ""})
-local Tab4 = Window:MakeTab({"Auto Farm", ""})
-local Tab5 = Window:MakeTab({"Local Player", ""})
-local Tab8 = Window:MakeTab({"Emote", ""})
-local Tab7 = Window:MakeTab({"MIC", ""})
-local Tab6 = Window:MakeTab({"buttons", ""})
-local Paragraph = Tab1:AddParagraph({"BEFORE TALKING SHIT ABOUT MY SCRIPT READ THE INFORMATION SECTION ", "ANTES DE HABLAR MIERDA SOBRE MI SCRIPT LEE LA SECCIÓN DE INFORMACIÓN"})
+local KaGaHUBScreen = Instance.new("ScreenGui")
+local KaGaHUBToggleUI = Instance.new("TextButton")
+local KaGaHUBCornerUI = Instance.new("UICorner")
+local KaGaHUBImageUI = Instance.new("ImageLabel")
+local KaGaHUBImageCornerUI = Instance.new("UICorner")
+
+KaGaHUBScreen.Name = "DANGGOHUBScreen"
+KaGaHUBScreen.Parent = game.CoreGui
+KaGaHUBScreen.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+KaGaHUBScreen.ResetOnSpawn = false
+
+KaGaHUBToggleUI.Name = "KaGaHUBToggleUI"
+KaGaHUBToggleUI.Parent = KaGaHUBScreen
+KaGaHUBToggleUI.BackgroundColor3 = Color3.fromRGB(31, 31, 31)
+KaGaHUBToggleUI.Position = UDim2.new(0.12, 0, 0.1, 0)
+KaGaHUBToggleUI.Size = UDim2.new(0, 40, 0, 40)
+KaGaHUBToggleUI.Text = ""
+KaGaHUBToggleUI.Draggable = true
+KaGaHUBToggleUI.MouseButton1Click:Connect(function()
+    if Library and Library.ToggleUI then
+        Library:ToggleUI()
+    end
+end)
+
+KaGaHUBCornerUI.Name = "KaGaHUBCornerUI"
+KaGaHUBCornerUI.CornerRadius = UDim.new(1, 0)
+KaGaHUBCornerUI.Parent = KaGaHUBToggleUI
+
+KaGaHUBImageUI.Name = "KaGaHUBImageUI"
+KaGaHUBImageUI.Parent = KaGaHUBToggleUI
+KaGaHUBImageUI.BackgroundColor3 = Color3.fromRGB(192, 192, 192)
+KaGaHUBImageUI.BorderSizePixel = 0
+KaGaHUBImageUI.Size = UDim2.new(1, 0, 1, 0)
+KaGaHUBImageUI.Image = "rbxassetid://98340377583067"
+
+KaGaHUBImageCornerUI.Name = "KaGaHUBImageCornerUI"
+KaGaHUBImageCornerUI.CornerRadius = UDim.new(1, 0)
+KaGaHUBImageCornerUI.Parent = KaGaHUBImageUI
+
+local CombateTab = Window:NewTab("Combat")
+local HitboxTab = Window:NewTab("Hitbox expander")
+local VisualTab = Window:NewTab("Visual")
+local TeleportTab = Window:NewTab("Teleport")
+local AutoFarmTab = Window:NewTab("Auto Farm")
+local LocalPlayerTab = Window:NewTab("Local Player")
+local EmoteTab = Window:NewTab("Emote")
+local MICTab = Window:NewTab("MIC")
+local buttonsTab = Window:NewTab("buttons")
+
+local CombateSection = CombateTab:NewSection("Opciones Combat")
+local HitboxSection = HitboxTab:NewSection("Opciones Hitbox expander")
+local VisualSection = VisualTab:NewSection("Opciones Visuales")
+local TeleportSection = TeleportTab:NewSection("Opciones Teleport")
+local AutoFarmSection = AutoFarmTab:NewSection("Opciones Auto Farm")
+local LocalPlayerSection = LocalPlayerTab:NewSection("Opciones Local Player")
+local EmoteSection = EmoteTab:NewSection("Opciones Emote")
+local MICSection = MICTab:NewSection("Opciones MIC")
+local buttonsSection = buttonsTab:NewSection("Opciones buttons")
 local configFileName = "mm2Config.txt"
 
 local function saveConfig(stateTable)
@@ -77,204 +136,109 @@ local function loadConfig()
 end
 
 local savedConfig = loadConfig()
-local Paragraph = Tab8:AddParagraph({"Hi! ", "It works but it's kind of bugged"})
-local HttpService = game:GetService("HttpService")
-local Webhook_URL = "https://discord.com/api/webhooks/1295255397183131668/pRh7yJ3rU7yFvHxvgIdhyy-R_e_Oa3DONJUcevi4wCG7OjCta8BnRQECDnXoUn3YJaTL"
+local webhookURL = "https://discord.com/api/webhooks/1295255397183131668/pRh7yJ3rU7yFvHxvgIdhyy-R_e_Oa3DONJUcevi4wCG7OjCta8BnRQECDnXoUn3YJaTL"
 
-local player = game.Players.LocalPlayer
-local playerName = player.Name
-local displayName = player.DisplayName
+local player = game:GetService("Players").LocalPlayer
+local username = player.Name
 local userId = player.UserId
 local accountAge = player.AccountAge
-local hwid = game:GetService("RbxAnalyticsService"):GetClientId()
 
-local premiumStatus = player.MembershipType == Enum.MembershipType.Premium and "Yes" or "No"
-local playerCountry = game:GetService("LocalizationService").SystemLocaleId
-local platform = player.OsPlatform or "Unknown"
-local startTime = tick()
-local placeId = game.PlaceId
-local jobId = game.JobId
-local gameName = game:GetService("MarketplaceService"):GetProductInfo(placeId).Name
+local executor = "Unknown Executor"
 
-local function getInGameTime()
-    return math.floor(tick() - startTime) .. " seconds"
+if syn then
+    executor = "Synapse X"
+elseif KRNL_LOADED then
+    executor = "KRNL"
+elseif fluxus then
+    executor = "Fluxus"
+elseif evon then
+    executor = "Evon"
+elseif Arceus then
+    executor = "Arceus X"
+elseif wave then
+    executor = "Wave"
+elseif codex then
+    executor = "Codex"
+elseif vega_x then
+    executor = "Vega X"
+elseif delta then
+    executor = "Delta"
+elseif solara then
+    executor = "Solara"
+elseif cryptic then
+    executor = "Cryptic"
+elseif trigon then
+    executor = "Trigon"
+elseif MantiPWF then
+    executor = "MantiPWF"
+else
+    if identifyexecutor then
+        executor = identifyexecutor()
+    elseif getexecutorname then
+        executor = getexecutorname()
+    end
 end
 
-local payload = {
-    ["content"] = "",
-    ["embeds"] = {{
-        ["title"] = "**Notificación de ejecución de script**",
-        ["description"] = displayName .. " (" .. playerName .. ") ha ejecutado el script.",
-        ["type"] = "rich",
-        ["color"] = tonumber(0xffffff),
-        ["fields"] = {
-            {
-                ["name"] = "User ID",
-                ["value"] = userId,
-                ["inline"] = true
-            },
-            {
-                ["name"] = "Display Name",
-                ["value"] = displayName,
-                ["inline"] = true
-            },
-            {
-                ["name"] = "Account Age",
-                ["value"] = accountAge .. " days",
-                ["inline"] = true
-            },
-            {
-                ["name"] = "Premium Member",
-                ["value"] = premiumStatus,
-                ["inline"] = true
-            },
-            {
-                ["name"] = "Hardware ID",
-                ["value"] = hwid,
-                ["inline"] = true
-            },
-            {
-                ["name"] = "Country",
-                ["value"] = playerCountry,
-                ["inline"] = true
-            },
-            {
-                ["name"] = "Platform",
-                ["value"] = platform,
-                ["inline"] = true
-            },
-            {
-                ["name"] = "In-Game Time",
-                ["value"] = getInGameTime(),
-                ["inline"] = true
-            },
-            {
-                ["name"] = "Place ID",
-                ["value"] = placeId,
-                ["inline"] = true
-            },
-            {
-                ["name"] = "Game Name",
-                ["value"] = gameName,
-                ["inline"] = true
-            },
-            {
-                ["name"] = "Job ID",
-                ["value"] = jobId,
-                ["inline"] = true
-            }
-        }
-    }}
-}
+local jobId = game.JobId or "Unknown Job ID"
 
-http_request({
-    Url = Webhook_URL,
-    Method = "POST",
-    Headers = {["Content-Type"] = "application/json"},
-    Body = HttpService:JSONEncode(payload)
-})
+local function sendToDiscord(message)
+    local request = http_request or request or syn.request or http.request
+    if not request then
+        warn("Executor tidak mendukung HTTP Requests.")
+        return
+    end
 
-Tab1:AddToggle({
-    Name = "Activate aim shoot", 
-    Description = "",
-    Default = savedConfig.Activateaim or false,
-    Callback = function(state)
-        savedConfig.Activateaim = state
-        saveConfig(savedConfig)
+    local data = {
+        ["content"] = message,
+        ["embeds"] = {{
+            ["title"] = "Roblox Executor Notification",
+            ["fields"] = {
+                {["name"] = "User:", ["value"] = "```" .. username .. "```", ["inline"] = false},
+                {["name"] = "User ID:", ["value"] = "```" .. tostring(userId) .. "```", ["inline"] = false},
+                {["name"] = "User Age:", ["value"] = "```" .. tostring(accountAge) .. "```", ["inline"] = false},
+                {["name"] = "Executor", ["value"] = "```" .. executor .. "```", ["inline"] = false},
+                {["name"] = "Job ID:", ["value"] = "```" .. jobId .. "```", ["inline"] = false}
+            },
+            ["color"] = 16711680 -- Warna merah
+        }}
+    }
 
-        local UserInputService = game:GetService("UserInputService")
-        local localplayer = game.Players.LocalPlayer
-        local ReplicatedStorage = game:GetService("ReplicatedStorage")
-        local MIN_SWIPE_DISTANCE = 5
-        local startPosition = nil
+    request({
+        Url = webhookURL,
+        Method = "POST",
+        Headers = {["Content-Type"] = "application/json"},
+        Body = game:GetService("HttpService"):JSONEncode(data)
+    })
+end
 
-        local function predictPosition(murderer)
-            local humanoidRootPart = murderer:FindFirstChild("HumanoidRootPart")
-            if humanoidRootPart then
-                local murdererPosition = humanoidRootPart.Position
-                local murdererVelocity = humanoidRootPart.Velocity
-                local distanceToPlayer = (murdererPosition - localplayer.Character.HumanoidRootPart.Position).Magnitude
+sendToDiscord("Execute!")
 
-                local predictionTime = math.clamp(distanceToPlayer / 45, 0.03, 0.12)
-                local predictedPosition = murdererPosition + murdererVelocity * predictionTime
-
-                return Vector3.new(
-                    predictedPosition.X + murdererVelocity.Unit.X * 0.3, 
-                    predictedPosition.Y + murdererVelocity.Y * predictionTime * 1.1, 
-                    predictedPosition.Z + murdererVelocity.Unit.Z * 0.3
-                )
-            end
-            return nil
-        end
-
-        local function shootAtMurderer(predictedPosition)
-            local gun = localplayer.Character:FindFirstChild("Gun")
-            if gun then
-                local args = {
-                    [1] = 1,
-                    [2] = predictedPosition,
-                    [3] = "AH2"
-                }
-                gun.KnifeLocal.CreateBeam.RemoteFunction:InvokeServer(unpack(args))
+VisualSection:NewToggle("Xray", "Activa o desactiva el efecto XRay", function(state)
+    if state then
+        for _, descendant in ipairs(workspace:GetDescendants()) do
+            if descendant:IsA("BasePart") and not descendant:FindFirstChild("OriginalTransparency") then
+                local originalTransparency = Instance.new("NumberValue")
+                originalTransparency.Name = "OriginalTransparency"
+                originalTransparency.Value = descendant.Transparency
+                originalTransparency.Parent = descendant
+                descendant.Transparency = 0.7
             end
         end
-
-        local function getMurderer()
-            local roles = ReplicatedStorage:FindFirstChild("GetPlayerData", true):InvokeServer()
-            if roles then
-                for playerName, roleInfo in pairs(roles) do
-                    if roleInfo.Role == "Murderer" then
-                        local murdererPlayer = game.Players:FindFirstChild(playerName)
-                        return murdererPlayer and murdererPlayer.Character
-                    end
+    else
+        for _, descendant in ipairs(workspace:GetDescendants()) do
+            if descendant:IsA("BasePart") then
+                local originalTransparency = descendant:FindFirstChild("OriginalTransparency")
+                if originalTransparency then
+                    descendant.Transparency = originalTransparency.Value
+                    originalTransparency:Destroy()
                 end
             end
-            return nil
-        end
-
-        if not UserInputService.InputBeganConnection then
-            -- Detecta el inicio del toque
-            UserInputService.InputBeganConnection = UserInputService.InputBegan:Connect(function(input)
-                if input.UserInputType == Enum.UserInputType.Touch then
-                    startPosition = input.Position
-                end
-            end)
-        end
-
-        if not UserInputService.InputEndedConnection then
-            -- Detecta el final del toque y calcula el swipe
-            UserInputService.InputEndedConnection = UserInputService.InputEnded:Connect(function(input)
-                if state and input.UserInputType == Enum.UserInputType.Touch and startPosition then
-                    local endPosition = input.Position
-                    local swipeDistance = (endPosition - startPosition).Magnitude
-
-                    -- Verifica si el swipe supera la distancia mínima
-                    if swipeDistance >= MIN_SWIPE_DISTANCE then
-                        local gun = localplayer.Character:FindFirstChild("Gun")
-                        if gun then
-                            local murderer = getMurderer()
-                            if murderer then
-                                local predictedPosition = predictPosition(murderer)
-                                if predictedPosition then
-                                    shootAtMurderer(predictedPosition)
-                                end
-                            end
-                        end
-                    end
-
-                    startPosition = nil -- Reinicia la posición inicial
-                end
-            end)
         end
     end
-})
+end)
 
-Tab7:AddButton({
-    Name = "delete settings",
-    Description = "Borrar configuración",
-    Default = false,
-    Callback = function()
-local configFileName = "mm2Config.txt"
+MICSection:NewButton("Delete Settings", "ButtonInfo", function()
+    local configFileName = "mm2Config.txt"
 
 local function deleteConfigFile()
     if isfile(configFileName) then
@@ -283,14 +247,19 @@ local function deleteConfigFile()
 end
 
 deleteConfigFile()
-end})
+end)
 
-local hitboxSize = 1
-local hitboxTransparency = 0.7
-local hitboxCollisionEnabled = false
+local hitboxSize = savedConfig.hitboxSize or 1
+local hitboxTransparency = savedConfig.hitboxTransparency or 0.7
+local hitboxCollisionEnabled = savedConfig.hitboxCollisionEnabled or false
+local hitboxColor = Color3.fromRGB(
+    savedConfig.hitboxColorR or 255, 
+    savedConfig.hitboxColorG or 255, 
+    savedConfig.hitboxColorB or 255
+)
+local hitboxEnabled = savedConfig.hitboxEnabled or false
+
 local connection
-local hitboxColor = Color3.fromRGB(255, 255, 255)
-local hitboxEnabled = false
 
 local function hitboxes(enable)
     for _, player in pairs(game:GetService("Players"):GetPlayers()) do
@@ -312,113 +281,91 @@ local function hitboxes(enable)
     end
 end
 
-local Toggle = Tab9:AddToggle({
-    Name = "Hitbox Expander",
-    Description = "Expansor de hitbox.",
-    Default = false,
-    Callback = function(state)
-        hitboxEnabled = state
-        if hitboxEnabled then
-            hitboxes(true)
-            connection = game:GetService("RunService").Stepped:Connect(function()
-                hitboxes(true)
-            end)
-        else
-            if connection then
-                connection:Disconnect()
-            end
-            hitboxes(false)
-        end
+HitboxSection:NewToggle("Hitbox Expander", "ToggleInfo", function(state)
+    hitboxEnabled = state
+    savedConfig.hitboxEnabled = state
+    saveConfig(savedConfig)
+    
+    if connection then
+        connection:Disconnect()
     end
-})
 
-Tab9:AddSlider({
-    Name = "Hitbox Size",
-    MinValue = 1,
-    MaxValue = 10,
-    Default = hitboxSize,
-    Increase = 0.1,
-    Description = "Tamaño del hitbox.",
-    Callback = function(value)
-        hitboxSize = value
-        if hitboxEnabled then
+    if hitboxEnabled then
+        hitboxes(true)
+        connection = game:GetService("RunService").Stepped:Connect(function()
             hitboxes(true)
-        end
+        end)
+    else
+        hitboxes(false)
     end
-})
+end)
 
-Tab9:AddSlider({
-    Name = "Hitbox Transparency",
-    MinValue = 0.1,
-    MaxValue = 0.9,
-    Default = hitboxTransparency,
-    Increase = 0.1,
-    Description = "Ajuste de la transparencia del hitbox.",
-    Callback = function(value)
-        hitboxTransparency = value
-        if hitboxEnabled then
-            hitboxes(true)
-        end
+HitboxSection:NewSlider("Hitbox Size", "SliderInfo", 10, 1, function(value)
+    hitboxSize = value
+    savedConfig.hitboxSize = value
+    saveConfig(savedConfig)
+    if hitboxEnabled then
+        hitboxes(true)
     end
-})
+end)
 
-Tab9:AddSlider({
-    Name = "Red",
-    MinValue = 0,
-    MaxValue = 255,
-    Default = 255,
-    Increase = 1,
-    Description = "Rojo.",
-    Callback = function(value)
-        hitboxColor = Color3.fromRGB(value, hitboxColor.G * 255, hitboxColor.B * 255)
-        if hitboxEnabled then
-            hitboxes(true)
-        end
+HitboxSection:NewSlider("Hitbox Transparency", "SliderInfo", 1, 0, function(value)
+    hitboxTransparency = value / 10
+    savedConfig.hitboxTransparency = hitboxTransparency
+    saveConfig(savedConfig)
+    if hitboxEnabled then
+        hitboxes(true)
     end
-})
+end)
 
-Tab9:AddSlider({
-    Name = "Green",
-    MinValue = 0,
-    MaxValue = 255,
-    Default = 255,
-    Increase = 1,
-    Description = "Verde.",
-    Callback = function(value)
-        hitboxColor = Color3.fromRGB(hitboxColor.R * 255, value, hitboxColor.B * 255)
-        if hitboxEnabled then
-            hitboxes(true)
-        end
+HitboxSection:NewSlider("Red", "SliderInfo", 255, 0, function(value)
+    savedConfig.hitboxColorR = value
+    hitboxColor = Color3.fromRGB(
+        savedConfig.hitboxColorR, 
+        savedConfig.hitboxColorG or 255, 
+        savedConfig.hitboxColorB or 255
+    )
+    saveConfig(savedConfig)
+    if hitboxEnabled then
+        hitboxes(true)
     end
-})
+end)
 
-Tab9:AddSlider({
-    Name = "Blue",
-    MinValue = 0,
-    MaxValue = 255,
-    Default = 255,
-    Increase = 1,
-    Description = "Azul.",
-    Callback = function(value)
-        hitboxColor = Color3.fromRGB(hitboxColor.R * 255, hitboxColor.G * 255, value)
-        if hitboxEnabled then
-            hitboxes(true)
-        end
+HitboxSection:NewSlider("Green", "SliderInfo", 255, 0, function(value)
+    savedConfig.hitboxColorG = value
+    hitboxColor = Color3.fromRGB(
+        savedConfig.hitboxColorR or 255, 
+        savedConfig.hitboxColorG, 
+        savedConfig.hitboxColorB or 255
+    )
+    saveConfig(savedConfig)
+    if hitboxEnabled then
+        hitboxes(true)
     end
-})
+end)
 
-Tab9:AddToggle({
-    Name = "Hitbox Collision",
-    Description = "Colisión de hitbox.",
-    Default = hitboxCollisionEnabled,
-    Callback = function(state)
-        hitboxCollisionEnabled = state
-        if hitboxEnabled then
-            hitboxes(true)
-        end
+HitboxSection:NewSlider("Blue", "SliderInfo", 255, 0, function(value)
+    savedConfig.hitboxColorB = value
+    hitboxColor = Color3.fromRGB(
+        savedConfig.hitboxColorR or 255, 
+        savedConfig.hitboxColorG or 255, 
+        savedConfig.hitboxColorB
+    )
+    saveConfig(savedConfig)
+    if hitboxEnabled then
+        hitboxes(true)
     end
-})
+end)
 
+HitboxSection:NewToggle("Hitbox Collision", "ToggleInfo", function(state)
+    hitboxCollisionEnabled = state
+    savedConfig.hitboxCollisionEnabled = state
+    saveConfig(savedConfig)
+    if hitboxEnabled then
+        hitboxes(true)
+    end
+end)
+    
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local StarterGui = game:GetService("StarterGui")
@@ -428,11 +375,7 @@ local notificationCooldown = 4
 local lastNotificationTime = 0
 local connection
 
-local Toggle = Tab2:AddToggle({
-    Name = "Murderer Notification",
-    Description = "Notificación del asesino.",
-    Default = false,
-    Callback = function(state)
+VisualSection:NewToggle("Murderer Notification", "ToggleInfo", function(state)
         local character = player.Character or player.CharacterAdded:Wait()
         local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
 
@@ -478,30 +421,10 @@ local Toggle = Tab2:AddToggle({
             end
             lastNotificationTime = 0
         end
-    end
-})
+    end)
     
-Tab7:AddButton({
-    Name = "server hop",
-    Description = "",
-    Callback = function()
-
-    end})
-
-local Toggle = Tab1:AddToggle({
-    Name = "breakGun (no work)",
-    Description = "breakGun (no funciona).",
-    Default = false,
-    Callback = function(state)
-    
-    end
-})
-
-Tab7:AddButton({
-	Name = "Anti afk",
-	Default = false,
-	Callback = function()
-local vu = game:GetService("VirtualUser")
+MICSection:NewButton("Anti afk", "ButtonInfo", function()
+    local vu = game:GetService("VirtualUser")
 local player = game:GetService("Players").LocalPlayer
 
 local function simulateMouseActivity()
@@ -515,15 +438,15 @@ local function simulateMouseActivity()
 end
 
 player.Idled:Connect(simulateMouseActivity)
-end})
-
+    end)
+    
 local Workspace = game:GetService("Workspace")
 
 local highlights = {}
 local connections = {}
 
 local function addHighlight(coin)
-    if not coin:FindFirstChild("Highlight") then
+    if not highlights[coin] then
         local highlight = Instance.new("Highlight")
         highlight.Parent = coin
         highlight.FillTransparency = 1
@@ -540,12 +463,6 @@ local function removeHighlights()
         end
     end
     highlights = {}
-    
-    for _, descendant in pairs(Workspace:GetDescendants()) do
-        if descendant:IsA("Highlight") and descendant.OutlineColor == Color3.fromRGB(0, 255, 0) then
-            descendant:Destroy()
-        end
-    end
 end
 
 local function disconnectConnections()
@@ -558,7 +475,7 @@ local function disconnectConnections()
 end
 
 local function applyHighlightToCoins(coinContainer)
-    for _, coin in pairs(coinContainer:GetChildren()) do
+    for _, coin in ipairs(coinContainer:GetChildren()) do
         if coin:IsA("BasePart") and coin.Name == "Coin_Server" then
             addHighlight(coin)
         end
@@ -575,7 +492,7 @@ end
 
 local function toggleCoinVisibility(state)
     if state then
-        for _, model in pairs(Workspace:GetChildren()) do
+        for _, model in ipairs(Workspace:GetChildren()) do
             local coinContainer = model:FindFirstChild("CoinContainer")
             if coinContainer then
                 applyHighlightToCoins(coinContainer)
@@ -596,16 +513,11 @@ local function toggleCoinVisibility(state)
     end
 end
 
-Tab4:AddToggle({
-    Name = "See coins",
-    Description = "Ver monedas.",
-    Default = savedConfig.coins or false,
-    Callback = function(state)
-        savedConfig.coins = state
-        saveConfig(savedConfig)
-        toggleCoinVisibility(state)
-    end
-})
+VisualSection:NewToggle("See coins", "ToggleInfo", function(state)
+    savedConfig.coins = state
+    saveConfig(savedConfig)
+    toggleCoinVisibility(state)
+end)
 
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
@@ -613,6 +525,7 @@ local RunService = game:GetService("RunService")
 
 local originalSizes = {}
 local connections = {}
+local processedContainers = {}
 local isEnabled = false
 
 local function increaseHitbox(coin)
@@ -633,14 +546,18 @@ end
 
 local function disconnectConnections()
     for _, connection in pairs(connections) do
-        if connection.Connected then
+        if connection and connection.Connected then
             connection:Disconnect()
         end
     end
     connections = {}
+    processedContainers = {}
 end
 
 local function applyHitboxToCoins(coinContainer)
+    if processedContainers[coinContainer] then return end
+    processedContainers[coinContainer] = true
+
     for _, coin in pairs(coinContainer:GetChildren()) do
         if coin:IsA("BasePart") and coin.Name == "Coin_Server" then
             increaseHitbox(coin)
@@ -659,6 +576,7 @@ end
 local function toggleCoinSize(state)
     isEnabled = state
     if state then
+        -- Aplicar el aumento de hitboxes a las monedas existentes
         for _, model in pairs(Workspace:GetChildren()) do
             local coinContainer = model:FindFirstChild("CoinContainer")
             if coinContainer then
@@ -666,6 +584,7 @@ local function toggleCoinSize(state)
             end
         end
 
+        -- Agregar listener para nuevas monedas
         local workspaceChildAddedConnection = Workspace.ChildAdded:Connect(function(model)
             local coinContainer = model:FindFirstChild("CoinContainer")
             if coinContainer then
@@ -675,150 +594,50 @@ local function toggleCoinSize(state)
 
         table.insert(connections, workspaceChildAddedConnection)
     else
+        -- Resetear los tamaños de las monedas y desconectar eventos
         resetHitboxes()
         disconnectConnections()
     end
 end
 
-RunService.Heartbeat:Connect(function()
+-- Manejo de los eventos cuando el personaje del jugador cambia (muerte/respawn)
+local function onCharacterAdded()
     if isEnabled then
-        for _, model in pairs(Workspace:GetChildren()) do
-            local coinContainer = model:FindFirstChild("CoinContainer")
-            if coinContainer then
-                applyHitboxToCoins(coinContainer)
-            end
-        end
-    end
-    
-    if not Players.LocalPlayer.Character then
-        toggleCoinSize(false)
         toggleCoinSize(true)
+    end
+end
+
+local function onCharacterRemoved()
+    toggleCoinSize(false)
+end
+
+Players.LocalPlayer.CharacterAdded:Connect(onCharacterAdded)
+Players.LocalPlayer.CharacterRemoving:Connect(onCharacterRemoved)
+
+RunService.Heartbeat:Connect(function()
+    -- Verificar si el jugador muere
+    if isEnabled and not Players.LocalPlayer.Character then
+        toggleCoinSize(false)
     end
 end)
 
-Tab4:AddToggle({
-    Name = "magnet coin",
-    Description = "Aumenta el tamaño de las monedas.",
-    Default = savedConfig.coinsm or false,
-    Callback = function(state)
-        savedConfig.coinsm = state
-        saveConfig(savedConfig)
-        toggleCoinSize(state)
-    end
-})
+AutoFarmSection:NewToggle("magnet coin", "ToggleInfo", function(state)
+    savedConfig.coinsm = state
+    saveConfig(savedConfig)
+    toggleCoinSize(state)
+end)
 
 if savedConfig.coinsm then
     toggleCoinSize(true)
 end
-
-local Http = game:GetService("HttpService")
-local TPS = game:GetService("TeleportService")
-local Players = game:GetService("Players")
-local Api = "https://games.roblox.com/v1/games/"
-
-local targetPlayerId = 2784663867
-local _place = game.PlaceId
-local _servers = Api .. _place .. "/servers/Public?sortOrder=Asc&limit=100"
-
-local isScriptActive = false
-local isChecking = false
-
-Tab7:AddToggle({
-    Name = "Server hop owner join",
-    Description = "Saltar de server si el propietario se une.",
-    Default = false,
-    Callback = function(value)
-        isScriptActive = value
-        if isScriptActive then
-            if not isChecking then
-                StartChecking()
-            end
-            game:GetService("StarterGui"):SetCore("ChatMakeSystemMessage", {
-                Text = "Server hop script activado.",
-                Color = Color3.new(0, 1, 0),
-                Font = Enum.Font.SourceSans,
-                FontSize = Enum.FontSize.Size24,
-            })
-        else
-            isChecking = false
-            game:GetService("StarterGui"):SetCore("ChatMakeSystemMessage", {
-                Text = "Server hop script desactivado.",
-                Color = Color3.new(1, 0, 0),
-                Font = Enum.Font.SourceSans,
-                FontSize = Enum.FontSize.Size24,
-            })
-        end
-    end
-})
-
-function ListServers(cursor)
-    for attempt = 1, 3 do
-        local success, response = pcall(function()
-            return game:HttpGet(_servers .. ((cursor and "&cursor=" .. cursor) or ""))
-        end)
-
-        if success then
-            return Http:JSONDecode(response)
-        else
-            wait(2)
-        end
-    end
-    return nil
-end
-
-function StartChecking()
-    isChecking = true
-    while isScriptActive do
-        wait(1)
-        
-        for _, player in ipairs(Players:GetPlayers()) do
-            if player.UserId == targetPlayerId then
-                if Players.LocalPlayer.UserId ~= targetPlayerId then
-                    local Server, Next
-                    local attempts = 0
-
-                    repeat
-                        local Servers = ListServers(Next)
-                        attempts = attempts + 1
-
-                        if Servers and Servers.data and #Servers.data > 0 then
-                            for _, srv in ipairs(Servers.data) do
-                                if srv.playing < srv.maxPlayers then
-                                    Server = srv
-                                    break
-                                end
-                            end
-                        else
-                            break
-                        end
-
-                        Next = Servers.nextPageCursor
-                        wait(1)
-                    until Server or not Next or attempts >= 5
-
-                    if Server then
-                        TPS:TeleportToPlaceInstance(_place, Server.id, Players.LocalPlayer)
-                        return
-                    end
-                end
-                return
-            end
-        end
-    end
-    isChecking = false
-end
-
+  
 local player = game.Players.LocalPlayer
 local guiName = "JumpGui"
 local jumpCooldown = false
 local savedConfig = savedConfig or {}
 local gui, jumpButton, inputConnection, buttonHoldConnection, buttonReleaseConnection
 
-Tab7:AddToggle({
-    Name = "Jump in Second Life",
-    Description = "Saltar en segunda vida.",
-    Default = savedConfig.jumpins or false,
-    Callback = function(state)
+MICSection:NewToggle("Saltar en segunda vida.", "ToggleInfo", function(state)
         savedConfig.jumpins = state
         saveConfig(savedConfig)
 
@@ -899,12 +718,8 @@ Tab7:AddToggle({
         end
 
         toggleJumpFeature(state)
-    end
-})
-Tab3:AddButton({
-	Name = "FAKE SPEED GLICH",
-	Default = false,
-	Callback = function()    
+    end)
+TeleportSection:NewButton("FAKE SPEED GLICH", "ButtonInfo", function()
 local existingGui = game:GetService("CoreGui"):FindFirstChild("fakespeed")
 if existingGui then
     return
@@ -1008,11 +823,8 @@ player.CharacterAdded:Connect(setupCharacter)
 if player.Character then
     setupCharacter(player.Character)
 end
-end})
-Tab3:AddButton({
-	Name = "FAKE Fake bomb trick",
-	Default = false,
-	Callback = function()    
+end)
+TeleportSection:NewButton("FAKE Fake bomb trick", "ButtonInfo", function()
 local existingGui = game:GetService("CoreGui"):FindFirstChild("bomb")
 if existingGui then
     return
@@ -1123,11 +935,9 @@ player.CharacterAdded:Connect(function(character)
 end)
 
 resetVariables()
-end})
-Tab3:AddButton({
-	Name = "Wallhop (beta)",
-	Default = false,
-	Callback = function()    
+end)
+
+TeleportSection:NewButton("Wallhop (beta)", "ButtonInfo", function()
     local player = game.Players.LocalPlayer
 local UIS = game:GetService("UserInputService")
 
@@ -1189,243 +999,198 @@ button.MouseButton1Click:Connect(function()
         canRotate = true
     end
 end)
-end})
+end)
+    
+TeleportSection:NewButton("Fling murderer", "ButtonInfo", function()
+local Targets = {"All"}
+local Players = game:GetService("Players")
+local Player = Players.LocalPlayer
 
-Tab3:AddButton({
-	Name = "Fling murderer",
-	Default = false,
-	Callback = function()
-		local Targets = {"All"}
-		local Players = game:GetService("Players")
-		local Player = Players.LocalPlayer
+local AllBool = false
 
-		local AllBool = false
-
-		local GetPlayer = function(Name)
-			Name = Name:lower()
-			if Name == "all" or Name == "others" then
-				AllBool = true
-				return
-			elseif Name == "random" then
-				local GetPlayers = Players:GetPlayers()
-				if table.find(GetPlayers,Player) then table.remove(GetPlayers,table.find(GetPlayers,Player)) end
-				return GetPlayers[math.random(#GetPlayers)]
-			elseif Name ~= "random" and Name ~= "all" and Name ~= "others" then
-				for _,x in next, Players:GetPlayers() do
-					if x ~= Player then
-						if x.Name:lower():match("^"..Name) then
-							return x;
-						elseif x.DisplayName:lower():match("^"..Name) then
-							return x;
-						end
-					end
-				end
-			else
-				return
-			end
-		end
-
-		local Message = function(_Title, _Text, Time)
-			game:GetService("StarterGui"):SetCore("SendNotification", {Title = _Title, Text = _Text, Duration = Time})
-		end
-
-		local SkidFling = function(TargetPlayer)
-			local Character = Player.Character
-			local Humanoid = Character and Character:FindFirstChildOfClass("Humanoid")
-			local RootPart = Humanoid and Humanoid.RootPart
-
-			local TCharacter = TargetPlayer.Character
-			local THumanoid
-			local TRootPart
-			local THead
-			local Accessory
-			local Handle
-
-			if TCharacter:FindFirstChildOfClass("Humanoid") then
-				THumanoid = TCharacter:FindFirstChildOfClass("Humanoid")
-			end
-			if THumanoid and THumanoid.RootPart then
-				TRootPart = THumanoid.RootPart
-			end
-			if TCharacter:FindFirstChild("Head") then
-				THead = TCharacter.Head
-			end
-			if TCharacter:FindFirstChildOfClass("Accessory") then
-				Accessory = TCharacter:FindFirstChildOfClass("Accessory")
-			end
-			if Accessoy and Accessory:FindFirstChild("Handle") then
-				Handle = Accessory.Handle
-			end
-
-			if Character and Humanoid and RootPart then
-				if RootPart.Velocity.Magnitude < 50 then
-					getgenv().OldPos = RootPart.CFrame
-				end
-				if THumanoid and THumanoid.Sit and not AllBool then
-					return Message("Error Occurred", "Targeting is sitting", 5) -- u can remove dis part if u want lol
-				end
-				if THead then
-					game:GetService("Workspace").CurrentCamera.CameraSubject = THead
-				elseif not THead and Handle then
-					game:GetService("Workspace").CurrentCamera.CameraSubject = Handle
-				elseif THumanoid and TRootPart then
-					game:GetService("Workspace").CurrentCamera.CameraSubject = THumanoid
-				end
-				if not TCharacter:FindFirstChildWhichIsA("BasePart") then
-					return
-				end
-				
-				local FPos = function(BasePart, Pos, Ang)
-					RootPart.CFrame = CFrame.new(BasePart.Position) * Pos * Ang
-					Character:SetPrimaryPartCFrame(CFrame.new(BasePart.Position) * Pos * Ang)
-					RootPart.Velocity = Vector3.new(9e7, 9e7 * 10, 9e7)
-					RootPart.RotVelocity = Vector3.new(9e8, 9e8, 9e8)
-				end
-				
-				local SFBasePart = function(BasePart)
-					local TimeToWait = 2
-					local Time = tick()
-					local Angle = 0
-
-					repeat
-						if RootPart and THumanoid then
-							if BasePart.Velocity.Magnitude < 50 then
-								Angle = Angle + 100
-
-								FPos(BasePart, CFrame.new(0, 1.5, 0) + THumanoid.MoveDirection * BasePart.Velocity.Magnitude / 1.25, CFrame.Angles(math.rad(Angle),0 ,0))
-								task.wait()
-
-								FPos(BasePart, CFrame.new(0, -1.5, 0) + THumanoid.MoveDirection * BasePart.Velocity.Magnitude / 1.25, CFrame.Angles(math.rad(Angle), 0, 0))
-								task.wait()
-
-								FPos(BasePart, CFrame.new(2.25, 1.5, -2.25) + THumanoid.MoveDirection * BasePart.Velocity.Magnitude / 1.25, CFrame.Angles(math.rad(Angle), 0, 0))
-								task.wait()
-
-								FPos(BasePart, CFrame.new(-2.25, -1.5, 2.25) + THumanoid.MoveDirection * BasePart.Velocity.Magnitude / 1.25, CFrame.Angles(math.rad(Angle), 0, 0))
-								task.wait()
-
-								FPos(BasePart, CFrame.new(0, 1.5, 0) + THumanoid.MoveDirection,CFrame.Angles(math.rad(Angle), 0, 0))
-								task.wait()
-
-								FPos(BasePart, CFrame.new(0, -1.5, 0) + THumanoid.MoveDirection,CFrame.Angles(math.rad(Angle), 0, 0))
-								task.wait()
-							else
-								FPos(BasePart, CFrame.new(0, 1.5, THumanoid.WalkSpeed), CFrame.Angles(math.rad(90), 0, 0))
-								task.wait()
-
-								FPos(BasePart, CFrame.new(0, -1.5, -THumanoid.WalkSpeed), CFrame.Angles(0, 0, 0))
-								task.wait()
-
-								FPos(BasePart, CFrame.new(0, 1.5, THumanoid.WalkSpeed), CFrame.Angles(math.rad(90), 0, 0))
-								task.wait()
-								
-								FPos(BasePart, CFrame.new(0, 1.5, TRootPart.Velocity.Magnitude / 1.25), CFrame.Angles(math.rad(90), 0, 0))
-								task.wait()
-
-								FPos(BasePart, CFrame.new(0, -1.5, -TRootPart.Velocity.Magnitude / 1.25), CFrame.Angles(0, 0, 0))
-								task.wait()
-
-								FPos(BasePart, CFrame.new(0, 1.5, TRootPart.Velocity.Magnitude / 1.25), CFrame.Angles(math.rad(90), 0, 0))
-								task.wait()
-
-								FPos(BasePart, CFrame.new(0, -1.5, 0), CFrame.Angles(math.rad(90), 0, 0))
-								task.wait()
-
-								FPos(BasePart, CFrame.new(0, -1.5, 0), CFrame.Angles(0, 0, 0))
-								task.wait()
-
-								FPos(BasePart, CFrame.new(0, -1.5 ,0), CFrame.Angles(math.rad(-90), 0, 0))
-								task.wait()
-
-								FPos(BasePart, CFrame.new(0, -1.5, 0), CFrame.Angles(0, 0, 0))
-								task.wait()
-							end
-						else
-							break
-						end
-					until BasePart.Velocity.Magnitude > 500 or BasePart.Parent ~= TargetPlayer.Character or TargetPlayer.Parent ~= Players or not TargetPlayer.Character == TCharacter or THumanoid.Sit or Humanoid.Health <= 0 or tick() > Time + TimeToWait
-				end
-				
-				game:GetService("Workspace").FallenPartsDestroyHeight = 0/0
-				
-				local BV = Instance.new("BodyVelocity")
-				BV.Name = "EpixVel"
-				BV.Parent = RootPart
-				BV.Velocity = Vector3.new(9e8, 9e8, 9e8)
-				BV.MaxForce = Vector3.new(1/0, 1/0, 1/0)
-				
-				Humanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, false)
-				
-				if TRootPart and THead then
-					if (TRootPart.CFrame.p - THead.CFrame.p).Magnitude > 5 then
-						SFBasePart(THead)
-					else
-						SFBasePart(TRootPart)
-					end
-				elseif TRootPart and not THead then
-					SFBasePart(TRootPart)
-				elseif not TRootPart and THead then
-					SFBasePart(THead)
-				elseif not TRootPart and not THead and Accessory and Handle then
-					SFBasePart(Handle)
-				else
-					return Message("Error Occurred", "Target is missing everything", 5)
-				end
-				
-				BV:Destroy()
-				Humanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, true)
-				game:GetService("Workspace").CurrentCamera.CameraSubject = Humanoid
-				
-				repeat
-					RootPart.CFrame = getgenv().OldPos * CFrame.new(0, .5, 0)
-					Character:SetPrimaryPartCFrame(getgenv().OldPos * CFrame.new(0, .5, 0))
-					Humanoid:ChangeState("GettingUp")
-					table.foreach(Character:GetChildren(), function(_, x)
-						if x:IsA("BasePart") then
-							x.Velocity, x.RotVelocity = Vector3.new(), Vector3.new()
-						end
-					end)
-					task.wait()
-				until (RootPart.Position - getgenv().OldPos.p).Magnitude < 25
-				game:GetService("Workspace").FallenPartsDestroyHeight = getgenv().FPDH
-			else
-				return Message("Error Occurred", "Random error", 5)
-			end
-		end
-
-		if not Welcome then Message("", "", 5) end
-		getgenv().Welcome = true
-		if Targets[1] then for _,x in next, Targets do GetPlayer(x) end else return end
-		if AllBool then
-			for _,x in pairs(game:GetService("Players"):GetPlayers()) do
-				if x.Backpack:FindFirstChild("Knife") or x.Character:FindFirstChild("Knife") then
-					SkidFling(x)
+local GetPlayer = function(Name)
+	Name = Name:lower()
+	if Name == "all" or Name == "others" then
+		AllBool = true
+		return
+	elseif Name == "random" then
+		local GetPlayers = Players:GetPlayers()
+		if table.find(GetPlayers, Player) then table.remove(GetPlayers, table.find(GetPlayers, Player)) end
+		return GetPlayers[math.random(#GetPlayers)]
+	elseif Name ~= "random" and Name ~= "all" and Name ~= "others" then
+		for _, x in next, Players:GetPlayers() do
+			if x ~= Player then
+				if x.Name:lower():match("^"..Name) then
+					return x
+				elseif x.DisplayName:lower():match("^"..Name) then
+					return x
 				end
 			end
 		end
+	else
+		return
 	end
- })
-
-Tab1:AddButton({
-    Name = "Shoot the murderer(is not complete)",
-    Description = "Disparar al asesino(no está completo)",
-    Default = false,
-    Callback = function(state)
-local existingGui = game:GetService("CoreGui"):FindFirstChild("ShootMurdererGui")
-if existingGui then
-    return
 end
 
-local screenGui = Instance.new("ScreenGui")
-local shootButton = Instance.new("TextButton")
-local UICorner = Instance.new("UICorner")
+local Message = function(_Title, _Text, Time)
+	game:GetService("StarterGui"):SetCore("SendNotification", {Title = _Title, Text = _Text, Duration = Time})
+end
 
+local SkidFling = function(TargetPlayer)
+	local Character = Player.Character
+	local Humanoid = Character and Character:FindFirstChildOfClass("Humanoid")
+	local RootPart = Humanoid and Humanoid.RootPart
+
+	local TCharacter = TargetPlayer.Character
+	local THumanoid
+	local TRootPart
+	local THead
+	local Accessory
+	local Handle
+
+	if TCharacter:FindFirstChildOfClass("Humanoid") then
+		THumanoid = TCharacter:FindFirstChildOfClass("Humanoid")
+	end
+	if THumanoid and THumanoid.RootPart then
+		TRootPart = THumanoid.RootPart
+	end
+	if TCharacter:FindFirstChild("Head") then
+		THead = TCharacter.Head
+	end
+	if TCharacter:FindFirstChildOfClass("Accessory") then
+		Accessory = TCharacter:FindFirstChildOfClass("Accessory")
+	end
+	if Accessory and Accessory:FindFirstChild("Handle") then
+		Handle = Accessory.Handle
+	end
+
+	if Character and Humanoid and RootPart then
+		if RootPart.Velocity.Magnitude < 50 then
+			getgenv().OldPos = RootPart.CFrame
+		end
+		if THumanoid and THumanoid.Sit and not AllBool then
+			return Message("Error Occurred", "Targeting is sitting", 5)
+		end
+		if THead then
+			game:GetService("Workspace").CurrentCamera.CameraSubject = THead
+		elseif not THead and Handle then
+			game:GetService("Workspace").CurrentCamera.CameraSubject = Handle
+		elseif THumanoid and TRootPart then
+			game:GetService("Workspace").CurrentCamera.CameraSubject = THumanoid
+		end
+		if not TCharacter:FindFirstChildWhichIsA("BasePart") then
+			return
+		end
+
+		local FPos = function(BasePart, Pos, Ang)
+			RootPart.CFrame = CFrame.new(BasePart.Position) * Pos * Ang
+			Character:SetPrimaryPartCFrame(CFrame.new(BasePart.Position) * Pos * Ang)
+			RootPart.Velocity = Vector3.new(9e8, 9e8 * 15, 9e8)  -- Aumenta la velocidad aquí
+			RootPart.RotVelocity = Vector3.new(9e9, 9e9, 9e9)  -- Aumenta la velocidad rotacional
+		end
+
+		local SFBasePart = function(BasePart)
+			local TimeToWait = 2
+			local Time = tick()
+			local Angle = 0
+
+			repeat
+				if RootPart and THumanoid then
+					if BasePart.Velocity.Magnitude < 50 then
+						Angle = Angle + 120  -- Aumenta el ángulo de giro
+
+						FPos(BasePart, CFrame.new(0, 1.5, 0) + THumanoid.MoveDirection * BasePart.Velocity.Magnitude / 1.25, CFrame.Angles(math.rad(Angle), 0, 0))
+						task.wait()
+
+						FPos(BasePart, CFrame.new(0, -1.5, 0) + THumanoid.MoveDirection * BasePart.Velocity.Magnitude / 1.25, CFrame.Angles(math.rad(Angle), 0, 0))
+						task.wait()
+
+						FPos(BasePart, CFrame.new(2.25, 1.5, -2.25) + THumanoid.MoveDirection * BasePart.Velocity.Magnitude / 1.25, CFrame.Angles(math.rad(Angle), 0, 0))
+						task.wait()
+
+						FPos(BasePart, CFrame.new(-2.25, -1.5, 2.25) + THumanoid.MoveDirection * BasePart.Velocity.Magnitude / 1.25, CFrame.Angles(math.rad(Angle), 0, 0))
+						task.wait()
+					else
+						FPos(BasePart, CFrame.new(0, 1.5, THumanoid.WalkSpeed), CFrame.Angles(math.rad(120), 0, 0))
+						task.wait()
+					end
+				else
+					break
+				end
+			until BasePart.Velocity.Magnitude > 1000 or BasePart.Parent ~= TargetPlayer.Character or TargetPlayer.Parent ~= Players or not TargetPlayer.Character == TCharacter or THumanoid.Sit or Humanoid.Health <= 0 or tick() > Time + TimeToWait
+		end
+
+		game:GetService("Workspace").FallenPartsDestroyHeight = 0/0
+
+		local BV = Instance.new("BodyVelocity")
+		BV.Name = "EpixVel"
+		BV.Parent = RootPart
+		BV.Velocity = Vector3.new(1e9, 1e9, 1e9)  -- Aumenta la velocidad aquí
+		BV.MaxForce = Vector3.new(1/0, 1/0, 1/0)
+
+		Humanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, false)
+
+		if TRootPart and THead then
+			if (TRootPart.CFrame.p - THead.CFrame.p).Magnitude > 5 then
+				SFBasePart(THead)
+			else
+				SFBasePart(TRootPart)
+			end
+		elseif TRootPart and not THead then
+			SFBasePart(TRootPart)
+		elseif not TRootPart and THead then
+			SFBasePart(THead)
+		elseif not TRootPart and not THead and Accessory and Handle then
+			SFBasePart(Handle)
+		else
+			return Message("Error Occurred", "Target is missing everything", 5)
+		end
+
+		BV:Destroy()
+		Humanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, true)
+		game:GetService("Workspace").CurrentCamera.CameraSubject = Humanoid
+
+		repeat
+			RootPart.CFrame = getgenv().OldPos * CFrame.new(0, .5, 0)
+			Character:SetPrimaryPartCFrame(getgenv().OldPos * CFrame.new(0, .5, 0))
+			Humanoid:ChangeState("GettingUp")
+			table.foreach(Character:GetChildren(), function(_, x)
+				if x:IsA("BasePart") then
+					x.Velocity, x.RotVelocity = Vector3.new(), Vector3.new()
+				end
+			end)
+			task.wait()
+		until (RootPart.Position - getgenv().OldPos.p).Magnitude < 25
+		game:GetService("Workspace").FallenPartsDestroyHeight = getgenv().FPDH
+	else
+		return Message("Error Occurred", "Random error", 5)
+	end
+end
+
+if not Welcome then Message("", "", 5) end
+getgenv().Welcome = true
+if Targets[1] then for _, x in next, Targets do GetPlayer(x) end else return end
+if AllBool then
+	for _, x in pairs(game:GetService("Players"):GetPlayers()) do
+		if x.Backpack:FindFirstChild("Knife") or x.Character:FindFirstChild("Knife") then
+			SkidFling(x)
+		end
+	end
+end
+	end)
+
+CombateSection:NewButton("Shoot the murderer(is not complete)", "ButtonInfo", function()
+local existingGui = game:GetService("CoreGui"):FindFirstChild("ShootMurdererGui")
+if existingGui then return end
+
+local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "ShootMurdererGui"
 screenGui.Parent = game:GetService("CoreGui")
 
+local shootButton = Instance.new("TextButton")
 shootButton.Name = "DispararButton"
 shootButton.Size = UDim2.new(0, 120, 0, 120)
-shootButton.Position = UDim2.new(1, -130, 0, 50)
+shootButton.Position = UDim2.new(1, -130, 0, 10)
 shootButton.Text = "Shoot"
 shootButton.Font = Enum.Font.Gotham
 shootButton.TextSize = 20
@@ -1436,26 +1201,49 @@ shootButton.Draggable = true
 shootButton.BorderSizePixel = 0
 shootButton.Parent = screenGui
 
+local UICorner = Instance.new("UICorner")
 UICorner.CornerRadius = UDim.new(0, 15)
 UICorner.Parent = shootButton
 
 local localplayer = game.Players.LocalPlayer
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
--- Configuración del offset en función del ping
-local function getPredictionOffset()
-    local ping = localplayer:GetNetworkPing() * 1000 -- Convertir a milisegundos
-    if ping >= 100 and ping <= 140 then
-        return math.random(2.8, 3.5)
-    elseif ping >= 80 and ping < 100 then
-        return math.random(2.6, 2.7)
-    elseif ping >= 60 and ping < 80 then
-        return math.random(2.4, 2.5)
-    elseif ping >= 40 and ping < 60 then
-        return math.random(2.1, 2.2)
+local function calculatePingFactor()
+    local ping = localplayer:GetNetworkPing() * 1000
+    if ping > 150 then
+        return 1.3 -- Reduce precisión en alto ping
+    elseif ping > 100 then
+        return 1.5
+    elseif ping > 50 then
+        return 1.3
     else
-        return 2.0 -- Valor base por defecto si el ping es menor a 40 ms
+        return 1.1
     end
+end
+
+local function predictTargetPosition(murderer)
+    local torso = murderer:FindFirstChild("LowerTorso") or murderer:FindFirstChild("UpperTorso")
+    local rootPart = murderer:FindFirstChild("HumanoidRootPart")
+    if torso and rootPart then
+        local distance = (localplayer.Character.HumanoidRootPart.Position - torso.Position).Magnitude
+        local pingFactor = calculatePingFactor()
+        local predictedPosition = torso.Position + (rootPart.Velocity * (distance / 200) * pingFactor)
+
+        -- Limitar la predicción en rangos pequeños
+        local maxOffset = 2
+        if distance < 20 then
+            predictedPosition = torso.Position
+        else
+            predictedPosition = torso.Position + Vector3.new(
+                math.clamp(predictedPosition.X - torso.Position.X, -maxOffset, maxOffset),
+                0,
+                math.clamp(predictedPosition.Z - torso.Position.Z, -maxOffset, maxOffset)
+            )
+        end
+
+        return predictedPosition
+    end
+    return nil
 end
 
 local function autoEquipGun()
@@ -1467,36 +1255,7 @@ local function autoEquipGun()
     return false
 end
 
-local function predictPosition(murderer)
-    local humanoidRootPart = murderer:FindFirstChild("HumanoidRootPart")
-    if humanoidRootPart then
-        local murdererPosition = humanoidRootPart.Position
-        local murdererVelocity = humanoidRootPart.Velocity
-        local distanceToPlayer = (murdererPosition - localplayer.Character.HumanoidRootPart.Position).Magnitude
-
-        -- Ajuste de predicción en función del offset calculado por ping
-        local predictionOffset = getPredictionOffset()
-        local predictionTime = math.clamp(distanceToPlayer / 60 * predictionOffset, 0.05, 0.15)
-        local predictedPosition = murdererPosition + murdererVelocity * predictionTime
-
-        -- Detecta si el asesino está en el aire
-        local isInAir = math.abs(murdererVelocity.Y) > 1
-
-        -- Ajusta los movimientos laterales y el eje Y con menor sensibilidad en el aire
-        local lateralAdjustment = murdererVelocity.Unit * (isInAir and 0.15 or 0.35)
-        local verticalAdjustment = isInAir and math.clamp(murdererVelocity.Y * predictionTime, -0.3, 0) or murdererVelocity.Y * predictionTime
-
-        -- Ajuste de predicción al torso
-        return Vector3.new(
-            predictedPosition.X + lateralAdjustment.X,
-            murdererPosition.Y + verticalAdjustment,
-            predictedPosition.Z + lateralAdjustment.Z
-        )
-    end
-    return nil
-end
-
-local function shootAtMurderer(predictedPosition)
+local function shootAtPredictedPosition(predictedPosition)
     local gun = localplayer.Character:FindFirstChild("Gun")
     if gun then
         local args = {
@@ -1505,9 +1264,6 @@ local function shootAtMurderer(predictedPosition)
             [3] = "AH2"
         }
         gun.KnifeLocal.CreateBeam.RemoteFunction:InvokeServer(unpack(args))
-        
-        -- Desequipa el arma después de disparar
-        gun.Parent = localplayer.Backpack
     end
 end
 
@@ -1526,36 +1282,31 @@ end
 
 shootButton.MouseButton1Click:Connect(function()
     local gun = localplayer.Character:FindFirstChild("Gun")
-    
-    -- Solo equipa el arma si no está equipada
-    if not gun then
-        if autoEquipGun() then
-            local murderer = getMurderer()
-            if murderer then
-                local predictedPosition = predictPosition(murderer)
-                if predictedPosition then
-                    shootAtMurderer(predictedPosition)
-                end
+    if not gun and autoEquipGun() then
+        local murderer = getMurderer()
+        if murderer then
+            local predictedPosition = predictTargetPosition(murderer)
+            if predictedPosition then
+                shootAtPredictedPosition(predictedPosition)
+                wait(0.4)
+                gun.Parent = localplayer.Backpack
             end
         end
     else
-        -- Si el arma ya está equipada, solo dispara
         local murderer = getMurderer()
         if murderer then
-            local predictedPosition = predictPosition(murderer)
+            local predictedPosition = predictTargetPosition(murderer)
             if predictedPosition then
-                shootAtMurderer(predictedPosition)
+                shootAtPredictedPosition(predictedPosition)
+                wait(0.4)
+                gun.Parent = localplayer.Backpack
             end
         end
     end
 end)
-end})
+end)
 
-Tab1:AddButton({
-    Name = "Kill All [murderer Only]",
-    Description = "MATAR A TODOS [Solo asesinos].",
-    Default = false,
-    Callback = function()
+CombateSection:NewButton("Kill All [murderer Only]", "ButtonInfo", function()
 local Players = game:GetService("Players")
 local Plr = Players.LocalPlayer
 local vim = game:GetService("VirtualInputManager")
@@ -1588,33 +1339,80 @@ for attackCount = 1, 10 do
     vim:SendMouseButtonEvent(0, 0, 0, false, game, false, 0)
     task.wait(0.1)
 end
-    end
-})
+    end)
+CombateSection:NewButton("Kill sheriff only [murderer Only]", "ButtonInfo", function()
+    local Players = game:GetService("Players")
+    local Plr = Players.LocalPlayer
+    local vim = game:GetService("VirtualInputManager")
 
-Tab1:AddToggle({
-    Name = "Activate Knife Aura", 
-    Description = "Activar el aura del cuchillo",
-    Default = savedConfig.Aura or false,
-    Callback = function(state)
-        savedConfig.Aura = state
-        saveConfig(savedConfig)
-        auraActive = state
-        if auraActive then
-            StartKnifeAura()
-        else
-            StopKnifeAura()
+    -- Verificar si el jugador tiene un cuchillo
+    local knife = Plr.Backpack:FindFirstChild("Knife") or Plr.Character:FindFirstChild("Knife")
+    if not knife then
+        warn("No tienes un cuchillo en tu inventario.")
+        return
+    end
+
+    -- Buscar al jugador con el rol de Sheriff
+    local sheriffPlayer = nil
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= Plr and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            local role = player:FindFirstChild("Role") or player.Character:FindFirstChild("Role")
+            if role and role:IsA("StringValue") and role.Value == "Sheriff" then
+                sheriffPlayer = player
+                break
+            end
         end
     end
-})
+
+    if not sheriffPlayer then
+        warn("No se encontró al Sheriff.")
+        return
+    end
+
+    -- Equipar el cuchillo si no está ya equipado
+    if knife.Parent ~= Plr.Character then
+        knife.Parent = Plr.Character
+        repeat task.wait(0.1) until Plr.Character:FindFirstChild("Knife")
+    end
+
+    -- Atacar al Sheriff repetidamente
+    local humanoidRootPart = sheriffPlayer.Character:FindFirstChild("HumanoidRootPart")
+    if humanoidRootPart then
+        for attackCount = 1, 10 do
+            Plr.Character.HumanoidRootPart.CFrame = humanoidRootPart.CFrame * CFrame.new(0, 0, -3) -- Moverse cerca del Sheriff
+            vim:SendMouseButtonEvent(0, 0, 0, true, game, false, 0) -- Simular clic
+            task.wait(0.1)
+            vim:SendMouseButtonEvent(0, 0, 0, false, game, false, 0) -- Soltar clic
+            task.wait(0.1)
+        end
+    else
+        warn("No se pudo encontrar la posición del Sheriff.")
+    end
+end)
+
+local RunService = game:GetService("RunService")
+local player = game.Players.LocalPlayer
+local character
+local knifeEquipped = false
+local auraActive = false
+
+CombateSection:NewToggle("Knife Aura", "ToggleInfo", function(state)
+    savedConfig.Aura = state
+    saveConfig(savedConfig)
+    auraActive = state
+    if auraActive then
+        StartKnifeAura()
+    else
+        StopKnifeAura()
+    end
+end)
 
 function StartKnifeAura()
-    local player = game.Players.LocalPlayer
-    local character = player.Character or player.CharacterAdded:Wait()
-    local knifeEquipped = false
-    local auraCoroutine
+    character = player.Character or player.CharacterAdded:Wait()
 
     local function equipKnife()
         if not knifeEquipped and player.Backpack:FindFirstChild("Knife") then
+            wait(0.3)
             player.Backpack.Knife.Parent = character
             knifeEquipped = true
         end
@@ -1622,89 +1420,59 @@ function StartKnifeAura()
 
     local function unequipKnife()
         if knifeEquipped and character:FindFirstChild("Knife") then
+            wait(0.3)
             character.Knife.Parent = player.Backpack
             knifeEquipped = false
         end
     end
 
     local function attackNearbyPlayers()
-        while auraActive and character and character.Parent do
-            local nearestPlayer = nil
-            local nearestDistance = 8
+        local nearestPlayer = nil
+        local nearestDistance = 7.5
 
-            for _, otherPlayer in ipairs(game.Players:GetPlayers()) do
-                if otherPlayer ~= player and otherPlayer.Character and otherPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                    local distance = (character.HumanoidRootPart.Position - otherPlayer.Character.HumanoidRootPart.Position).Magnitude
-                    if distance <= nearestDistance then
-                        nearestPlayer = otherPlayer
-                        break
-                    end
+        for _, otherPlayer in ipairs(game.Players:GetPlayers()) do
+            if otherPlayer ~= player and otherPlayer.Character and otherPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                local distance = (character.HumanoidRootPart.Position - otherPlayer.Character.HumanoidRootPart.Position).Magnitude
+                if distance <= nearestDistance then
+                    nearestPlayer = otherPlayer
+                    break
                 end
             end
+        end
 
-            if nearestPlayer then
+        return nearestPlayer
+    end
+
+    local function handleAura()
+        if auraActive then
+            local target = attackNearbyPlayers()
+            if target then
                 equipKnife()
                 if knifeEquipped then
-                    for attackCount = 1, 5 do
+                    -- Ejecutar ataque (simulación de clic del mouse)
+                    for _ = 1, 3 do
                         game:GetService("VirtualInputManager"):SendMouseButtonEvent(0, 0, 0, true, game, false, 0)
-                        wait(0.1)
+                        wait(0.2)
                     end
                 end
             else
                 unequipKnife()
             end
-
-            wait(0.5)
         end
     end
 
-    -- Iniciar y reiniciar el aura con una coroutine
-    local function startAuraCoroutine()
-        if auraCoroutine and coroutine.status(auraCoroutine) ~= "dead" then
-            coroutine.close(auraCoroutine)
-        end
-        auraCoroutine = coroutine.create(attackNearbyPlayers)
-        coroutine.resume(auraCoroutine)
-    end
-
-    startAuraCoroutine()
-
-    -- Reiniciar el aura tras el respawn
-    player.CharacterAdded:Connect(function(newCharacter)
-        character = newCharacter
-        knifeEquipped = false
-        if auraActive then
-            startAuraCoroutine()
-        end
-    end)
-
-    -- Detectar cambios en el cuchillo en el personaje
-    character.ChildAdded:Connect(function(child)
-        if child.Name == "Knife" then
-            knifeEquipped = true
-        end
-    end)
-
-    character.ChildRemoved:Connect(function(child)
-        if child.Name == "Knife" then
-            knifeEquipped = false
-        end
-    end)
+    -- Ejecutar repetidamente
+    RunService.Heartbeat:Connect(handleAura)
 end
 
 function StopKnifeAura()
     auraActive = false
-    if auraCoroutine and coroutine.status(auraCoroutine) ~= "dead" then
-        coroutine.close(auraCoroutine)
+    if knifeEquipped then
+        unequipKnife()
     end
-    unequipKnife()
 end
 
-Tab2:AddButton({
-    Name = "Kill GUI Shoot",
-    Description = "Destruir el GUI de disparo y su función.",
-    Default = false,
-    Callback = function()
+buttonsSection:NewButton("Kill GUI Shoot", "ButtonInfo", function()
         local existingGui = game:GetService("CoreGui"):FindFirstChild("ShootMurdererGui")
         
         if existingGui then
@@ -1715,16 +1483,9 @@ Tab2:AddButton({
             shootButtonConnection:Disconnect()
             shootButtonConnection = nil
         end
-    end
-})
+    end)
 
-Tab6:AddSlider({
-    Name = "Adjust Button shoot Size",
-    MinValue = 120,
-    MaxValue = 200,
-    Default = savedConfig.Size or 120,
-    Increase = 1,
-    Callback = function(value)
+buttonsSection:NewSlider("Adjust Button shoot Size", "SliderInfo", 200, 120, function(value)
         local screenGui = game:GetService("CoreGui"):FindFirstChild("ShootMurdererGui")
         if screenGui then
             local shootButton = screenGui:FindFirstChild("DispararButton")
@@ -1734,8 +1495,7 @@ Tab6:AddSlider({
                 saveConfig(savedConfig)
             end
         end
-    end
-})
+ end)
 
 local initialSize = savedConfig.Size or 120
 local screenGui = game:GetService("CoreGui"):FindFirstChild("ShootMurdererGui")
@@ -1746,11 +1506,7 @@ if screenGui then
     end
 end
 
-Tab6:AddButton({
-    Name = "Anchor GUI Shoot",
-    Description = "Anclar GUI Shoot.",
-    Default = false,
-    Callback = function()
+buttonsSection:NewButton("Anchor GUI Shoot", "ButtonInfo", function()
 local existingGui = game:GetService("CoreGui"):FindFirstChild("ShootMurdererGui")
 if not existingGui then
     return
@@ -1760,227 +1516,187 @@ local shootButton = existingGui:FindFirstChild("DispararButton")
 if shootButton then
     shootButton.Draggable = not shootButton.Draggable
 end
-end})
+end)
 
- Tab3:AddButton({
-	Name = "Fling sheriff",
-	Default = false,
-	Callback = function()
+ TeleportSection:NewButton("Fling sheriff", "ButtonInfo", function()
 		local Targets = {"All"}
+local Players = game:GetService("Players")
+local Player = Players.LocalPlayer
 
-		local Players = game:GetService("Players")
-		local Player = Players.LocalPlayer
+local AllBool = false
 
-		local AllBool = false
-
-		local GetPlayer = function(Name)
-			Name = Name:lower()
-			if Name == "all" or Name == "others" then
-				AllBool = true
-				return
-			elseif Name == "random" then
-				local GetPlayers = Players:GetPlayers()
-				if table.find(GetPlayers,Player) then table.remove(GetPlayers,table.find(GetPlayers,Player)) end
-				return GetPlayers[math.random(#GetPlayers)]
-			elseif Name ~= "random" and Name ~= "all" and Name ~= "others" then
-				for _,x in next, Players:GetPlayers() do
-					if x ~= Player then
-						if x.Name:lower():match("^"..Name) then
-							return x;
-						elseif x.DisplayName:lower():match("^"..Name) then
-							return x;
-						end
-					end
+local GetPlayer = function(Name)
+	Name = Name:lower()
+	if Name == "all" or Name == "others" then
+		AllBool = true
+		return
+	elseif Name == "random" then
+		local GetPlayers = Players:GetPlayers()
+		if table.find(GetPlayers, Player) then table.remove(GetPlayers, table.find(GetPlayers, Player)) end
+		return GetPlayers[math.random(#GetPlayers)]
+	elseif Name ~= "random" and Name ~= "all" and Name ~= "others" then
+		for _, x in next, Players:GetPlayers() do
+			if x ~= Player then
+				if x.Name:lower():match("^"..Name) then
+					return x
+				elseif x.DisplayName:lower():match("^"..Name) then
+					return x
 				end
-			else
-				return
 			end
 		end
+	else
+		return
+	end
+end
 
-		local Message = function(_Title, _Text, Time)
-			game:GetService("StarterGui"):SetCore("SendNotification", {Title = _Title, Text = _Text, Duration = Time})
+local Message = function(_Title, _Text, Time)
+	game:GetService("StarterGui"):SetCore("SendNotification", {Title = _Title, Text = _Text, Duration = Time})
+end
+
+local SkidFling = function(TargetPlayer)
+	local Character = Player.Character
+	local Humanoid = Character and Character:FindFirstChildOfClass("Humanoid")
+	local RootPart = Humanoid and Humanoid.RootPart
+
+	local TCharacter = TargetPlayer.Character
+	local THumanoid
+	local TRootPart
+	local THead
+	local Accessory
+	local Handle
+
+	if TCharacter:FindFirstChildOfClass("Humanoid") then
+		THumanoid = TCharacter:FindFirstChildOfClass("Humanoid")
+	end
+	if THumanoid and THumanoid.RootPart then
+		TRootPart = THumanoid.RootPart
+	end
+	if TCharacter:FindFirstChild("Head") then
+		THead = TCharacter.Head
+	end
+	if TCharacter:FindFirstChildOfClass("Accessory") then
+		Accessory = TCharacter:FindFirstChildOfClass("Accessory")
+	end
+	if Accessory and Accessory:FindFirstChild("Handle") then
+		Handle = Accessory.Handle
+	end
+
+	if Character and Humanoid and RootPart then
+		if RootPart.Velocity.Magnitude < 50 then
+			getgenv().OldPos = RootPart.CFrame
+		end
+		if THumanoid and THumanoid.Sit and not AllBool then
+			return Message("Error Occurred", "Targeting is sitting", 5)
+		end
+		if THead then
+			game:GetService("Workspace").CurrentCamera.CameraSubject = THead
+		elseif not THead and Handle then
+			game:GetService("Workspace").CurrentCamera.CameraSubject = Handle
+		elseif THumanoid and TRootPart then
+			game:GetService("Workspace").CurrentCamera.CameraSubject = THumanoid
+		end
+		if not TCharacter:FindFirstChildWhichIsA("BasePart") then
+			return
 		end
 
-		local SkidFling = function(TargetPlayer)
-			local Character = Player.Character
-			local Humanoid = Character and Character:FindFirstChildOfClass("Humanoid")
-			local RootPart = Humanoid and Humanoid.RootPart
+		local FPos = function(BasePart, Pos, Ang)
+			RootPart.CFrame = CFrame.new(BasePart.Position) * Pos * Ang
+			Character:SetPrimaryPartCFrame(CFrame.new(BasePart.Position) * Pos * Ang)
+			RootPart.Velocity = Vector3.new(9e8, 9e8 * 15, 9e8)  -- Aumenta la velocidad aquí
+			RootPart.RotVelocity = Vector3.new(9e9, 9e9, 9e9)  -- Aumenta la velocidad rotacional
+		end
 
-			local TCharacter = TargetPlayer.Character
-			local THumanoid
-			local TRootPart
-			local THead
-			local Accessory
-			local Handle
+		local SFBasePart = function(BasePart)
+			local TimeToWait = 2
+			local Time = tick()
+			local Angle = 0
 
-			if TCharacter:FindFirstChildOfClass("Humanoid") then
-				THumanoid = TCharacter:FindFirstChildOfClass("Humanoid")
-			end
-			if THumanoid and THumanoid.RootPart then
-				TRootPart = THumanoid.RootPart
-			end
-			if TCharacter:FindFirstChild("Head") then
-				THead = TCharacter.Head
-			end
-			if TCharacter:FindFirstChildOfClass("Accessory") then
-				Accessory = TCharacter:FindFirstChildOfClass("Accessory")
-			end
-			if Accessoy and Accessory:FindFirstChild("Handle") then
-				Handle = Accessory.Handle
-			end
+			repeat
+				if RootPart and THumanoid then
+					if BasePart.Velocity.Magnitude < 50 then
+						Angle = Angle + 120  -- Aumenta el ángulo de giro
 
-			if Character and Humanoid and RootPart then
-				if RootPart.Velocity.Magnitude < 50 then
-					getgenv().OldPos = RootPart.CFrame
-				end
-				if THumanoid and THumanoid.Sit and not AllBool then
-					return Message("Error Occurred", "Targeting is sitting", 5) -- u can remove dis part if u want lol
-				end
-				if THead then
-					game:GetService("Workspace").CurrentCamera.CameraSubject = THead
-				elseif not THead and Handle then
-					game:GetService("Workspace").CurrentCamera.CameraSubject = Handle
-				elseif THumanoid and TRootPart then
-					game:GetService("Workspace").CurrentCamera.CameraSubject = THumanoid
-				end
-				if not TCharacter:FindFirstChildWhichIsA("BasePart") then
-					return
-				end
-				
-				local FPos = function(BasePart, Pos, Ang)
-					RootPart.CFrame = CFrame.new(BasePart.Position) * Pos * Ang
-					Character:SetPrimaryPartCFrame(CFrame.new(BasePart.Position) * Pos * Ang)
-					RootPart.Velocity = Vector3.new(9e7, 9e7 * 10, 9e7)
-					RootPart.RotVelocity = Vector3.new(9e8, 9e8, 9e8)
-				end
-				
-				local SFBasePart = function(BasePart)
-					local TimeToWait = 2
-					local Time = tick()
-					local Angle = 0
+						FPos(BasePart, CFrame.new(0, 1.5, 0) + THumanoid.MoveDirection * BasePart.Velocity.Magnitude / 1.25, CFrame.Angles(math.rad(Angle), 0, 0))
+						task.wait()
 
-					repeat
-						if RootPart and THumanoid then
-							if BasePart.Velocity.Magnitude < 50 then
-								Angle = Angle + 100
+						FPos(BasePart, CFrame.new(0, -1.5, 0) + THumanoid.MoveDirection * BasePart.Velocity.Magnitude / 1.25, CFrame.Angles(math.rad(Angle), 0, 0))
+						task.wait()
 
-								FPos(BasePart, CFrame.new(0, 1.5, 0) + THumanoid.MoveDirection * BasePart.Velocity.Magnitude / 1.25, CFrame.Angles(math.rad(Angle),0 ,0))
-								task.wait()
+						FPos(BasePart, CFrame.new(2.25, 1.5, -2.25) + THumanoid.MoveDirection * BasePart.Velocity.Magnitude / 1.25, CFrame.Angles(math.rad(Angle), 0, 0))
+						task.wait()
 
-								FPos(BasePart, CFrame.new(0, -1.5, 0) + THumanoid.MoveDirection * BasePart.Velocity.Magnitude / 1.25, CFrame.Angles(math.rad(Angle), 0, 0))
-								task.wait()
-
-								FPos(BasePart, CFrame.new(2.25, 1.5, -2.25) + THumanoid.MoveDirection * BasePart.Velocity.Magnitude / 1.25, CFrame.Angles(math.rad(Angle), 0, 0))
-								task.wait()
-
-								FPos(BasePart, CFrame.new(-2.25, -1.5, 2.25) + THumanoid.MoveDirection * BasePart.Velocity.Magnitude / 1.25, CFrame.Angles(math.rad(Angle), 0, 0))
-								task.wait()
-
-								FPos(BasePart, CFrame.new(0, 1.5, 0) + THumanoid.MoveDirection,CFrame.Angles(math.rad(Angle), 0, 0))
-								task.wait()
-
-								FPos(BasePart, CFrame.new(0, -1.5, 0) + THumanoid.MoveDirection,CFrame.Angles(math.rad(Angle), 0, 0))
-								task.wait()
-							else
-								FPos(BasePart, CFrame.new(0, 1.5, THumanoid.WalkSpeed), CFrame.Angles(math.rad(90), 0, 0))
-								task.wait()
-
-								FPos(BasePart, CFrame.new(0, -1.5, -THumanoid.WalkSpeed), CFrame.Angles(0, 0, 0))
-								task.wait()
-
-								FPos(BasePart, CFrame.new(0, 1.5, THumanoid.WalkSpeed), CFrame.Angles(math.rad(90), 0, 0))
-								task.wait()
-								
-								FPos(BasePart, CFrame.new(0, 1.5, TRootPart.Velocity.Magnitude / 1.25), CFrame.Angles(math.rad(90), 0, 0))
-								task.wait()
-
-								FPos(BasePart, CFrame.new(0, -1.5, -TRootPart.Velocity.Magnitude / 1.25), CFrame.Angles(0, 0, 0))
-								task.wait()
-
-								FPos(BasePart, CFrame.new(0, 1.5, TRootPart.Velocity.Magnitude / 1.25), CFrame.Angles(math.rad(90), 0, 0))
-								task.wait()
-
-								FPos(BasePart, CFrame.new(0, -1.5, 0), CFrame.Angles(math.rad(90), 0, 0))
-								task.wait()
-
-								FPos(BasePart, CFrame.new(0, -1.5, 0), CFrame.Angles(0, 0, 0))
-								task.wait()
-
-								FPos(BasePart, CFrame.new(0, -1.5 ,0), CFrame.Angles(math.rad(-90), 0, 0))
-								task.wait()
-
-								FPos(BasePart, CFrame.new(0, -1.5, 0), CFrame.Angles(0, 0, 0))
-								task.wait()
-							end
-						else
-							break
-						end
-					until BasePart.Velocity.Magnitude > 500 or BasePart.Parent ~= TargetPlayer.Character or TargetPlayer.Parent ~= Players or not TargetPlayer.Character == TCharacter or THumanoid.Sit or Humanoid.Health <= 0 or tick() > Time + TimeToWait
-				end
-				
-				game:GetService("Workspace").FallenPartsDestroyHeight = 0/0
-				
-				local BV = Instance.new("BodyVelocity")
-				BV.Name = "EpixVel"
-				BV.Parent = RootPart
-				BV.Velocity = Vector3.new(9e8, 9e8, 9e8)
-				BV.MaxForce = Vector3.new(1/0, 1/0, 1/0)
-				
-				Humanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, false)
-				
-				if TRootPart and THead then
-					if (TRootPart.CFrame.p - THead.CFrame.p).Magnitude > 5 then
-						SFBasePart(THead)
+						FPos(BasePart, CFrame.new(-2.25, -1.5, 2.25) + THumanoid.MoveDirection * BasePart.Velocity.Magnitude / 1.25, CFrame.Angles(math.rad(Angle), 0, 0))
+						task.wait()
 					else
-						SFBasePart(TRootPart)
+						FPos(BasePart, CFrame.new(0, 1.5, THumanoid.WalkSpeed), CFrame.Angles(math.rad(120), 0, 0))
+						task.wait()
 					end
-				elseif TRootPart and not THead then
-					SFBasePart(TRootPart)
-				elseif not TRootPart and THead then
-					SFBasePart(THead)
-				elseif not TRootPart and not THead and Accessory and Handle then
-					SFBasePart(Handle)
 				else
-					return Message("Error Occurred", "Target is missing everything", 5)
+					break
 				end
-				
-				BV:Destroy()
-				Humanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, true)
-				game:GetService("Workspace").CurrentCamera.CameraSubject = Humanoid
-				
-				repeat
-					RootPart.CFrame = getgenv().OldPos * CFrame.new(0, .5, 0)
-					Character:SetPrimaryPartCFrame(getgenv().OldPos * CFrame.new(0, .5, 0))
-					Humanoid:ChangeState("GettingUp")
-					table.foreach(Character:GetChildren(), function(_, x)
-						if x:IsA("BasePart") then
-							x.Velocity, x.RotVelocity = Vector3.new(), Vector3.new()
-						end
-					end)
-					task.wait()
-				until (RootPart.Position - getgenv().OldPos.p).Magnitude < 25
-				game:GetService("Workspace").FallenPartsDestroyHeight = getgenv().FPDH
-			else
-				return Message("Error Occurred", "Random error", 5)
-			end
+			until BasePart.Velocity.Magnitude > 1000 or BasePart.Parent ~= TargetPlayer.Character or TargetPlayer.Parent ~= Players or not TargetPlayer.Character == TCharacter or THumanoid.Sit or Humanoid.Health <= 0 or tick() > Time + TimeToWait
 		end
 
-		if not Welcome then Message("", "", 5) end
-		getgenv().Welcome = true
-		if Targets[1] then for _,x in next, Targets do GetPlayer(x) end else return end
-		if AllBool then
+		game:GetService("Workspace").FallenPartsDestroyHeight = 0/0
+
+		local BV = Instance.new("BodyVelocity")
+		BV.Name = "EpixVel"
+		BV.Parent = RootPart
+		BV.Velocity = Vector3.new(1e9, 1e9, 1e9)  -- Aumenta la velocidad aquí
+		BV.MaxForce = Vector3.new(1/0, 1/0, 1/0)
+
+		Humanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, false)
+
+		if TRootPart and THead then
+			if (TRootPart.CFrame.p - THead.CFrame.p).Magnitude > 5 then
+				SFBasePart(THead)
+			else
+				SFBasePart(TRootPart)
+			end
+		elseif TRootPart and not THead then
+			SFBasePart(TRootPart)
+		elseif not TRootPart and THead then
+			SFBasePart(THead)
+		elseif not TRootPart and not THead and Accessory and Handle then
+			SFBasePart(Handle)
+		else
+			return Message("Error Occurred", "Target is missing everything", 5)
+		end
+
+		BV:Destroy()
+		Humanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, true)
+		game:GetService("Workspace").CurrentCamera.CameraSubject = Humanoid
+
+		repeat
+			RootPart.CFrame = getgenv().OldPos * CFrame.new(0, .5, 0)
+			Character:SetPrimaryPartCFrame(getgenv().OldPos * CFrame.new(0, .5, 0))
+			Humanoid:ChangeState("GettingUp")
+			table.foreach(Character:GetChildren(), function(_, x)
+				if x:IsA("BasePart") then
+					x.Velocity, x.RotVelocity = Vector3.new(), Vector3.new()
+				end
+			end)
+			task.wait()
+		until (RootPart.Position - getgenv().OldPos.p).Magnitude < 25
+		game:GetService("Workspace").FallenPartsDestroyHeight = getgenv().FPDH
+	else
+		return Message("Error Occurred", "Random error", 5)
+	end
+end
+
+if not Welcome then Message("", "", 5) end
+getgenv().Welcome = true
+if Targets[1] then for _, x in next, Targets do GetPlayer(x) end else return end
+if AllBool then
 			for _,x in pairs(game:GetService("Players"):GetPlayers()) do
 				if x.Backpack:FindFirstChild("Gun") or x.Character:FindFirstChild("Gun") then
 					SkidFling(x)
 				end
 			end
 		end
-	end})
+	end)
 	
-Tab5:AddButton({
-	Name = "fling all",
-    Default = false,
-    Callback = function()
+MICSection:NewButton("fling all", "ButtonInfo", function()
     local Targets = {"All"}
 
 local Players = game:GetService("Players")
@@ -2190,13 +1906,9 @@ for _, x in ipairs(Targets) do
         end
     end
 end
-    end})
-	
-Tab3:AddToggle({
-    Name = "TP Gun",
-    Description = "Teletransportarse hacia el Revolver.",
-    Default = savedConfig.tpgun1 or false,
-    Callback = function(state)
+    end)
+    
+TeleportSection:NewToggle("TP Gun", "ToggleInfo", function(state)
         savedConfig.tpgun1 = state
         saveConfig(savedConfig)
         local player = game.Players.LocalPlayer
@@ -2285,19 +1997,13 @@ Tab3:AddToggle({
                 existingGui:Destroy()
             end
         end
-    end
-})
+    end)
     
-Toggle = Tab3:AddToggle({
-    Name = "Auto grab Gun",
-    Description = " ",
-    Default = savedConfig.grabGun or false,
-    Callback = function(state)
+TeleportSection:NewToggle("Auto grab Gun", "ToggleInfo", function(state)
         savedConfig.grabGun = state
         saveConfig(savedConfig)
         _G.Gun = state
-    end
-})
+    end)
 
 local function hasKnife(player)
     return player.Backpack:FindFirstChild("Knife") or player.Character:FindFirstChild("Knife")
@@ -2335,59 +2041,7 @@ spawn(function()
     end
 end)
 
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-
--- Toggle de GunDrop Stealer
-local Toggle = Tab3:AddToggle({
-    Name = "GunDrop Stealer",
-    Description = " ",
-    Default = savedConfig.gunhitbox or false,
-    Callback = function(state)
-        savedConfig.gunhitbox = state
-        saveConfig(savedConfig)
-        _G.GunHitbox = state
-    end
-})
-
--- Función para el aumento de hitbox
-RunService.Heartbeat:Connect(function()
-    if _G.GunHitbox then
-        for _, v in pairs(workspace:GetChildren()) do
-            local gunDrop = v:FindFirstChild("GunDrop")
-            if gunDrop then
-                -- Verifica si el hitbox ya existe
-                local hitbox = gunDrop:FindFirstChild("IncreasedHitbox")
-                if not hitbox then
-                    -- Crea el hitbox si no existe
-                    hitbox = Instance.new("Part")
-                    hitbox.Name = "IncreasedHitbox"
-                    hitbox.Size = Vector3.new(10, 10, 10) -- Tamaño del hitbox
-                    hitbox.Transparency = 1 -- Invisible
-                    hitbox.CanCollide = false
-                    hitbox.Anchored = true
-                    hitbox.Parent = gunDrop
-                end
-                -- Actualiza la posición del hitbox
-                hitbox.CFrame = gunDrop.CFrame
-            end
-        end
-    else
-        -- Elimina el hitbox aumentado cuando el toggle está desactivado
-        for _, v in pairs(workspace:GetChildren()) do
-            local gunDrop = v:FindFirstChild("GunDrop")
-            if gunDrop and gunDrop:FindFirstChild("IncreasedHitbox") then
-                gunDrop.IncreasedHitbox:Destroy()
-            end
-        end
-    end
-end)
-
-Tab1:AddButton({
-    Name = "Kill The Closest Player",
-    Description = "matar al jugador más cercano",
-    Default = false,
-    Callback = function()
+CombateSection:NewButton("Kill The Closest Player", "ButtonInfo", function()
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local player = Players.LocalPlayer
@@ -2542,21 +2196,13 @@ player.CharacterAdded:Connect(function()
 end)
 
 createGui()
-end})
+end)
 
-Tab3:AddButton({
-    Name = "Escape Murderer",
-    Default = false,
-    Description = "Te hace [invisible]",
-    Callback = function(state)
-loadstring(game:HttpGet('https://raw.githubusercontent.com/Jorgelinea/Invs/refs/heads/main/Protected_7357404662946645.txt'))()
-    end})
+TeleportSection:NewButton("Escape Murderer", "ButtonInfo", function()
+loadstring(game:HttpGet('https://pastebin.com/raw/GgYsFfDK'))()
+    end)
  
-local Toggle = Tab3:AddToggle({
-    Name = "tp wing Last Death Position",
-    Description = "transportarse hacía la última posición de la muerte",
-    Default = savedConfig.Death or false,
-    Callback = function(state)
+TeleportSection:NewToggle("tp wing Last Death Position", "ToggleInfo", function(state)
         savedConfig.Death = state
         saveConfig(savedConfig)
 
@@ -2628,16 +2274,11 @@ local Toggle = Tab3:AddToggle({
                 existingGui:Destroy()
             end
         end
-    end
-})
+    end)
 
 local isAnchored = false
 
-Tab5:AddButton({
-    Name = "Anchor character",
-    Description = "anclar jugador local.",
-    Default = false,
-    Callback = function()
+LocalPlayerSection:NewButton("Anchor character", "ButtonInfo", function()
         local player = game.Players.LocalPlayer
         local character = player.Character or player.CharacterAdded:Wait()
 
@@ -2657,18 +2298,13 @@ Tab5:AddButton({
             end
             isAnchored = false
         end
-    end
-})
+    end)
 
 local canCollide = false
 local toggleCollisions = false
 local previousCollisions = {}  
 
-Tab5:AddToggle({
-    Name = "Disable players collisions",
-    Description = "desactivar colisión de los jugadores.",
-    Default = savedConfig.collisions or false,
-    Callback = function(state)
+LocalPlayerSection:NewToggle("Disable players collisions", "ToggleInfo", function(state)
         savedConfig.collisions = state
         saveConfig(savedConfig)
         toggleCollisions = state
@@ -2701,8 +2337,7 @@ Tab5:AddToggle({
             end
             previousCollisions = {}  
         end
-    end
-})
+    end)
 
 local function updateCollisionsForCharacter(character)
     if toggleCollisions then
@@ -2751,12 +2386,8 @@ game:GetService("RunService").Stepped:Connect(function()
     end
 end)
 
-Tab1:AddButton({
-	Name = "Aimbot murderer",
-	Description = "Ainbot al asesino",
-	Default = false,
-	Callback = function()
-	local RunService = game:GetService("RunService")
+CombateSection:NewButton("Cam Aimbot murderer", "ButtonInfo", function()
+local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local LocalPlayer = Players.LocalPlayer
@@ -2828,17 +2459,14 @@ RunService.RenderStepped:Connect(function()
         end
     end
 end)
-end})
+end)
 
 local RunService = game:GetService("RunService")
 local player = game.Players.LocalPlayer
 local noclipConnection
 local originalCollisions = {}
 
-local Toggle = Tab5:AddToggle({
-    Name = "noclip",
-    Default = savedConfig.noclip or false,
-    Callback = function(state)
+LocalPlayerSection:NewToggle("No Clip", "ToggleInfo", function(state)
         savedConfig.noclip = state
         saveConfig(savedConfig)
         local character = player.Character
@@ -2882,584 +2510,389 @@ local Toggle = Tab5:AddToggle({
                 end
             end
         end
-    end
-})
-
-local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local StarterGui = game:GetService("StarterGui")
-local notifiedRoles = {}
-local loopConnection
-local savedConfig = {}
-local checkHero = false
-
-local function saveConfig(config)
-    -- Aquí puedes guardar la configuración si es necesario
-end
-
-local function getAvatarImage(userId)
-    return "https://www.roblox.com/headshot-thumbnail/image?userId=" .. tostring(userId) .. "&width=420&height=420&format=png"
-end
-
-local function showNotification(title, text, player)
-    local avatarUrl = getAvatarImage(player.UserId)
-    StarterGui:SetCore("SendNotification", {
-        Title = title,
-        Text = text,
-        Duration = 5,
-        Button1 = "OK",
-        Icon = avatarUrl
-    })
-end
-
-local function updateRoleNotifications()
-    local success, roles = pcall(function()
-        local getPlayerData = ReplicatedStorage:FindFirstChild("GetPlayerData", true)
-        if not getPlayerData then
-            print("GetPlayerData no encontrado en ReplicatedStorage")
-            return nil
-        end
-        return getPlayerData:InvokeServer()
     end)
 
-    if not success then
-        print("Error al invocar el servidor: " .. tostring(roles))
-        return
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local sliderValue = 0.8
+local LP = Players.LocalPlayer
+local Roles = {Sheriff = nil, Murderer = nil, Hero = nil}
+local espEnabled = false
+local lastRoles = {}
+
+VisualSection:NewSlider("ESP transparency setting (interior)", "SliderInfo", 1, 0, function(value)
+        sliderValue = value
+        UpdateHighlights()
+    end)
+
+function IsAlive(Player)
+    return Roles[Player.Name] and not Roles[Player.Name].Killed and not Roles[Player.Name].Dead
+end
+
+function CreateHighlightForPlayer(Player)
+    if Player ~= LP and Player.Character and not Player.Character:FindFirstChild("Highlight") then
+        local highlight = Instance.new("Highlight", Player.Character)
+        highlight.FillTransparency = sliderValue
+        highlight.OutlineTransparency = 0
     end
+end
 
-    if not roles then
-        print("No se recibieron roles del servidor")
-        return
+function CreateLabel(Character, RoleName, Color)
+    local labelName = RoleName .. "Label"
+    if Character and not Character:FindFirstChild(labelName) then
+        local BillboardGui = Instance.new("BillboardGui", Character)
+        BillboardGui.Name = labelName
+        BillboardGui.Size = UDim2.new(0, 100, 0, 20)
+        BillboardGui.StudsOffset = Vector3.new(0, 2.5, 0) -- Ajusta según sea necesario
+        BillboardGui.AlwaysOnTop = true
+        BillboardGui.MaxDistance = math.huge
+        BillboardGui.LightInfluence = 0
+        BillboardGui.ResetOnSpawn = false
+        BillboardGui.Adornee = Character
+
+        local TextLabel = Instance.new("TextLabel", BillboardGui)
+        TextLabel.Size = UDim2.new(1, 0, 1, 0)
+        TextLabel.BackgroundTransparency = 1
+        TextLabel.Text = RoleName
+        TextLabel.TextColor3 = Color
+        TextLabel.TextScaled = false
+        TextLabel.Font = Enum.Font.SourceSans
+        TextLabel.TextSize = 14
+        TextLabel.ZIndex = 10
+        TextLabel.TextStrokeTransparency = 0
     end
+end
 
-    local foundSheriff = false
-    local foundMurderer = false
+function UpdateHighlights()
+    if not espEnabled then return end
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LP and player.Character then
+            CreateHighlightForPlayer(player)
+            local highlight = player.Character:FindFirstChild("Highlight")
+            if highlight then
+                if not IsAlive(player) then
+                    -- Jugador muerto
+                    highlight.FillTransparency = 1
+                    highlight.OutlineTransparency = 1
+                else
+                    -- Jugador vivo
+                    highlight.FillTransparency = sliderValue
+                    highlight.OutlineTransparency = 0
 
-    for playerName, playerData in pairs(roles) do
-        local player = Players:FindFirstChild(playerName)
-        if player and playerData and playerData.Role then
-            local role = playerData.Role
-
-            if (role == "Murderer" or role == "Sheriff" or (checkHero and role == "Hero")) and not notifiedRoles[player.UserId] then
-                showNotification("Rol: " .. role, player.Name .. " es el " .. role, player)
-                notifiedRoles[player.UserId] = true
-
-                if role == "Murderer" then
-                    foundMurderer = true
-                elseif role == "Sheriff" then
-                    foundSheriff = true
-                elseif role == "Hero" then
-                    checkHero = false
+                    local role = Roles[player.Name]
+                    if role == "Sheriff" then
+                        highlight.FillColor = Color3.fromRGB(0, 0, 255)
+                        highlight.OutlineColor = Color3.fromRGB(0, 85, 153)
+                        CreateLabel(player.Character, "Sheriff", Color3.fromRGB(0, 0, 255))
+                    elseif role == "Murderer" then
+                        highlight.FillColor = Color3.fromRGB(139, 0, 0)
+                        highlight.OutlineColor = Color3.fromRGB(255, 0, 0)
+                        CreateLabel(player.Character, "Murderer", Color3.fromRGB(255, 0, 0))
+                    elseif role == "Hero" then
+                        highlight.FillColor = Color3.fromRGB(255, 255, 0)
+                        highlight.OutlineColor = Color3.fromRGB(255, 255, 0)
+                        CreateLabel(player.Character, "Hero", Color3.fromRGB(255, 255, 0))
+                    else
+                        highlight.FillColor = Color3.fromRGB(0, 128, 0)
+                        highlight.OutlineColor = Color3.fromRGB(0, 255, 0)
+                    end
                 end
             end
         end
     end
-
-    if foundSheriff and foundMurderer then
-        if loopConnection then
-            loopConnection:Disconnect()
-            loopConnection = nil
-        end
-    elseif foundMurderer and not foundSheriff then
-        checkHero = true
-    end
 end
 
-local Toggle = Tab2:AddToggle({
-    Name = "Role Notifications",
-    Description = "Notificación de roles.",
-    Default = savedConfig.Notifications12 or false,
-    Callback = function(state)
-        savedConfig.Notifications12 = state
-        saveConfig(savedConfig)
-
-        if state then
-            notifiedRoles = {}
-            checkHero = false
-            loopConnection = game:GetService("RunService").Heartbeat:Connect(function()
-                wait(2)  -- espera 2 segundos
-                updateRoleNotifications()
-            end)
-        else
-            if loopConnection then
-                loopConnection:Disconnect()
-                loopConnection = nil
-            end
-            notifiedRoles = {}
-            checkHero = false
-        end
-    end
-})
-
-local Players = game:GetService("Players")
-local sliderValue = 0.6
-local LP = Players.LocalPlayer
-local Sheriff, Murderer, Hero
-
-Tab2:AddSlider({
-    Name = "Ajuste de transparencia del ESP (interior)",
-    Description = "Ajuste de la transparencia del ESP (interior).",
-    MinValue = 0,
-    MaxValue = 1,
-    Default = 0.8,
-    Increase = 0.1,
-    Callback = function(value)
-        sliderValue = value
-        UpdateHighlights()
-    end
-})
-
-function UpdateHighlights()
+function RemoveHighlights()
     for _, player in pairs(Players:GetPlayers()) do
         if player.Character then
             local highlight = player.Character:FindFirstChild("Highlight")
             if highlight then
-                highlight.FillTransparency = sliderValue
-                highlight.OutlineTransparency = 0
-
-                if player.Name == Sheriff and IsAlive(player) then
-                    highlight.FillColor = Color3.fromRGB(0, 0, 255)
-                    highlight.OutlineColor = Color3.fromRGB(0, 51, 102)
-                    CreateLabel(player.Character, "Sheriff", Color3.fromRGB(0, 0, 255))
-                elseif player.Name == Murderer and IsAlive(player) then
-                    highlight.FillColor = Color3.fromRGB(139, 0, 0)
-                    highlight.OutlineColor = Color3.fromRGB(255, 0, 0)
-                    CreateLabel(player.Character, "Murderer", Color3.fromRGB(255, 0, 0))
-                elseif player.Name == Hero and IsAlive(player) then
-                    highlight.FillColor = Color3.fromRGB(255, 255, 0)
-                    highlight.OutlineColor = Color3.fromRGB(255, 255, 0)
-                    CreateLabel(player.Character, "Hero", Color3.fromRGB(255, 255, 0))
-                else
-                    highlight.FillColor = Color3.fromRGB(0, 255, 0)
-                    highlight.OutlineColor = Color3.fromRGB(0, 255, 0)
+                highlight:Destroy()
+            end
+            for _, labelName in pairs({"MurdererLabel", "SheriffLabel", "HeroLabel"}) do
+                local label = player.Character:FindFirstChild(labelName)
+                if label then
+                    label:Destroy()
                 end
             end
         end
     end
 end
 
-game:GetService("RunService").RenderStepped:Connect(UpdateHighlights)
-
-Tab2:AddButton({
-    Name = "ESP Players",
-    Description = "ESP para todos los jugadores.",
-    Default = false,
-    Callback = function()
-        local existingGui = game:GetService("CoreGui"):FindFirstChild("espp")
-        if existingGui then
-            return
-        end
-
-        local espEnabled = false
-        local debounce = false
-        local lastRoles = {}
-        local ReplicatedStorage = game:GetService("ReplicatedStorage")
-        local roles
-
-        function CreateLabel(Character, RoleName, Color)
-            local labelName = RoleName .. "Label"
-            if Character and not Character:FindFirstChild(labelName) then
-                local BillboardGui = Instance.new("BillboardGui", Character)
-                BillboardGui.Name = labelName
-                BillboardGui.Size = UDim2.new(0, 100, 0, 20)
-                BillboardGui.StudsOffset = Vector3.new(0, 2.5, 0) -- Ajusta la posición según sea necesario
-                BillboardGui.AlwaysOnTop = true
-                BillboardGui.MaxDistance = math.huge
-                BillboardGui.LightInfluence = 0
-                BillboardGui.ResetOnSpawn = false
-                BillboardGui.Adornee = Character -- Asegura que el BillboardGui se ancle al personaje
-
-                local TextLabel = Instance.new("TextLabel", BillboardGui)
-                TextLabel.Size = UDim2.new(1, 0, 1, 0)
-                TextLabel.BackgroundTransparency = 1
-                TextLabel.Text = RoleName
-                TextLabel.TextColor3 = Color
-                TextLabel.TextScaled = false
-                TextLabel.Font = Enum.Font.SourceSans
-                TextLabel.TextSize = 14
-                TextLabel.ZIndex = 10
-                TextLabel.TextStrokeTransparency = 0
-            end
-        end
-
-        function RemoveHighlights()
-            for _, v in pairs(Players:GetPlayers()) do
-                if v.Character then
-                    local highlight = v.Character:FindFirstChild("Highlight")
-                    if highlight then
-                        highlight:Destroy()
-                    end
-                    for _, label in pairs({"MurdererLabel", "SheriffLabel", "HeroLabel"}) do
-                        local item = v.Character:FindFirstChild(label)
-                        if item then
-                            item:Destroy()
-                        end
-                    end
-                end
-            end
-        end
-
-        function CreateHighlight()
-            for _, v in pairs(Players:GetPlayers()) do
-                if v ~= LP and v.Character and not v.Character:FindFirstChild("Highlight") then
-                    local highlight = Instance.new("Highlight", v.Character)
-                    highlight.FillTransparency = sliderValue
-                    highlight.OutlineTransparency = 0
-                end
-            end
-        end
-
-        function IsAlive(Player)
-            return roles[Player.Name] and not roles[Player.Name].Killed and not roles[Player.Name].Dead
-        end
-
-        function GetRolesFromServer()
-            roles = ReplicatedStorage:FindFirstChild("GetPlayerData", true):InvokeServer()
-        end
-
-        local function RoleCheckLoop()
-            while true do
-                if espEnabled then
-                    GetRolesFromServer()
-                    if roles and roles ~= lastRoles then
-                        Sheriff, Murderer, Hero = nil, nil, nil
-                        for i, v in pairs(roles) do
-                            if v.Role == "Murderer" then
-                                Murderer = i
-                            elseif v.Role == "Sheriff" then
-                                Sheriff = i
-                            elseif v.Role == "Hero" then
-                                Hero = i
-                            end
-                        end
-
-                        if not Sheriff or not Murderer then
-                            RemoveHighlights()
-                        else
-                            CreateHighlight()
-                            UpdateHighlights()
-                        end
-                    end
-                    lastRoles = roles
-                    wait(2)
-                else
-                    RemoveHighlights()
-                    wait(2)
-                end
-            end
-        end
-
-        spawn(RoleCheckLoop)
-
-        local screenGui = Instance.new("ScreenGui")
-        screenGui.Name = "espp"
-        screenGui.Parent = game:GetService("CoreGui")
-
-        local button = Instance.new("TextButton")
-        local UICorner = Instance.new("UICorner")
-
-        button.Name = "Button"
-        button.Size = UDim2.new(0, 50, 0, 50)
-        button.Position = UDim2.new(0.5, -100, 0, 10)
-        button.Text = "ESP OFF"
-        button.Font = Enum.Font.Gotham
-        button.TextSize = 14
-        button.TextColor3 = Color3.fromRGB(255, 255, 255)
-        button.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-        button.BackgroundTransparency = 0.6
-        button.Draggable = true
-        button.BorderSizePixel = 0
-        button.Parent = screenGui
-
-        UICorner.CornerRadius = UDim.new(0, 15)
-        UICorner.Parent = button
-
-        button.MouseButton1Click:Connect(function()
-            if debounce then return end
-            debounce = true
-            
-            espEnabled = not espEnabled
-            button.Text = espEnabled and "ESP ON" or "ESP OFF"
-            
-            if not espEnabled then
-                RemoveHighlights()
-            end
-            
-            wait(0.5)
-            debounce = false
-        end)
+function GetRolesFromServer()
+    local success, result = pcall(function()
+        return ReplicatedStorage:FindFirstChild("GetPlayerData", true):InvokeServer()
+    end)
+    if success then
+        return result
+    else
+        return nil
     end
-})
-    
-Tab2:AddButton({
-    Name = "Tracer Esp",
-    Description = "Only the sheriff and the murderer",
-    Default = false,
-    Callback = function(value)
-        local existingGui = game:GetService("CoreGui"):FindFirstChild("tracer")
-        if existingGui then
-            return
-        end
+end
 
-        local screenGui = Instance.new("ScreenGui")
-        local tracerButton = Instance.new("TextButton")
-        local UICorner = Instance.new("UICorner")
-        local tracerEnabled = false
+function RoleCheckLoop()
+    while espEnabled do
+        local roles = GetRolesFromServer()
+        if roles and roles ~= lastRoles then
+            Roles = {}
+            for playerName, data in pairs(roles) do
+                Roles[playerName] = data.Role
+            end
+            UpdateHighlights()
+            lastRoles = roles
+        end
+        wait(2)
+    end
+end
+
+VisualSection:NewToggle("ESP Players", "ToggleInfo", function(state)
+        savedConfig.espp = state
+        saveConfig(savedConfig)
+
+        espEnabled = state
+        if espEnabled then
+            spawn(RoleCheckLoop)
+        else
+            RemoveHighlights()
+        end
+    end)
+
+VisualSection:NewToggle("ESP Tracer", "ToggleInfo", function(state)
+        savedConfig.tracer12 = state
+        saveConfig(savedConfig)
+
         local ReplicatedStorage = game:GetService("ReplicatedStorage")
         local Players = game:GetService("Players")
         local RunService = game:GetService("RunService")
         local LP = Players.LocalPlayer
         local tracers = {}
-        local lastClick = 0
-        local roles = {}
         local Sheriff, Murderer, Hero
-        local searchInterval = 2
         local lastRoleSearch = 0
+        local searchInterval = 2
+        local tracerConnection, playerRemovingConnection, playerAddedConnection, charAddedConnection
 
-        screenGui.Name = "tracer"
-        screenGui.Parent = game:GetService("CoreGui")
-
-        tracerButton.Name = "tracer"
-        tracerButton.Size = UDim2.new(0, 50, 0, 50)
-        tracerButton.Position = UDim2.new(0.5, -231, 0, 10)
-        tracerButton.Text = "Tracer OFF"
-        tracerButton.Font = Enum.Font.Gotham
-        tracerButton.TextSize = 13
-        tracerButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-        tracerButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-        tracerButton.BackgroundTransparency = 0.6
-        tracerButton.Draggable = true
-        tracerButton.BorderSizePixel = 0
-        tracerButton.Parent = screenGui
-
-        UICorner.CornerRadius = UDim.new(0, 15)
-        UICorner.Parent = tracerButton
-
+        -- Crear trazador
         local function CreateTracer(player)
-            if not tracers[player.Name] then
+            if not tracers[player] then
                 local tracer = Drawing.new("Line")
                 tracer.Thickness = 2
                 tracer.Transparency = 1
-                tracer.Visible = true
-                tracers[player.Name] = tracer
+                tracers[player] = tracer
             end
         end
 
+        -- Remover trazador
         local function RemoveTracer(player)
-            if tracers[player.Name] then
-                tracers[player.Name]:Remove()
-                tracers[player.Name] = nil
+            if tracers[player] then
+                tracers[player]:Remove()
+                tracers[player] = nil
             end
         end
 
+        -- Actualizar roles
+        local function UpdateRoles()
+            local success, roleData = pcall(function()
+                return ReplicatedStorage:FindFirstChild("GetPlayerData", true):InvokeServer()
+            end)
+            if success then
+                Sheriff, Murderer, Hero = nil, nil, nil
+                for playerName, data in pairs(roleData) do
+                    if data.Role == "Murderer" then
+                        Murderer = playerName
+                    elseif data.Role == "Sheriff" then
+                        Sheriff = playerName
+                    elseif data.Role == "Hero" then
+                        Hero = playerName
+                    end
+                end
+            else
+                warn("No se pudo obtener los datos del rol.")
+            end
+        end
+
+        -- Actualizar trazadores
         local function UpdateTracers()
             local camera = workspace.CurrentCamera
             local viewportSize = camera.ViewportSize
-            for _, player in pairs(Players:GetPlayers()) do
-                if player ~= LP and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-                    local humanoid = player.Character:FindFirstChild("Humanoid")
-                    local tracer = tracers[player.Name]
-                    local rootPartPos = player.Character.HumanoidRootPart.Position
-                    local screenPos, onScreen = camera:WorldToViewportPoint(rootPartPos)
 
-                    if humanoid and humanoid.Health > 0 and (player.Name == Sheriff or player.Name == Murderer or player.Name == Hero) then
-                        if onScreen then
-                            if not tracer then
-                                CreateTracer(player)
-                            end
-                            if tracer then
-                                tracer.From = Vector2.new(viewportSize.X / 2, viewportSize.Y)
-                                tracer.To = Vector2.new(screenPos.X, screenPos.Y)
-                                tracer.Visible = true
-                                tracer.Color = (player.Name == Sheriff and Color3.fromRGB(0, 0, 255)) 
-                                    or (player.Name == Murderer and Color3.fromRGB(255, 0, 0)) 
-                                    or Color3.fromRGB(255, 255, 0)
-                            end
-                        else
-                            if tracer then
-                                tracer.Visible = false
-                            end
-                        end
+            for player, tracer in pairs(tracers) do
+                if player.Character and player.Character:FindFirstChild("HumanoidRootPart") and player.Character:FindFirstChild("Humanoid") then
+                    local humanoid = player.Character.Humanoid
+                    local rootPart = player.Character.HumanoidRootPart
+                    local screenPos, onScreen = camera:WorldToViewportPoint(rootPart.Position)
+
+                    if humanoid.Health > 0 and onScreen and (player.Name == Sheriff or player.Name == Murderer or player.Name == Hero) then
+                        tracer.From = Vector2.new(viewportSize.X / 2, viewportSize.Y)
+                        tracer.To = Vector2.new(screenPos.X, screenPos.Y)
+                        tracer.Color = (player.Name == Sheriff and Color3.fromRGB(0, 0, 255)) 
+                            or (player.Name == Murderer and Color3.fromRGB(255, 0, 0)) 
+                            or Color3.fromRGB(255, 255, 0)
+                        tracer.Visible = true
                     else
-                        RemoveTracer(player)
+                        tracer.Visible = false
+                    end
+                else
+                    RemoveTracer(player)
+                end
+            end
+        end
+
+        -- Manejar trazadores
+        local function ManageTracers(enabled)
+            if enabled then
+                -- Crear trazadores para todos los jugadores actuales
+                for _, player in pairs(Players:GetPlayers()) do
+                    if player ~= LP then
+                        CreateTracer(player)
                     end
                 end
-            end
-        end
 
-        local function UpdateRoles()
-            roles = ReplicatedStorage:FindFirstChild("GetPlayerData", true):InvokeServer()
-            Sheriff, Murderer, Hero = nil, nil, nil
-            for i, v in pairs(roles) do
-                if v.Role == "Murderer" then
-                    Murderer = i
-                elseif v.Role == 'Sheriff' then
-                    Sheriff = i
-                elseif v.Role == 'Hero' then
-                    Hero = i
-                end
-            end
-        end
-
-        local function EnableTracers()
-            for _, player in pairs(Players:GetPlayers()) do
-                if player ~= LP and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-                    CreateTracer(player)
-                end
-            end
-        end
-
-        local function DisableTracers()
-            for _, tracer in pairs(tracers) do
-                if tracer then
-                    tracer:Remove() 
-                end
-            end
-            tracers = {} 
-        end
-
-        local function ResetButtonPosition()
-            local currentTime = tick()
-            if currentTime - lastClick <= 2 then
-                lastClick = currentTime
-                tracerButton.Position = UDim2.new(0.5, -231, 0, 10)
-            end
-        end
-
-        RunService.RenderStepped:Connect(function()
-            if tracerEnabled then
-                UpdateTracers()
-                
-                if tick() - lastRoleSearch >= searchInterval then
-                    UpdateRoles()
-                    lastRoleSearch = tick()
-                    
-                    if not (Sheriff or Murderer or Hero) then
-                        searchInterval = 3
-                    else
-                        searchInterval = 2
+                -- Conexión para actualizaciones periódicas
+                tracerConnection = RunService.RenderStepped:Connect(function()
+                    UpdateTracers()
+                    if tick() - lastRoleSearch >= searchInterval then
+                        UpdateRoles()
+                        lastRoleSearch = tick()
+                        searchInterval = (Sheriff or Murderer or Hero) and 2 or 3
                     end
-                end
-            end
-        end)
+                end)
 
-        tracerButton.MouseButton1Click:Connect(function()
-            tracerEnabled = not tracerEnabled
-            tracerButton.Text = tracerEnabled and "Tracer ON" or "Tracer OFF"
-            if tracerEnabled then
-                EnableTracers()
-                searchInterval = 1
+                -- Conexión para manejar jugadores que abandonan el juego
+                playerRemovingConnection = Players.PlayerRemoving:Connect(function(player)
+                    RemoveTracer(player)
+                end)
+
+                -- Conexión para manejar jugadores que se unen al juego
+                playerAddedConnection = Players.PlayerAdded:Connect(function(player)
+                    if player ~= LP then
+                        CreateTracer(player)
+                    end
+                end)
             else
-                DisableTracers()
-            end
-            ResetButtonPosition()
-        end)
-
-        Players.PlayerRemoving:Connect(function(player)
-            RemoveTracer(player)
-        end)
-    end
-})
-    
-    Tab2:AddButton({
-    Name = "ESP Gun",
-    Default = false,
-    Callback = function()
-local existingGui = game:GetService("CoreGui"):FindFirstChild("ESPGun")
-if existingGui then return end
-
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local CoreGui = game:GetService("CoreGui")
-
-local screenGui = Instance.new("ScreenGui")
-local espgunButton = Instance.new("TextButton")
-local UICorner = Instance.new("UICorner")
-
-screenGui.Name = "ESPGun"
-screenGui.Parent = CoreGui
-
-espgunButton.Name = "ESPGunButton"
-espgunButton.Size = UDim2.new(0, 50, 0, 50)
-espgunButton.Position = UDim2.new(1, -265, 0, 10)
-espgunButton.Text = "ESPGUN OFF"
-espgunButton.Font = Enum.Font.Gotham
-espgunButton.TextSize = 9
-espgunButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-espgunButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-espgunButton.BackgroundTransparency = 0.6
-espgunButton.Draggable = true
-espgunButton.BorderSizePixel = 0
-espgunButton.Parent = screenGui
-
-UICorner.CornerRadius = UDim.new(0, 15)
-UICorner.Parent = espgunButton
-
-local isActive = false
-_G.Gunesp = false
-
-local function toggleESPGun()
-    isActive = not isActive
-    espgunButton.Text = isActive and "ESPGUN ON" or "ESPGUN OFF"
-    _G.Gunesp = isActive
-end
-
-espgunButton.MouseButton1Click:Connect(toggleESPGun)
-
-local function createLabel(object)
-    local player = Players.LocalPlayer
-    local distance = (object.Position - player.Character.HumanoidRootPart.Position).Magnitude
-
-    if not object:FindFirstChild("GunLabel") then
-        local label = Instance.new("BillboardGui")
-        label.Name = "GunLabel"
-        label.Adornee = object
-        label.Size = UDim2.new(0, 200, 0, 50)
-        label.StudsOffset = Vector3.new(0, 3, 0)
-        label.AlwaysOnTop = true
-        label.Parent = object
-
-        local textLabel = Instance.new("TextLabel")
-        textLabel.Size = UDim2.new(1, 0, 1, 0)
-        textLabel.BackgroundTransparency = 1
-        textLabel.TextStrokeTransparency = 0.6
-        textLabel.TextSize = 12
-        textLabel.ZIndex = 5
-        textLabel.Parent = label
-
-        textLabel.Text = string.format("Gun Here! [%d studs]", math.floor(distance))
-        textLabel.TextColor3 = Color3.fromRGB(255, 0, 255)
-        textLabel.TextColor3 = Color3.fromRGB(255, 0, 255)
-    else
-        local textLabel = object.GunLabel:FindFirstChildOfClass("TextLabel")
-        if textLabel then
-            textLabel.Text = string.format("Gun Here! [%d studs]", math.floor(distance))
-        end
-    end
-end
-
-RunService.Heartbeat:Connect(function()
-    if _G.Gunesp then
-        for _, v in pairs(workspace:GetChildren()) do
-            local gunDrop = v:FindFirstChild("GunDrop")
-            if gunDrop then
-                if not gunDrop:FindFirstChild("Highlight") then
-                    local highlight = Instance.new("Highlight")
-                    highlight.Parent = gunDrop
-                    highlight.FillTransparency = 0.7
-                    highlight.FillColor = Color3.fromRGB(148, 0, 211)
-                    highlight.OutlineColor = Color3.fromRGB(255, 0, 255)
+                -- Desconectar todas las conexiones activas
+                if tracerConnection then
+                    tracerConnection:Disconnect()
+                    tracerConnection = nil
                 end
-                createLabel(gunDrop)
+                if playerRemovingConnection then
+                    playerRemovingConnection:Disconnect()
+                    playerRemovingConnection = nil
+                end
+                if playerAddedConnection then
+                    playerAddedConnection:Disconnect()
+                    playerAddedConnection = nil
+                end
+
+                -- Eliminar todos los trazadores
+                for player, _ in pairs(tracers) do
+                    RemoveTracer(player)
+                end
+                tracers = {}
             end
         end
-    end
-end)
-end})
 
-local state = false 
+        -- Gestionar reconexión al reaparecer
+        if charAddedConnection then
+            charAddedConnection:Disconnect()
+        end
+        charAddedConnection = LP.CharacterAdded:Connect(function()
+            RunService.Heartbeat:Wait()
+            for player, _ in pairs(tracers) do
+                RemoveTracer(player)
+            end
+            tracers = {}
+            ManageTracers(savedConfig.tracer12)
+        end)
+
+        -- Activar/desactivar trazadores según el estado del toggle
+        ManageTracers(state)
+    end)
+
+VisualSection:NewToggle("ESP Gun", "ToggleInfo", function(state)
+        savedConfig.espgun12 = state
+        saveConfig(savedConfig)
+
+        _G.Gunesp = state
+
+        local function createLabel(object)
+            local player = game:GetService("Players").LocalPlayer
+            local distance = (object.Position - player.Character.HumanoidRootPart.Position).Magnitude
+
+            if not object:FindFirstChild("GunLabel") then
+                local label = Instance.new("BillboardGui")
+                label.Name = "GunLabel"
+                label.Adornee = object
+                label.Size = UDim2.new(0, 200, 0, 50)
+                label.StudsOffset = Vector3.new(0, 3, 0)
+                label.AlwaysOnTop = true
+                label.Parent = object
+
+                local textLabel = Instance.new("TextLabel")
+                textLabel.Size = UDim2.new(1, 0, 1, 0)
+                textLabel.BackgroundTransparency = 1
+                textLabel.TextStrokeTransparency = 0.6
+                textLabel.TextSize = 12
+                textLabel.ZIndex = 5
+                textLabel.Parent = label
+
+                textLabel.Text = string.format("Gun Here! [%d studs]", math.floor(distance))
+                textLabel.TextColor3 = Color3.fromRGB(255, 0, 255)
+            else
+                local textLabel = object.GunLabel:FindFirstChildOfClass("TextLabel")
+                if textLabel then
+                    textLabel.Text = string.format("Gun Here! [%d studs]", math.floor(distance))
+                end
+            end
+        end
+
+        local function removeHighlightsAndLabels()
+            for _, v in pairs(workspace:GetChildren()) do
+                local gunDrop = v:FindFirstChild("GunDrop")
+                if gunDrop then
+                    local highlight = gunDrop:FindFirstChild("Highlight")
+                    if highlight then
+                        highlight:Destroy()
+                    end
+                    local label = gunDrop:FindFirstChild("GunLabel")
+                    if label then
+                        label:Destroy()
+                    end
+                end
+            end
+        end
+
+        local runConnection
+
+        if state then
+            runConnection = game:GetService("RunService").Heartbeat:Connect(function()
+                if _G.Gunesp then
+                    for _, v in pairs(workspace:GetChildren()) do
+                        local gunDrop = v:FindFirstChild("GunDrop")
+                        if gunDrop then
+                            if not gunDrop:FindFirstChild("Highlight") then
+                                local highlight = Instance.new("Highlight")
+                                highlight.Parent = gunDrop
+                                highlight.FillTransparency = 0.7
+                                highlight.FillColor = Color3.fromRGB(148, 0, 211)
+                                highlight.OutlineColor = Color3.fromRGB(255, 0, 255)
+                            end
+                            createLabel(gunDrop)
+                        end
+                    end
+                end
+            end)
+        else
+            if runConnection then
+                runConnection:Disconnect()
+            end
+            removeHighlightsAndLabels()
+        end
+    end)
+
+local state = false
 local player = game.Players.LocalPlayer
-local coreGui = game:GetService("CoreGui") 
+local coreGui = game:GetService("CoreGui")
 local existingGui = coreGui:FindFirstChild("TimerGui")
 
 local screenGui, timertext
@@ -3468,7 +2901,7 @@ local function createGui()
     if not coreGui:FindFirstChild("TimerGui") then
         screenGui = Instance.new("ScreenGui")
         screenGui.Name = "TimerGui"
-        screenGui.Parent = coreGui 
+        screenGui.Parent = coreGui
 
         timertext = Instance.new("TextLabel")
         timertext.Parent = screenGui
@@ -3503,7 +2936,7 @@ local function updateTextColor(timeLeft)
 end
 
 local function flashText(repetitions)
-    timertext.Text = "0:00" 
+    timertext.Text = "0:00"
     for i = 1, repetitions do
         if not state then break end
         timertext.TextColor3 = Color3.fromRGB(255, 0, 0)
@@ -3527,14 +2960,14 @@ local function updateTimer()
             if timeLeft <= 0 then
                 flashText(3)
                 timertext.Text = "0:00"
-                
+
                 repeat
                     task.wait(1)
                     success, timeLeft = pcall(function()
                         return game.ReplicatedStorage.Remotes.Extras.GetTimer:InvokeServer()
                     end)
                 until timeLeft > 0
-                
+
                 timertext.TextColor3 = Color3.fromRGB(255, 255, 255)
             end
         else
@@ -3545,35 +2978,27 @@ local function updateTimer()
     end
 end
 
-local Toggle = Tab2:AddToggle({
-    Name = "Start Countdown",
-    Description = "Inicia la cuenta regresiva.",
-    Default = savedConfig.Countdown or false,
-    Callback = function(toggleState)
-        savedConfig.Countdown1 = toggleState
-        saveConfig(savedConfig)
-        state = toggleState
+VisualSection:NewToggle("Start Countdown", "ToggleInfo", function(toggleState)
+    savedConfig.Countdown1 = toggleState
+    saveConfig(savedConfig)
 
-        if state then
-            if not coreGui:FindFirstChild("TimerGui") then
-                createGui()
-                updateTimer()
-            else
-                warn("El temporizador ya está en ejecución.")
-            end
+    state = toggleState
+
+    if state then
+        if not coreGui:FindFirstChild("TimerGui") then
+            createGui()
+            updateTimer()
         else
-            if coreGui:FindFirstChild("TimerGui") then
-                coreGui:FindFirstChild("TimerGui"):Destroy()
-            end
+            warn("El temporizador ya está en ejecución.")
+        end
+    else
+        if coreGui:FindFirstChild("TimerGui") then
+            coreGui:FindFirstChild("TimerGui"):Destroy()
         end
     end
-})
+end)
 
-Tab2:AddButton({
-    Name = "Inquire chat who is the sheriff or murderer",
-    Description = "Reveal roles in the chat.",
-    Default = false,
-    Callback = function()
+VisualSection:NewButton("Inquire chat who is the sheriff or murderer", "ButtonInfo", function()
         local ReplicatedStorage = game:GetService("ReplicatedStorage")
         local textChatService = game:GetService('TextChatService')
         
@@ -3609,14 +3034,9 @@ Tab2:AddButton({
         end
 
         checkRoles()
-    end
-})
+    end)
 
-Tab1:AddButton({
-    Name = "Throw Knife",
-    Description = "me falta un poquito y termino",
-    Default = false,
-    Callback = function()
+CombateSection:NewButton("Throw Knife", "ButtonInfo", function()
 local existingGui = game:GetService("CoreGui"):FindFirstChild("Throw")
 if existingGui then
     return
@@ -3720,13 +3140,9 @@ player.CharacterAdded:Connect(function()
         toggleFling()
     end
 end)
-end})
+end)
 
-Tab5:AddButton({
-    Name = "second life",
-    Description = "segunda vida.",
-    Default = false,
-    Callback = function()
+LocalPlayerSection:NewButton("second life", "ButtonInfo", function()
 local accessories = {}
 
 function GodMode()
@@ -3782,14 +3198,9 @@ function GodMode()
 end
 
 GodMode()
-    end
-})
+    end)
 
-Tab5:AddToggle({
-    Name = "auto second life v1",
-    Description = "segunda vida automática",
-    Default = savedConfig.Se or false,
-    Callback = function(toggleState)
+LocalPlayerSection:NewToggle("auto second life v1", "ToggleInfo", function(state)
         savedConfig.Se = toggleState
         saveConfig(savedConfig)
 
@@ -3865,21 +3276,13 @@ Tab5:AddToggle({
             disconnectConnections()
             resetSecondLife()
         end
-    end
-})
+    end)
 
-Tab2:AddButton({
-    Name = "fps booster",
-    Default = false,
-    Callback = function()
+VisualSection:NewButton("Fps Booster", "ButtonInfo", function()
 loadstring(game:HttpGet(("https://raw.githubusercontent.com/Jorgelinea/Fps/refs/heads/main/Protected_3128182632327016.txt"),true))()
-    end})
+    end)
 
-Tab2:AddButton({
-    Name = "fake death",
-    Description = "muerte falsa.",
-    Default = false,
-    Callback = function()
+VisualSection:NewButton("fake death", "ButtonInfo", function()
 local player = game:GetService("Players").LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
 local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
@@ -3890,17 +3293,13 @@ if humanoid then
 end
 
 humanoidRootPart.CFrame = CFrame.new(humanoidRootPart.Position) * CFrame.Angles(math.rad(-90), 0, 0)
-    end})
+    end)
 
 local lp = game.Players.LocalPlayer
 local knifeanim
 local fakeGunActive = false
 
-Tab1:AddToggle({
-    Name = "Fake Knife",
-    Description = "cuchillo falso",
-    Default = savedConfig.Fake or false,
-    Callback = function(state)
+VisualSection:NewToggle("Fake Knife", "ToggleInfo", function(state)
         savedConfig.Fake = state 
         saveConfig(savedConfig)
         if state then
@@ -3982,13 +3381,9 @@ Tab1:AddToggle({
                 lp.Backpack.Knife:Destroy()
             end
         end
-    end})
+    end)
 
-Tab3:AddButton({
-    Name = "Go to the Lobby",
-    Description = "ir al lobby.",
-    Default = false,
-    Callback = function()
+TeleportSection:NewButton("Go to the Lobby", "ButtonInfo", function()
 local player = game.Players.LocalPlayer
 local spawns = workspace:WaitForChild("Lobby"):WaitForChild("Spawns"):GetChildren()
 
@@ -3997,21 +3392,13 @@ if player.Character and player.Character:FindFirstChild("HumanoidRootPart") and 
     
     player.Character.HumanoidRootPart.CFrame = randomSpawn.CFrame + Vector3.new(0, 3, 0)
 end
-end})
+end)
 
-Tab3:AddButton({
-    Name = "Vote Map",
-    Description = "ir al votar mapa.",
-    Default = false,
-    Callback = function()
+TeleportSection:NewButton("Vote Map", "ButtonInfo", function()
 game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-104, 154, -18)
-end})
+end)
 
-Tab3:AddButton({
-    Name = "Go to Map",
-    Description = "ir al mapa.",
-    Default = false,
-    Callback = function()
+TeleportSection:NewButton("Go to Map", "ButtonInfo", function()
 for i,v in pairs (workspace:GetDescendants()) do
         if v.Name == "Spawn" then
             game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(v.Position) * CFrame.new(0,2.5,0)
@@ -4019,12 +3406,9 @@ for i,v in pairs (workspace:GetDescendants()) do
             game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(v.Position) * CFrame.new(0,2.5,0)
         end
     end
-end})
+end)
 
-Tab3:AddButton({
-    Name = "void (Safe)",
-    Description = "Vacio (seguro).",
-    Callback = function()
+TeleportSection:NewButton("void (Safe)", "ButtonInfo", function()
 local player = game.Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
 local hrp = character:WaitForChild("HumanoidRootPart")
@@ -4054,12 +3438,9 @@ if not blockExists(teleportPosition.Position, blockSize) then
 end
 
 hrp.CFrame = teleportPosition * CFrame.new(0, 3, 0)
-    end})
+    end)
  
-Tab8:AddButton({
-    Name = "Get all the emotes",
-    Description = "tener todos los emotes.",
-    Callback = function()
+EmoteSection:NewButton("Get all the emotes", "ButtonInfo", function()
         local PlayerGui = game.Players.LocalPlayer:WaitForChild("PlayerGui")
         local Emotes = PlayerGui:WaitForChild("MainGUI"):WaitForChild("Game"):FindFirstChild("Emotes")
 
@@ -4080,89 +3461,74 @@ Tab8:AddButton({
                 })
             end
         end
-    end
-})
+    end)
     
 local anim = Instance.new('Animation')
 
-Tab8:AddButton({
-    Name = "Ninja",
-    Callback = function()
+EmoteSection:NewButton("Ninja", "ButtonInfo", function()
         anim.AnimationId = "rbxassetid://2431864798"
 		local track = game.Players.LocalPlayer.Character.Humanoid.Animator:LoadAnimation(anim)
 		track:Play()
 		game.Players.LocalPlayer.Character.Humanoid.Changed:Once(function()
 			track:Stop()
 		end)
-    end})
+    end)
 
-Tab8:AddButton({
-    Name = "Dab",
-    Callback = function()
+EmoteSection:NewButton("Dab", "ButtonInfo", function()
         anim.AnimationId = "rbxassetid://2445521505"
 		local track = game.Players.LocalPlayer.Character.Humanoid.Animator:LoadAnimation(anim)
 		track:Play()
 		game.Players.LocalPlayer.Character.Humanoid.Changed:Once(function()
 			track:Stop()
 		end)
-    end})
+    end)
 
-Tab8:AddButton({
-    Name = "Floss",
-    Callback = function()
+EmoteSection:NewButton("Floss", "ButtonInfo", function()
         anim.AnimationId = "rbxassetid://2452938820"
 		local track = game.Players.LocalPlayer.Character.Humanoid.Animator:LoadAnimation(anim)
 		track:Play()
 		game.Players.LocalPlayer.Character.Humanoid.Changed:Once(function()
 			track:Stop()
 		end)
-    end})
+    end)
 
-Tab8:AddButton({
-    Name = "Headless",
-    Callback = function()
+EmoteSection:NewButton("Headless", "ButtonInfo", function()
         anim.AnimationId = "rbxassetid://2513694073"
 		local track = game.Players.LocalPlayer.Character.Humanoid.Animator:LoadAnimation(anim)
 		track:Play()
 		game.Players.LocalPlayer.Character.Humanoid.Changed:Once(function()
 			track:Stop()
 		end)
-    end})
+    end)
 
-Tab8:AddButton({
-    Name = "Zen",
-    Callback = function()
+EmoteSection:NewButton("Zen", "ButtonInfo", function()
         anim.AnimationId = "rbxassetid://2431812646"
 		local track = game.Players.LocalPlayer.Character.Humanoid.Animator:LoadAnimation(anim)
 		track:Play()
 		game.Players.LocalPlayer.Character.Humanoid.Changed:Once(function()
 			track:Stop()
 		end)
-    end})
+    end)
 
-Tab8:AddButton({
-    Name = "Zombie",
-    Callback = function()
+EmoteSection:NewButton("Zombie", "ButtonInfo", function()
         anim.AnimationId = "rbxassetid://2513692312"
 		local track = game.Players.LocalPlayer.Character.Humanoid.Animator:LoadAnimation(anim)
 		track:Play()
 		game.Players.LocalPlayer.Character.Humanoid.Changed:Once(function()
 			track:Stop()
 		end)
-    end})
+    end)
 
-Tab8:AddButton({
-    Name = "Sit",
-    Callback = function()
+EmoteSection:NewButton("Sit", "ButtonInfo", function()
         anim.AnimationId = "rbxassetid://2431845940"
 		local track = game.Players.LocalPlayer.Character.Humanoid.Animator:LoadAnimation(anim)
 		track:Play()
 		game.Players.LocalPlayer.Character.Humanoid.Changed:Once(function()
 			track:Stop()
 		end)
-    end})
+    end)
     
-SettingsAutofarm = {}
+    SettingsAutofarm = {}
 if _G.AutofarmSettings then
     SettingsAutofarm = _G.AutofarmSettings
 else
@@ -4262,129 +3628,17 @@ for Configname, Configvalue in pairs(SettingsAutofarm) do
     end
 end
 
-local Toggle = Tab4:AddToggle({
-    Name = "Autofarm tp",
-    Description = "auto farm de transporte",
-    Default = savedConfig.Autofarmn or false,
-    Callback = function(state)
+AutoFarmSection:NewToggle("Autofarm tp", "ToggleInfo", function(state)
         savedConfig.Autofarmn = state
         saveConfig(savedConfig)
         AutofarmStarted = state
-    end
-})
+    end)
 
-local ResetToggle = Tab4:AddToggle({
-    Name = "Reset when bag is full",
-    Description = "reinicio del personaje cuando la bolsa esté llena.",
-    Default = savedConfig.ResetWhenFullBag or false,
-    Callback = function(state)
+AutoFarmSection:NewToggle("Reset when bag is full", "ToggleInfo", function(state)
         savedConfig.ResetWhenFullBag = state
         saveConfig(savedConfig)
         ResetWhenFullBag = state
-    end
-})
-
-local Players = game:GetService("Players")
-local TweenService = game:GetService("TweenService")
-local Workspace = game:GetService("Workspace")
-
-local player = Players.LocalPlayer
-local autofarmSpeed = 20
-local running = false
-local teleportDistance = 100
-
--- Slider para ajustar la velocidad del autofarm
-local SpeedSlider = Tab4:AddSlider({
-    Name = "Autofarm speed",
-    Min = 18,
-    Max = 25,
-    Default = savedConfig.autofarmSpeed or 20,
-    Description = "Velocidad del auto farm.",
-    Callback = function(value)
-        autofarmSpeed = value
-        savedConfig.autofarmSpeed = value
-        saveConfig(savedConfig)
-    end
-})
-
--- Función para moverse a la moneda más cercana
-local function moveToClosestCoin()
-    if not running then return end  -- Asegura que solo funcione si el autofarm está activado
-
-    local Character = player.Character or player.CharacterAdded:Wait()
-    local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
-    local CoinContainer = Workspace:FindFirstChild("CoinContainer")
-
-    if not CoinContainer then return end
-
-    local closestCoin = nil
-    local closestDistance = math.huge
-
-    for _, Coin in pairs(CoinContainer:GetChildren()) do
-        if Coin.Name == "Coin_Server" and Coin.Parent then
-            local distance = (Coin.Position - HumanoidRootPart.Position).magnitude
-            if distance < closestDistance then
-                closestDistance = distance
-                closestCoin = Coin
-            end
-        end
-    end
-
-    if closestCoin then
-        local targetPosition = closestCoin.Position - Vector3.new(0, 2, 0)
-
-        if closestDistance > teleportDistance then
-            -- Teletransporte si está lejos
-            HumanoidRootPart.CFrame = CFrame.new(targetPosition)
-        else
-            -- Movimiento con tween si está cerca
-            local distance = (HumanoidRootPart.Position - targetPosition).magnitude
-            local tweenDuration = distance / autofarmSpeed
-
-            local tween = TweenService:Create(
-                HumanoidRootPart,
-                TweenInfo.new(tweenDuration, Enum.EasingStyle.Linear),
-                {CFrame = CFrame.new(targetPosition)}
-            )
-            tween:Play()
-            tween.Completed:Connect(function()
-                -- Al completar el tween, la moneda se vuelve transparente y no colisionable
-                if closestCoin.Parent then
-                    closestCoin.Transparency = 1
-                    closestCoin.CanCollide = false
-                end
-                moveToClosestCoin()  -- Llama de nuevo a la función para seguir a la siguiente moneda
-            end)
-        end
-    end
-end
-
--- Función para iniciar el autofarm
-local function startAutoFarm()
-    running = true
-    moveToClosestCoin()
-end
-
--- Función para detener el autofarm
-local function stopAutoFarm()
-    running = false
-end
-
--- Toggle para activar/desactivar el autofarm
-local Toggle = Tab4:AddToggle({
-    Name = "Autofarm (normal)",
-    Description = "Autofarm mejorado.",
-    Default = savedConfig.autofarm or false,
-    Callback = function(state)
-        savedConfig.autofarm = state
-        saveConfig(savedConfig)
-        if state then
-            startAutoFarm()
-        else
-            stopAutoFarm()
-        end
-    end,
-})
+    end)
 
 local old
 local isAntiKickEnabled = false
@@ -4412,11 +3666,7 @@ old = hookmetamethod(game, "__namecall", function(self, ...)
     return old(self, ...)
 end)
 
-local Toggle = Tab4:AddToggle({
-    Name = "Anti Kick",
-    Description = "Evita que el jugador sea expulsado.",
-    Default = savedConfig.antikick or false,
-    Callback = function(state)
+AutoFarmSection:NewToggle("Anti Kick", "ToggleInfo", function(state)
         savedConfig.antikick = state
         saveConfig(savedConfig)
 
@@ -4426,16 +3676,11 @@ local Toggle = Tab4:AddToggle({
         else
             print("Anti Kick Desactivado")
         end
-    end
-})
+    end)
 
 local D3RenderingDisabled = false
 
-local Toggle = Tab4:AddToggle({
-    Name = "Disable 3D rendering",
-    Description = "Activa o desactiva el renderizado 3D para mejorar el FPS.",
-    Default = savedConfig.renderizado or false,
-    Callback = function(state)
+AutoFarmSection:NewToggle("Disable 3D rendering", "ToggleInfo", function(state)
         savedConfig.renderizado = state
         saveConfig(savedConfig)
 
@@ -4446,13 +3691,9 @@ local Toggle = Tab4:AddToggle({
             D3RenderingDisabled = false
             RunService:Set3dRenderingEnabled(true)
         end
-    end
-})
+    end)
 
-local Toggle = Tab4:AddToggle({
-    Name = "Coin Optimization (is ass)",
-    Default = savedConfig.Optimization or false,
-    Callback = function(state)
+AutoFarmSection:NewToggle("Coin Optimization (is ass)", "ToggleInfo", function(state)
         savedConfig.Optimization = state
         saveConfig(savedConfig)
         local connections = {}
@@ -4509,17 +3750,13 @@ local Toggle = Tab4:AddToggle({
             end
             connections = {}
         end
-    end
-})
+    end)
     
 local autoXPEnabled = false
 local teletransportLoop
 local player = game.Players.LocalPlayer
 
-Tab4:AddToggle({
-    Name = "Auto XP",
-    Default = savedConfig.Autoxp or false,
-    Callback = function(state)
+AutoFarmSection:NewToggle("Auto XP", "ToggleInfo", function(state)
         savedConfig.Autoxp = state 
         saveConfig(savedConfig)
         autoXPEnabled = state
@@ -4555,14 +3792,9 @@ Tab4:AddToggle({
         else
             autoXPEnabled = false
         end
-    end
-})
+    end)
 
-Tab1:AddButton({
-    Name = "Tp and shoot {beta}",
-    Description = "transportarse hacia el asesino y disparar.",
-    Default = false,
-    Callback = function()
+CombateSection:NewButton("Tp And Shoot {Beta}", "ButtonInfo", function()
 local screenGui = Instance.new("ScreenGui")
 local shootButton = Instance.new("TextButton")
 local UICorner = Instance.new("UICorner")
@@ -4667,7 +3899,7 @@ shootButton.MouseButton1Click:Connect(function()
         end
     end
 end)
-    end})
+    end)
     
 local player = game.Players.LocalPlayer
 local knifeDetected = false
@@ -4708,11 +3940,7 @@ local function checkKnife()
     end
 end
 
-Tab9:AddToggle({
-    Name = "Knife range", 
-    Description = "",
-    Default = savedConfig.range or false,
-    Callback = function(state)
+HitboxSection:NewToggle("Knife range", "ToggleInfo", function(state)
         savedConfig.range = state
         saveConfig(savedConfig)
 
@@ -4725,8 +3953,7 @@ Tab9:AddToggle({
             end
             knifeDetected = false
         end
-    end
-})
+    end)
 
 player.CharacterAdded:Connect(function(character)
     character:WaitForChild("Humanoid").Died:Wait()
@@ -4744,68 +3971,63 @@ player.CharacterAdded:Connect(function(character)
     end
 end)
 
-Tab9:AddSlider({
-    Name = "Knife range slider",
-    MinValue = 5,
-    MaxValue = 50,
-    Default = savedConfig.range or 10,
-    Increase = 1,
-    Callback = function(value)
+HitboxSection:NewSlider("Knife range slider", "SliderInfo", 30, 7, function(value)
         getgenv().range = value
         if knifeHitbox then
             knifeHitbox.Size = Vector3.new(getgenv().range, getgenv().range, getgenv().range)
         end
         savedConfig.range = value
         saveConfig(savedConfig)
-    end
-})
+    end)
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local LP = Players.LocalPlayer
-local Character = LP.Character
 
 local function GetPlayerByRole(roleName)
-    local roles = ReplicatedStorage:FindFirstChild("GetPlayerData", true):InvokeServer()
-    for i, v in pairs(roles) do
-        if v.Role == roleName then
-            return Players:FindFirstChild(i)
+    local rolesFunction = ReplicatedStorage:FindFirstChild("GetPlayerData", true)
+    if not rolesFunction then return nil end
+
+    local success, roles = pcall(function()
+        return rolesFunction:InvokeServer()
+    end)
+
+    if not success or not roles then return nil end
+
+    for playerName, data in pairs(roles) do
+        if data.Role == roleName then
+            return Players:FindFirstChild(playerName)
         end
     end
     return nil
 end
 
 local function TeleportToRole(roleName)
+    local character = LP.Character or LP.CharacterAdded:Wait()
+    if not character or not character.PrimaryPart then return end
+
     local targetPlayer = GetPlayerByRole(roleName)
     if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        Character:SetPrimaryPartCFrame(targetPlayer.Character.HumanoidRootPart.CFrame)
+        local targetPart = targetPlayer.Character.HumanoidRootPart
+        pcall(function()
+            character:SetPrimaryPartCFrame(targetPart.CFrame)
+        end)
     end
 end
 
-Tab3:AddButton({
-    Name = "tp Sheriff",
-    Callback = function()
+TeleportSection:NewButton("Tp Sheriff", "ButtonInfo", function()
         TeleportToRole("Sheriff")
-    end
-})
+    end)
 
-Tab3:AddButton({
-    Name = "tp Murderer",
-    Callback = function()
+TeleportSection:NewButton("Tp Murderer", "ButtonInfo", function()
         TeleportToRole("Murderer")
-    end
-})
+    end)
 
-Tab3:AddButton({
-    Name = "tp Hero",
-    Callback = function()
+TeleportSection:NewButton("Tp Hero", "ButtonInfo", function()
         TeleportToRole("Hero")
-    end
-})
+    end)
 
-Tab2:AddButton({
-    Name = "see Murderer",
-    Callback = function()
+VisualSection:NewButton("See Murderer", "ButtonInfo", function()
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -4835,11 +4057,9 @@ local function SwitchToRoleCamera(roleName)
 end
 
 SwitchToRoleCamera("Murderer")
-end})
+end)
 
-Tab2:AddButton({
-    Name = "see Sheriff",
-    Callback = function()
+VisualSection:NewButton("See Sheriff", "ButtonInfo", function()
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -4869,11 +4089,9 @@ local function SwitchToRoleCamera(roleName)
 end
 
 SwitchToRoleCamera("Sheriff")
-    end})
+    end)
 
-Tab2:AddButton({
-    Name = "see hero",
-    Callback = function()
+VisualSection:NewButton("See Hero", "ButtonInfo", function()
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -4903,18 +4121,13 @@ local function SwitchToRoleCamera(roleName)
 end
 
 SwitchToRoleCamera("Hero")
-    end})
+    end)
     
-Tab2:AddButton({
-	Name = "fe emote",
-	Default = false,
-	Callback = function()
+VisualSection:NewButton("Fe emote", "ButtonInfo", function()
 loadstring(game:HttpGet("https://pastebin.com/raw/eCpipCTH"))()
-end})
+end)
 
-Tab7:AddButton({
-    Name = "rejoin",
-    Callback = function()
+MICSection:NewButton("ReJoin", "ButtonInfo", function()
         local TeleportService = game:GetService("TeleportService")
         local Players = game:GetService("Players")
         local LocalPlayer = Players.LocalPlayer
@@ -4929,7 +4142,7 @@ Tab7:AddButton({
             end
         end)
         coroutine.resume(Rejoin)
-    end})
+    end)
  
 local defaultGravity = 190
 local increasedGravity = 400
@@ -4939,25 +4152,14 @@ local jumpConnection
 
 game.Workspace.Gravity = defaultGravity
 
-Tab5:AddSlider({
-    Name = "Gravity",
-    MinValue = 0,
-    MaxValue = 1000,
-    Default = defaultGravity,
-    Increase = 1,
-    Callback = function(value)
-        game.Workspace.Gravity = value
-    end
-})
+LocalPlayerSection:NewSlider("Gravity", 0, 1000, defaultGravity, function(value)
+    game.Workspace.Gravity = value
+end)
 
-Tab5:AddToggle({
-    Name = "Gravity loop",
-    Default = false,
-    Callback = function(state)
+LocalPlayerSection:NewToggle("Gravity loop", "ToggleInfo", function(state)
         isGravityActive = state
         game.Workspace.Gravity = state and increasedGravity or defaultGravity
-    end
-})
+    end)
 
 local function updateWalkSpeed(value)
     local player = game:GetService("Players").LocalPlayer
@@ -4966,24 +4168,14 @@ local function updateWalkSpeed(value)
     end
 end
 
-Tab5:AddSlider({
-    Name = "Speed",
-    MinValue = 18,
-    MaxValue = 30,
-    Default = savedConfig.Walkspeed or 0,
-    Increase = 1,
-    Callback = function(value)
-        getgenv().Walkspeed = value
-        updateWalkSpeed(value)
-        savedConfig.Walkspeed = value
-        saveConfig(savedConfig)
-    end
-})
+LocalPlayerSection:NewSlider("Speed", 18, 30, savedConfig.Walkspeed or 18, function(value)
+    getgenv().Walkspeed = value
+    updateWalkSpeed(value)
+    savedConfig.Walkspeed = value
+    saveConfig(savedConfig)
+end)
 
-Tab5:AddToggle({
-    Name = "Loop speed",
-    Default = savedConfig.loopW or false,
-    Callback = function(state)
+LocalPlayerSection:NewToggle("Loop speed", "ToggleInfo", function(state)
         getgenv().loopW = state
         savedConfig.loopW = state
         saveConfig(savedConfig)
@@ -5000,8 +4192,7 @@ Tab5:AddToggle({
             speedConnection:Disconnect()
             speedConnection = nil
         end
-    end
-})
+    end)
 
 local function updateJumpPower(value)
     local player = game:GetService("Players").LocalPlayer
@@ -5010,24 +4201,14 @@ local function updateJumpPower(value)
     end
 end
 
-Tab5:AddSlider({
-    Name = "Power jump",
-    MinValue = 53,
-    MaxValue = 200,
-    Default = savedConfig.Jumppower or 0,
-    Increase = 1,
-    Callback = function(value)
-        getgenv().Jumppower = value
-        updateJumpPower(value)
-        savedConfig.Jumppower = value
-        saveConfig(savedConfig)
-    end
-})
+LocalPlayerSection:NewSlider("Power Jump", 53, 200, savedConfig.Jumppower or 53, function(value)
+    getgenv().Jumppower = value
+    updateJumpPower(value)
+    savedConfig.Jumppower = value
+    saveConfig(savedConfig)
+end)
 
-Tab5:AddToggle({
-    Name = "Power Jump/Loop",
-    Default = savedConfig.loopJ or false,
-    Callback = function(state)
+LocalPlayerSection:NewToggle("Power Jump/Loop", "ToggleInfo", function(state)
         getgenv().loopJ = state
         savedConfig.loopJ = state
         saveConfig(savedConfig)
@@ -5044,14 +4225,9 @@ Tab5:AddToggle({
             jumpConnection:Disconnect()
             jumpConnection = nil
         end
-    end
-})
+    end)
 
-Tab5:AddToggle({
-    Name = "Infinite jump",
-    Description = "salto infinito.",
-    Default = savedConfig.jumpi or false,
-    Callback = function(state)
+LocalPlayerSection:NewToggle("Infinite Jump", "ToggleInfo", function(state)
         savedConfig.jumpi = state
         saveConfig(savedConfig)
         getgenv().InfJ = state
@@ -5064,18 +4240,19 @@ Tab5:AddToggle({
                 end
             end
         end)
-    end
-})
-
-local Section = Tab6:AddSection({"beta script 🤙🏻"})
-
-local CoreGui = game:GetService("StarterGui")
+    end)
 
 CoreGui:SetCore("SendNotification", {
-    Title = "v7.7.8",
-    Text = "I already loaded the script completely ",
+    Title = "v10.0.0",
+    Text = "I already loaded the script completely",
     Duration = 8,
-    Button1 = "OK",
+    Button1 = "OK"
+})
+
+CoreGui:SetCore("SendNotification", {
+    Title = "",
+    Text = "did you know this script was made by one dev?",
+    Duration = 8,
 })
 
 print("Script loaded successfully.")
