@@ -309,7 +309,7 @@ HitboxSection:NewSlider("Hitbox Size", "SliderInfo", 10, 1, function(value)
     end
 end)
 
-HitboxSection:NewSlider("Hitbox Transparency", "SliderInfo", 1, 0, function(value)
+HitboxSection:NewSlider("Hitbox Transparency", "SliderInfo", 9, 0, function(value)
     hitboxTransparency = value / 10
     savedConfig.hitboxTransparency = hitboxTransparency
     saveConfig(savedConfig)
@@ -526,7 +526,9 @@ local RunService = game:GetService("RunService")
 local originalSizes = {}
 local connections = {}
 local processedContainers = {}
-local isEnabled = false
+
+-- Usamos _G para gestionar el estado global
+_G.isEnabled = false
 
 local function increaseHitbox(coin)
     if not originalSizes[coin] then
@@ -574,7 +576,7 @@ local function applyHitboxToCoins(coinContainer)
 end
 
 local function toggleCoinSize(state)
-    isEnabled = state
+    _G.isEnabled = state
     if state then
         -- Aplicar el aumento de hitboxes a las monedas existentes
         for _, model in pairs(Workspace:GetChildren()) do
@@ -602,7 +604,7 @@ end
 
 -- Manejo de los eventos cuando el personaje del jugador cambia (muerte/respawn)
 local function onCharacterAdded()
-    if isEnabled then
+    if _G.isEnabled then
         toggleCoinSize(true)
     end
 end
@@ -616,7 +618,7 @@ Players.LocalPlayer.CharacterRemoving:Connect(onCharacterRemoved)
 
 RunService.Heartbeat:Connect(function()
     -- Verificar si el jugador muere
-    if isEnabled and not Players.LocalPlayer.Character then
+    if _G.isEnabled and not Players.LocalPlayer.Character then
         toggleCoinSize(false)
     end
 end)
@@ -1211,11 +1213,11 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local function calculatePingFactor()
     local ping = localplayer:GetNetworkPing() * 1000
     if ping > 150 then
-        return 1.3 -- Reduce precisión en alto ping
-    elseif ping > 100 then
         return 1.5
-    elseif ping > 50 then
+    elseif ping > 100 then
         return 1.3
+    elseif ping > 50 then
+        return 1.2
     else
         return 1.1
     end
@@ -1228,9 +1230,7 @@ local function predictTargetPosition(murderer)
         local distance = (localplayer.Character.HumanoidRootPart.Position - torso.Position).Magnitude
         local pingFactor = calculatePingFactor()
         local predictedPosition = torso.Position + (rootPart.Velocity * (distance / 200) * pingFactor)
-
-        -- Limitar la predicción en rangos pequeños
-        local maxOffset = 2
+        local maxOffset = 1.5
         if distance < 20 then
             predictedPosition = torso.Position
         else
@@ -1240,7 +1240,6 @@ local function predictTargetPosition(murderer)
                 math.clamp(predictedPosition.Z - torso.Position.Z, -maxOffset, maxOffset)
             )
         end
-
         return predictedPosition
     end
     return nil
@@ -1395,6 +1394,7 @@ local player = game.Players.LocalPlayer
 local character
 local knifeEquipped = false
 local auraActive = false
+local auraConnection
 
 CombateSection:NewToggle("Knife Aura", "ToggleInfo", function(state)
     savedConfig.Aura = state
@@ -1412,7 +1412,7 @@ function StartKnifeAura()
 
     local function equipKnife()
         if not knifeEquipped and player.Backpack:FindFirstChild("Knife") then
-            wait(0.3)
+            wait(0.2)
             player.Backpack.Knife.Parent = character
             knifeEquipped = true
         end
@@ -1420,7 +1420,7 @@ function StartKnifeAura()
 
     local function unequipKnife()
         if knifeEquipped and character:FindFirstChild("Knife") then
-            wait(0.3)
+            wait(0.2)
             character.Knife.Parent = player.Backpack
             knifeEquipped = false
         end
@@ -1444,31 +1444,42 @@ function StartKnifeAura()
     end
 
     local function handleAura()
-        if auraActive then
-            local target = attackNearbyPlayers()
-            if target then
-                equipKnife()
-                if knifeEquipped then
-                    -- Ejecutar ataque (simulación de clic del mouse)
-                    for _ = 1, 3 do
-                        game:GetService("VirtualInputManager"):SendMouseButtonEvent(0, 0, 0, true, game, false, 0)
-                        wait(0.2)
-                    end
+        if not auraActive or not character or not character:FindFirstChild("HumanoidRootPart") then
+            StopKnifeAura()
+            return
+        end
+
+        local target = attackNearbyPlayers()
+        if target then
+            equipKnife()
+            if knifeEquipped then
+                -- Ejecutar ataque (simulación de clic del mouse)
+                for _ = 1, 3 do
+                    game:GetService("VirtualInputManager"):SendMouseButtonEvent(0, 0, 0, true, game, false, 0)
+                    wait(0.2)
                 end
-            else
-                unequipKnife()
             end
+        else
+            unequipKnife()
         end
     end
 
-    -- Ejecutar repetidamente
-    RunService.Heartbeat:Connect(handleAura)
+    -- Asegurarse de no crear múltiples conexiones
+    if auraConnection then
+        auraConnection:Disconnect()
+    end
+    auraConnection = RunService.Heartbeat:Connect(handleAura)
 end
 
 function StopKnifeAura()
     auraActive = false
-    if knifeEquipped then
-        unequipKnife()
+    if knifeEquipped and character then
+        character.Knife.Parent = player.Backpack
+        knifeEquipped = false
+    end
+    if auraConnection then
+        auraConnection:Disconnect()
+        auraConnection = nil
     end
 end
 
@@ -1909,95 +1920,101 @@ end
     end)
     
 TeleportSection:NewToggle("TP Gun", "ToggleInfo", function(state)
-        savedConfig.tpgun1 = state
-        saveConfig(savedConfig)
-        local player = game.Players.LocalPlayer
-        local coreGui = game:GetService("CoreGui")
-        
-        local existingGui = coreGui:FindFirstChild("TPGUN")
+    savedConfig.tpgun1 = state
+    saveConfig(savedConfig)
+    local player = game.Players.LocalPlayer
+    local coreGui = game:GetService("CoreGui")
+    local existingGui = coreGui:FindFirstChild("TPGUN")
 
-        if state then
-            if not existingGui then
-                local screenGui = Instance.new("ScreenGui")
-                screenGui.Name = "TPGUN"
-                screenGui.Parent = coreGui
+    if state then
+        if not existingGui then
+            -- Crear la GUI
+            local screenGui = Instance.new("ScreenGui")
+            screenGui.Name = "TPGUN"
+            screenGui.Parent = coreGui
 
-                local button = Instance.new("TextButton")
-                local UICorner = Instance.new("UICorner")
+            local button = Instance.new("TextButton")
+            local UICorner = Instance.new("UICorner")
 
-                button.Name = "TPGUN"
-                button.Text = "Tp Gun"
-                button.Size = UDim2.new(0, 50, 0, 50)
-                button.Position = UDim2.new(1, -210, 0, 10)
-                button.Parent = screenGui
-                button.BackgroundTransparency = 0.6
-                button.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-                button.TextColor3 = Color3.fromRGB(255, 255, 255)
-                button.Draggable = true
+            -- Configuración del botón
+            button.Name = "TPGUNButton"
+            button.Text = "TP Gun"
+            button.Size = UDim2.new(0, 70, 0, 50)
+            button.Position = UDim2.new(1, -220, 0, 10)
+            button.Parent = screenGui
+            button.BackgroundTransparency = 0.5
+            button.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+            button.TextColor3 = Color3.fromRGB(255, 255, 255)
+            button.Draggable = true
 
-                UICorner.CornerRadius = UDim.new(0, 15)
-                UICorner.Parent = button
+            -- Bordes redondeados
+            UICorner.CornerRadius = UDim.new(0, 15)
+            UICorner.Parent = button
 
-                local function sendNotification(title, text, duration)
-                    game:GetService("StarterGui"):SetCore("SendNotification", {
-                        Title = title,
-                        Text = text,
-                        Duration = duration or 2,
-                    })
+            -- Función para enviar notificaciones
+            local function sendNotification(title, text, duration)
+                game:GetService("StarterGui"):SetCore("SendNotification", {
+                    Title = title,
+                    Text = text,
+                    Duration = duration or 3,
+                })
+            end
+
+            -- Resaltar el botón al hacer clic
+            local function onButtonClick()
+                button.BackgroundColor3 = Color3.fromRGB(173, 216, 230) -- Azul claro
+                wait(0.3)
+                button.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- Rojo
+            end
+
+            button.MouseButton1Click:Connect(onButtonClick)
+
+            -- Teletransportarse al arma caída
+            local function teleportToDroppedGun()
+                local character = player.Character or player.CharacterAdded:Wait()
+                local gunDrop = workspace:FindFirstChild("GunDrop", true)
+
+                if gunDrop and character.PrimaryPart then
+                    local belowGunPosition = gunDrop.CFrame * CFrame.new(0, -2, 0)
+                    local originalPosition = character.PrimaryPart.CFrame
+
+                    character:SetPrimaryPartCFrame(belowGunPosition)
+                    wait()
+                    character:SetPrimaryPartCFrame(originalPosition)
+
+                    sendNotification("Teletransportación exitosa", "Te has teletransportado temporalmente bajo el arma caída.")
+                else
+                    sendNotification("Teletransportación fallida", "No se encontró ningún arma caída o el personaje no está disponible.")
                 end
+            end
 
-                local function onButtonClick()
-                    button.BackgroundColor3 = Color3.fromRGB(173, 216, 230)
-                    wait(0.3)
-                    button.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-                end
+            button.MouseButton1Click:Connect(teleportToDroppedGun)
 
-                button.MouseButton1Click:Connect(onButtonClick)
-
-                local function teleportToDroppedGun()
-                    local character = player.Character or player.CharacterAdded:Wait()
+            -- Detección de armas caídas
+            local function detectGunDrop()
+                local gunDropDetected = false
+                while state and screenGui.Parent do
                     local gunDrop = workspace:FindFirstChild("GunDrop", true)
 
-                    if gunDrop then
-                        local originalPosition = character.PrimaryPart.CFrame
-                        local belowGunPosition = gunDrop.CFrame * CFrame.new(0, -2, 0)
-                        
-                        character:SetPrimaryPartCFrame(belowGunPosition)
-                        wait()
-                        character:SetPrimaryPartCFrame(originalPosition)
-
-                        sendNotification("Gun Found", "You have temporarily teleported under the fallen gun.")
-                    else
-                        sendNotification("Teleportation Failed", "There is no dropped gun to teleport to.")
+                    if gunDrop and not gunDropDetected then
+                        sendNotification("Arma detectada", "Se ha detectado un arma caída en el mapa. ¡Presiona el botón para teletransportarte!")
+                        gunDropDetected = true
+                    elseif not gunDrop and gunDropDetected then
+                        sendNotification("Arma recogida", "El arma caída ha sido recogida por otro jugador.")
+                        gunDropDetected = false
                     end
+                    wait(1)
                 end
-
-                button.MouseButton1Click:Connect(teleportToDroppedGun)
-
-                local function detectGunDrop()
-                    local gunDropDetected = false
-                    while state and screenGui.Parent do
-                        local gunDrop = workspace:FindFirstChild("GunDrop", true)
-
-                        if gunDrop and not gunDropDetected then
-                            sendNotification("Dropped Gun Detected", "A dropped Gun has been detected on the map.")
-                            gunDropDetected = true
-                        elseif not gunDrop and gunDropDetected then
-                            sendNotification("Gun Picked Up", "The dropped Gun has been picked up by another player.")
-                            gunDropDetected = false
-                        end
-                        wait(1)
-                    end
-                end
-
-                spawn(detectGunDrop)
             end
-        else
-            if existingGui then
-                existingGui:Destroy()
-            end
+
+            spawn(detectGunDrop)
         end
-    end)
+    else
+        if existingGui then
+            existingGui:Destroy()
+        end
+    end
+end)
     
 TeleportSection:NewToggle("Auto grab Gun", "ToggleInfo", function(state)
         savedConfig.grabGun = state
@@ -2521,10 +2538,10 @@ local Roles = {Sheriff = nil, Murderer = nil, Hero = nil}
 local espEnabled = false
 local lastRoles = {}
 
-VisualSection:NewSlider("ESP transparency setting (interior)", "SliderInfo", 1, 0, function(value)
-        sliderValue = value
-        UpdateHighlights()
-    end)
+VisualSection:NewSlider("ESP transparency setting (interior)", "SliderInfo", 9, 0, function(value)
+    sliderValue = value / 10
+    UpdateHighlights()
+end)
 
 function IsAlive(Player)
     return Roles[Player.Name] and not Roles[Player.Name].Killed and not Roles[Player.Name].Dead
@@ -2647,167 +2664,298 @@ function RoleCheckLoop()
 end
 
 VisualSection:NewToggle("ESP Players", "ToggleInfo", function(state)
-        savedConfig.espp = state
-        saveConfig(savedConfig)
+    savedConfig.espp = state
+    saveConfig(savedConfig)
 
-        espEnabled = state
-        if espEnabled then
-            spawn(RoleCheckLoop)
-        else
-            RemoveHighlights()
-        end
-    end)
+    espEnabled = state
+    if espEnabled then
+        spawn(RoleCheckLoop)
+    else
+        RemoveHighlights()
+    end
+end)
 
-VisualSection:NewToggle("ESP Tracer", "ToggleInfo", function(state)
-        savedConfig.tracer12 = state
-        saveConfig(savedConfig)
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
 
-        local ReplicatedStorage = game:GetService("ReplicatedStorage")
-        local Players = game:GetService("Players")
-        local RunService = game:GetService("RunService")
-        local LP = Players.LocalPlayer
-        local tracers = {}
-        local Sheriff, Murderer, Hero
-        local lastRoleSearch = 0
-        local searchInterval = 2
-        local tracerConnection, playerRemovingConnection, playerAddedConnection, charAddedConnection
+local roles = {}
+local LocalPlayer = Players.LocalPlayer
+_G.Cheamesp = false
 
-        -- Crear trazador
-        local function CreateTracer(player)
-            if not tracers[player] then
-                local tracer = Drawing.new("Line")
-                tracer.Thickness = 2
-                tracer.Transparency = 1
-                tracers[player] = tracer
-            end
-        end
+local roleColors = {
+    Sheriff = BrickColor.new(0, 0, 255),
+    Murderer = BrickColor.new(255, 0, 0),
+    Hero = BrickColor.new(255, 255, 0),
+    None = BrickColor.new(0, 255, 0)
+}
 
-        -- Remover trazador
-        local function RemoveTracer(player)
-            if tracers[player] then
-                tracers[player]:Remove()
-                tracers[player] = nil
-            end
-        end
+local playerAdornments = {}
+local lastUpdate = 0
 
-        -- Actualizar roles
-        local function UpdateRoles()
-            local success, roleData = pcall(function()
-                return ReplicatedStorage:FindFirstChild("GetPlayerData", true):InvokeServer()
-            end)
-            if success then
-                Sheriff, Murderer, Hero = nil, nil, nil
-                for playerName, data in pairs(roleData) do
-                    if data.Role == "Murderer" then
-                        Murderer = playerName
-                    elseif data.Role == "Sheriff" then
-                        Sheriff = playerName
-                    elseif data.Role == "Hero" then
-                        Hero = playerName
-                    end
+local function applyRoleColor(character, role)
+    local color = roleColors[role] or roleColors.None
+    if character then
+        for _, part in pairs(character:GetChildren()) do
+            if part:IsA("Part") or part:IsA("MeshPart") then
+                if not playerAdornments[character] then
+                    playerAdornments[character] = {}
                 end
-            else
-                warn("No se pudo obtener los datos del rol.")
-            end
-        end
-
-        -- Actualizar trazadores
-        local function UpdateTracers()
-            local camera = workspace.CurrentCamera
-            local viewportSize = camera.ViewportSize
-
-            for player, tracer in pairs(tracers) do
-                if player.Character and player.Character:FindFirstChild("HumanoidRootPart") and player.Character:FindFirstChild("Humanoid") then
-                    local humanoid = player.Character.Humanoid
-                    local rootPart = player.Character.HumanoidRootPart
-                    local screenPos, onScreen = camera:WorldToViewportPoint(rootPart.Position)
-
-                    if humanoid.Health > 0 and onScreen and (player.Name == Sheriff or player.Name == Murderer or player.Name == Hero) then
-                        tracer.From = Vector2.new(viewportSize.X / 2, viewportSize.Y)
-                        tracer.To = Vector2.new(screenPos.X, screenPos.Y)
-                        tracer.Color = (player.Name == Sheriff and Color3.fromRGB(0, 0, 255)) 
-                            or (player.Name == Murderer and Color3.fromRGB(255, 0, 0)) 
-                            or Color3.fromRGB(255, 255, 0)
-                        tracer.Visible = true
-                    else
-                        tracer.Visible = false
-                    end
+                local existingAdornment = playerAdornments[character][part]
+                if not existingAdornment then
+                    local adornment = Instance.new("BoxHandleAdornment", part)
+                    adornment.Name = "espAdornment"
+                    adornment.Size = part.Size
+                    adornment.Color = color
+                    adornment.Transparency = 0.8
+                    adornment.AlwaysOnTop = true
+                    adornment.Visible = true
+                    adornment.Adornee = part
+                    adornment.ZIndex = true
+                    playerAdornments[character][part] = adornment
                 else
-                    RemoveTracer(player)
+                    existingAdornment.Color = color
                 end
             end
         end
+    end
+end
 
-        -- Manejar trazadores
-        local function ManageTracers(enabled)
-            if enabled then
-                -- Crear trazadores para todos los jugadores actuales
-                for _, player in pairs(Players:GetPlayers()) do
-                    if player ~= LP then
-                        CreateTracer(player)
+local function onPlayerDeath(player)
+    if player.Character then
+        for _, part in pairs(player.Character:GetChildren()) do
+            if part:IsA("Part") or part:IsA("MeshPart") then
+                local adornment = playerAdornments[player.Character] and playerAdornments[player.Character][part]
+                if adornment then
+                    adornment:Destroy()
+                    playerAdornments[player.Character][part] = nil
+                end
+            end
+        end
+    end
+end
+
+Players.PlayerAdded:Connect(function(player)
+    player.CharacterAdded:Connect(function(character)
+        if player == LocalPlayer then return end
+        if _G.Cheamesp then
+            if roles then
+                for i, v in pairs(roles) do
+                    if player.Name == i then
+                        applyRoleColor(character, v.Role)
+                        break
                     end
                 end
-
-                -- Conexión para actualizaciones periódicas
-                tracerConnection = RunService.RenderStepped:Connect(function()
-                    UpdateTracers()
-                    if tick() - lastRoleSearch >= searchInterval then
-                        UpdateRoles()
-                        lastRoleSearch = tick()
-                        searchInterval = (Sheriff or Murderer or Hero) and 2 or 3
-                    end
-                end)
-
-                -- Conexión para manejar jugadores que abandonan el juego
-                playerRemovingConnection = Players.PlayerRemoving:Connect(function(player)
-                    RemoveTracer(player)
-                end)
-
-                -- Conexión para manejar jugadores que se unen al juego
-                playerAddedConnection = Players.PlayerAdded:Connect(function(player)
-                    if player ~= LP then
-                        CreateTracer(player)
-                    end
-                end)
             else
-                -- Desconectar todas las conexiones activas
-                if tracerConnection then
-                    tracerConnection:Disconnect()
-                    tracerConnection = nil
-                end
-                if playerRemovingConnection then
-                    playerRemovingConnection:Disconnect()
-                    playerRemovingConnection = nil
-                end
-                if playerAddedConnection then
-                    playerAddedConnection:Disconnect()
-                    playerAddedConnection = nil
-                end
-
-                -- Eliminar todos los trazadores
-                for player, _ in pairs(tracers) do
-                    RemoveTracer(player)
-                end
-                tracers = {}
+                applyRoleColor(character, "None")
             end
         end
+        player.Character:WaitForChild("Humanoid").Died:Connect(function()
+            onPlayerDeath(player)
+        end)
+    end)
+end)
 
-        -- Gestionar reconexión al reaparecer
-        if charAddedConnection then
-            charAddedConnection:Disconnect()
+RunService.RenderStepped:Connect(function()
+    local currentTime = tick()
+    if currentTime - lastUpdate < 1 then return end
+    lastUpdate = currentTime
+    roles = ReplicatedStorage:FindFirstChild("GetPlayerData", true):InvokeServer()
+    if roles then
+        for _, player in pairs(Players:GetPlayers()) do
+            if player == LocalPlayer then continue end
+            if player.Character then
+                local character = player.Character
+                local roleAssigned = false
+                if _G.Cheamesp then
+                    for i, v in pairs(roles) do
+                        if player.Name == i then
+                            applyRoleColor(character, v.Role)
+                            roleAssigned = true
+                            break
+                        end
+                    end
+                end
+                if not roleAssigned and _G.Cheamesp then
+                    applyRoleColor(character, "None")
+                end
+            end
         end
-        charAddedConnection = LP.CharacterAdded:Connect(function()
-            RunService.Heartbeat:Wait()
+    end
+end)
+
+VisualSection:NewToggle("ESP Cheam", "ToggleInfo", function(state)
+    _G.Cheamesp = state
+    if not _G.Cheamesp then
+        for _, player in pairs(Players:GetPlayers()) do
+            if player.Character then
+                for _, part in pairs(player.Character:GetChildren()) do
+                    if part:IsA("Part") or part:IsA("MeshPart") then
+                        local adornment = playerAdornments[player.Character] and playerAdornments[player.Character][part]
+                        if adornment then
+                            adornment:Destroy()
+                            playerAdornments[player.Character][part] = nil
+                        end
+                    end
+                end
+            end
+        end
+    end
+end)
+VisualSection:NewToggle("ESP Tracer", "ToggleInfo", function(state)
+    savedConfig.tracer12 = state
+    saveConfig(savedConfig)
+
+    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+    local Players = game:GetService("Players")
+    local RunService = game:GetService("RunService")
+    local LP = Players.LocalPlayer
+    local tracers = {}
+    local Sheriff, Murderer, Hero
+    local lastRoleSearch = 0
+    local searchInterval = 2
+    local tracerConnection, playerRemovingConnection, playerAddedConnection
+
+    -- Inicialización de _G para mantener el estado global de los trazadores
+    _G.ESPTracers = _G.ESPTracers or {}
+
+    -- Crear trazador
+    local function CreateTracer(player)
+        if not tracers[player] then
+            local tracer = Drawing.new("Line")
+            tracer.Thickness = 2
+            tracer.Transparency = 1
+            tracers[player] = tracer
+        end
+    end
+
+    -- Eliminar trazador
+    local function RemoveTracer(player)
+        if tracers[player] then
+            tracers[player]:Remove()
+            tracers[player] = nil
+        end
+    end
+
+    -- Actualizar roles
+    local function UpdateRoles()
+        local success, roleData = pcall(function()
+            return ReplicatedStorage:FindFirstChild("GetPlayerData", true):InvokeServer()
+        end)
+        if success then
+            Sheriff, Murderer, Hero = nil, nil, nil
+            for playerName, data in pairs(roleData) do
+                if data.Role == "Murderer" then
+                    Murderer = playerName
+                elseif data.Role == "Sheriff" then
+                    Sheriff = playerName
+                elseif data.Role == "Hero" then
+                    Hero = playerName
+                end
+            end
+        else
+            warn("No se pudo obtener los datos del rol.")
+        end
+    end
+
+    -- Actualizar trazadores
+    local function UpdateTracers()
+        local camera = workspace.CurrentCamera
+        local viewportSize = camera.ViewportSize
+
+        for player, tracer in pairs(tracers) do
+            if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                local rootPart = player.Character.HumanoidRootPart
+                local screenPos, onScreen = camera:WorldToViewportPoint(rootPart.Position)
+
+                if onScreen and (player.Name == Sheriff or player.Name == Murderer or player.Name == Hero) then
+                    tracer.From = Vector2.new(viewportSize.X / 2, viewportSize.Y)
+                    tracer.To = Vector2.new(screenPos.X, screenPos.Y)
+                    tracer.Color = (player.Name == Sheriff and Color3.fromRGB(0, 0, 255)) 
+                        or (player.Name == Murderer and Color3.fromRGB(255, 0, 0)) 
+                        or Color3.fromRGB(255, 255, 0)
+                    tracer.Visible = true
+                else
+                    tracer.Visible = false
+                end
+            else
+                RemoveTracer(player)
+            end
+        end
+    end
+
+    -- Gestionar trazadores
+    local function ManageTracers(enabled)
+        if enabled then
+            -- Crear trazadores para los jugadores actuales
+            for _, player in pairs(Players:GetPlayers()) do
+                if player ~= LP then
+                    CreateTracer(player)
+                end
+            end
+
+            -- Conexión para actualizaciones periódicas
+            tracerConnection = RunService.RenderStepped:Connect(function()
+                UpdateTracers()
+                if tick() - lastRoleSearch >= searchInterval then
+                    UpdateRoles()
+                    lastRoleSearch = tick()
+                    searchInterval = (Sheriff or Murderer or Hero) and 2 or 3
+                end
+            end)
+
+            -- Conexión para manejar jugadores que abandonan el juego
+            playerRemovingConnection = Players.PlayerRemoving:Connect(function(player)
+                RemoveTracer(player)
+            end)
+
+            -- Conexión para manejar jugadores que se unen al juego
+            playerAddedConnection = Players.PlayerAdded:Connect(function(player)
+                if player ~= LP then
+                    CreateTracer(player)
+                end
+            end)
+
+            -- Guardar el estado en _G.ESPTracers
+            _G.ESPTracers = tracers
+        else
+            -- Desconectar todas las conexiones activas
+            if tracerConnection then
+                tracerConnection:Disconnect()
+                tracerConnection = nil
+            end
+            if playerRemovingConnection then
+                playerRemovingConnection:Disconnect()
+                playerRemovingConnection = nil
+            end
+            if playerAddedConnection then
+                playerAddedConnection:Disconnect()
+                playerAddedConnection = nil
+            end
+
+            -- Eliminar todos los trazadores
             for player, _ in pairs(tracers) do
                 RemoveTracer(player)
             end
             tracers = {}
-            ManageTracers(savedConfig.tracer12)
-        end)
 
-        -- Activar/desactivar trazadores según el estado del toggle
-        ManageTracers(state)
+            -- Limpiar el estado global de los trazadores en _G.ESPTracers
+            _G.ESPTracers = nil
+        end
+    end
+
+    -- Reconexión al reaparecer
+    LP.CharacterAdded:Connect(function()
+        for player, _ in pairs(tracers) do
+            RemoveTracer(player)
+        end
+        tracers = {}
+        ManageTracers(savedConfig.tracer12)
     end)
+
+    -- Activar/desactivar trazadores según el estado del toggle
+    ManageTracers(state)
+end)
 
 VisualSection:NewToggle("ESP Gun", "ToggleInfo", function(state)
         savedConfig.espgun12 = state
@@ -4150,17 +4298,25 @@ local isGravityActive = false
 local speedConnection
 local jumpConnection
 
+-- Configuración inicial
 game.Workspace.Gravity = defaultGravity
 
-LocalPlayerSection:NewSlider("Gravity", 0, 1000, defaultGravity, function(value)
-    game.Workspace.Gravity = value
+-- Actualizar gravedad desde un TextBox
+LocalPlayerSection:NewTextBox("Gravity", "Enter a value", function(value)
+    local numericValue = tonumber(value)
+    if numericValue then
+        game.Workspace.Gravity = numericValue
+    else
+        warn("Invalid input. Please enter a number.")
+    end
 end)
 
 LocalPlayerSection:NewToggle("Gravity loop", "ToggleInfo", function(state)
-        isGravityActive = state
-        game.Workspace.Gravity = state and increasedGravity or defaultGravity
-    end)
+    isGravityActive = state
+    game.Workspace.Gravity = state and increasedGravity or defaultGravity
+end)
 
+-- Función para actualizar la velocidad de movimiento
 local function updateWalkSpeed(value)
     local player = game:GetService("Players").LocalPlayer
     if player.Character and player.Character:FindFirstChildOfClass("Humanoid") then
@@ -4168,32 +4324,39 @@ local function updateWalkSpeed(value)
     end
 end
 
-LocalPlayerSection:NewSlider("Speed", 18, 30, savedConfig.Walkspeed or 18, function(value)
-    getgenv().Walkspeed = value
-    updateWalkSpeed(value)
-    savedConfig.Walkspeed = value
-    saveConfig(savedConfig)
+-- Actualizar velocidad desde un TextBox
+LocalPlayerSection:NewTextBox("Speed", "Enter a value", function(value)
+    local numericValue = tonumber(value)
+    if numericValue then
+        getgenv().Walkspeed = numericValue
+        updateWalkSpeed(numericValue)
+        savedConfig.Walkspeed = numericValue
+        saveConfig(savedConfig)
+    else
+        warn("Invalid input. Please enter a number.")
+    end
 end)
 
 LocalPlayerSection:NewToggle("Loop speed", "ToggleInfo", function(state)
-        getgenv().loopW = state
-        savedConfig.loopW = state
-        saveConfig(savedConfig)
-        
-        if state then
-            if not speedConnection then
-                speedConnection = game:GetService("RunService").Heartbeat:Connect(function()
-                    if getgenv().loopW then
-                        updateWalkSpeed(getgenv().Walkspeed)
-                    end
-                end)
-            end
-        elseif speedConnection then
-            speedConnection:Disconnect()
-            speedConnection = nil
-        end
-    end)
+    getgenv().loopW = state
+    savedConfig.loopW = state
+    saveConfig(savedConfig)
 
+    if state then
+        if not speedConnection then
+            speedConnection = game:GetService("RunService").Heartbeat:Connect(function()
+                if getgenv().loopW then
+                    updateWalkSpeed(getgenv().Walkspeed)
+                end
+            end)
+        end
+    elseif speedConnection then
+        speedConnection:Disconnect()
+        speedConnection = nil
+    end
+end)
+
+-- Función para actualizar la potencia de salto
 local function updateJumpPower(value)
     local player = game:GetService("Players").LocalPlayer
     if player.Character and player.Character:FindFirstChildOfClass("Humanoid") then
@@ -4201,31 +4364,37 @@ local function updateJumpPower(value)
     end
 end
 
-LocalPlayerSection:NewSlider("Power Jump", 53, 200, savedConfig.Jumppower or 53, function(value)
-    getgenv().Jumppower = value
-    updateJumpPower(value)
-    savedConfig.Jumppower = value
-    saveConfig(savedConfig)
+-- Actualizar potencia de salto desde un TextBox
+LocalPlayerSection:NewTextBox("Power Jump", "Enter a value", function(value)
+    local numericValue = tonumber(value)
+    if numericValue then
+        getgenv().Jumppower = numericValue
+        updateJumpPower(numericValue)
+        savedConfig.Jumppower = numericValue
+        saveConfig(savedConfig)
+    else
+        warn("Invalid input. Please enter a number.")
+    end
 end)
 
 LocalPlayerSection:NewToggle("Power Jump/Loop", "ToggleInfo", function(state)
-        getgenv().loopJ = state
-        savedConfig.loopJ = state
-        saveConfig(savedConfig)
+    getgenv().loopJ = state
+    savedConfig.loopJ = state
+    saveConfig(savedConfig)
 
-        if state then
-            if not jumpConnection then
-                jumpConnection = game:GetService("RunService").Heartbeat:Connect(function()
-                    if getgenv().loopJ then
-                        updateJumpPower(getgenv().Jumppower)
-                    end
-                end)
-            end
-        elseif jumpConnection then
-            jumpConnection:Disconnect()
-            jumpConnection = nil
+    if state then
+        if not jumpConnection then
+            jumpConnection = game:GetService("RunService").Heartbeat:Connect(function()
+                if getgenv().loopJ then
+                    updateJumpPower(getgenv().Jumppower)
+                end
+            end)
         end
-    end)
+    elseif jumpConnection then
+        jumpConnection:Disconnect()
+        jumpConnection = nil
+    end
+end)
 
 LocalPlayerSection:NewToggle("Infinite Jump", "ToggleInfo", function(state)
         savedConfig.jumpi = state
@@ -4242,6 +4411,8 @@ LocalPlayerSection:NewToggle("Infinite Jump", "ToggleInfo", function(state)
         end)
     end)
 
+local CoreGui = game:GetService("CoreGui")
+
 CoreGui:SetCore("SendNotification", {
     Title = "v10.0.0",
     Text = "I already loaded the script completely",
@@ -4251,7 +4422,7 @@ CoreGui:SetCore("SendNotification", {
 
 CoreGui:SetCore("SendNotification", {
     Title = "",
-    Text = "did you know this script was made by one dev?",
+    Text = "Did you know this script was made by one dev?",
     Duration = 8,
 })
 
