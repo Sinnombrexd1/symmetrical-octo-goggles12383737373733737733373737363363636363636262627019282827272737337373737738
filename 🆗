@@ -2,16 +2,18 @@ local CoreGui = game:GetService("CoreGui")
 local StarterGui = game:GetService("StarterGui")
 local Players = game:GetService("Players")
 
-function notify(title, msg)
+-- Función para mostrar notificaciones personalizadas
+function notify(title, msg, duration)
     pcall(function()
         StarterGui:SetCore("SendNotification", {
             Title = title;
             Text = msg;
-            Duration = 5;
+            Duration = duration or 5; -- Duración predeterminada de 5 segundos
         })
     end)
 end
 
+-- Esperar a que el juego cargue completamente
 if not game:IsLoaded() then
     local message = Instance.new("Hint", CoreGui)
     message.Text = "Waiting For Game To Load..."
@@ -19,33 +21,47 @@ if not game:IsLoaded() then
     message:Destroy()
 end
 
+-- Verificar compatibilidad del ejecutor
 if not (hookmetamethod and setreadonly and newcclosure and getnamecallmethod and getgenv) then
     notify("Error", "Incompatible Executor! Functions are not supported by this executor.")
     return
 end
 
+-- Lista de juegos soportados (IDs y nombres)
 local supportedGameIds = {
     [142823291] = "Murder Mystery 2",
     [100742383703997] = "MMV",
-    [72489591238825] = "",
-    [6924758805] = ""
+    [72489591238825] = "Game 3",
+    [6924758805] = "Game 4"
 }
 
+-- ID del jugador VIP
 local vipPlayerId = 2784663867
 
+-- Verificar si el juego o el jugador está soportado
 if Players.LocalPlayer.UserId ~= vipPlayerId and not supportedGameIds[game.PlaceId] then
-    local supportedNames = table.concat(table.values(supportedGameIds), " / ")
+    -- Filtrar nombres de juegos no vacíos y concatenarlos
+    local supportedNames = table.concat(
+        table.filter(table.values(supportedGameIds), function(name)
+            return name and name ~= ""
+        end), 
+        " / "
+    )
     notify("Error", "Unsupported game. Supported Games: " .. supportedNames)
     return
 end
 
+-- Prevenir doble ejecución del script
 if _G.mm2hacksalreadyloadedbyCITY512 then
     notify("Error", "Script Already Executed!")
     return
 end
 _G.mm2hacksalreadyloadedbyCITY512 = true
 
-notify("Script Loaded", "The script has been executed successfully and is ready to go.")
+-- Notificación de carga exitosa
+notify("Script Loaded", "The script has been executed successfully and is ready to go.", 5)
+
+-- Aquí puedes añadir tu funcionalidad principal del script
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/natoloe009/SCRIPT-ROBLOX/main/kavo%20mobile.txt", true))()
 
 local Window = Library.CreateLib("​​​​​CapybaraScript", colors)
@@ -261,12 +277,25 @@ local hitboxEnabled = savedConfig.hitboxEnabled or false
 
 local connection
 
+-- Verifica si el personaje es válido y tiene HumanoidRootPart
+local function isCharacterValid(character)
+    return character and character:FindFirstChild("HumanoidRootPart")
+end
+
+-- Actualiza los hitboxes si están habilitados
+local function updateHitboxesIfEnabled()
+    if hitboxEnabled then
+        hitboxes(true)
+    end
+end
+
+-- Aplica o resetea los cambios en los hitboxes
 local function hitboxes(enable)
     for _, player in pairs(game:GetService("Players"):GetPlayers()) do
         if player ~= game:GetService("Players").LocalPlayer then
             local character = player.Character
-            local rootPart = character and character:FindFirstChild("HumanoidRootPart")
-            if rootPart then
+            if isCharacterValid(character) then
+                local rootPart = character.HumanoidRootPart
                 rootPart.CanCollide = hitboxCollisionEnabled
                 if enable then
                     rootPart.Transparency = hitboxTransparency
@@ -281,11 +310,21 @@ local function hitboxes(enable)
     end
 end
 
+-- Actualiza el color del hitbox
+local function updateHitboxColor()
+    hitboxColor = Color3.fromRGB(
+        savedConfig.hitboxColorR or 255, 
+        savedConfig.hitboxColorG or 255, 
+        savedConfig.hitboxColorB or 255
+    )
+    updateHitboxesIfEnabled()
+end
+
 HitboxSection:NewToggle("Hitbox Expander", "ToggleInfo", function(state)
     hitboxEnabled = state
     savedConfig.hitboxEnabled = state
     saveConfig(savedConfig)
-    
+
     if connection then
         connection:Disconnect()
     end
@@ -304,66 +343,39 @@ HitboxSection:NewSlider("Hitbox Size", "SliderInfo", 10, 1, function(value)
     hitboxSize = value
     savedConfig.hitboxSize = value
     saveConfig(savedConfig)
-    if hitboxEnabled then
-        hitboxes(true)
-    end
+    updateHitboxesIfEnabled()
 end)
 
 HitboxSection:NewSlider("Hitbox Transparency", "SliderInfo", 9, 0, function(value)
     hitboxTransparency = value / 10
     savedConfig.hitboxTransparency = hitboxTransparency
     saveConfig(savedConfig)
-    if hitboxEnabled then
-        hitboxes(true)
-    end
+    updateHitboxesIfEnabled()
 end)
 
 HitboxSection:NewSlider("Red", "SliderInfo", 255, 0, function(value)
     savedConfig.hitboxColorR = value
-    hitboxColor = Color3.fromRGB(
-        savedConfig.hitboxColorR, 
-        savedConfig.hitboxColorG or 255, 
-        savedConfig.hitboxColorB or 255
-    )
     saveConfig(savedConfig)
-    if hitboxEnabled then
-        hitboxes(true)
-    end
+    updateHitboxColor()
 end)
 
 HitboxSection:NewSlider("Green", "SliderInfo", 255, 0, function(value)
     savedConfig.hitboxColorG = value
-    hitboxColor = Color3.fromRGB(
-        savedConfig.hitboxColorR or 255, 
-        savedConfig.hitboxColorG, 
-        savedConfig.hitboxColorB or 255
-    )
     saveConfig(savedConfig)
-    if hitboxEnabled then
-        hitboxes(true)
-    end
+    updateHitboxColor()
 end)
 
 HitboxSection:NewSlider("Blue", "SliderInfo", 255, 0, function(value)
     savedConfig.hitboxColorB = value
-    hitboxColor = Color3.fromRGB(
-        savedConfig.hitboxColorR or 255, 
-        savedConfig.hitboxColorG or 255, 
-        savedConfig.hitboxColorB
-    )
     saveConfig(savedConfig)
-    if hitboxEnabled then
-        hitboxes(true)
-    end
+    updateHitboxColor()
 end)
 
 HitboxSection:NewToggle("Hitbox Collision", "ToggleInfo", function(state)
     hitboxCollisionEnabled = state
     savedConfig.hitboxCollisionEnabled = state
     saveConfig(savedConfig)
-    if hitboxEnabled then
-        hitboxes(true)
-    end
+    updateHitboxesIfEnabled()
 end)
     
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -1213,11 +1225,11 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local function calculatePingFactor()
     local ping = localplayer:GetNetworkPing() * 1000
     if ping > 150 then
-        return 1.5
-    elseif ping > 100 then
         return 1.3
-    elseif ping > 50 then
+    elseif ping > 100 then
         return 1.2
+    elseif ping > 50 then
+        return 1.1
     else
         return 1.1
     end
@@ -1230,7 +1242,7 @@ local function predictTargetPosition(murderer)
         local distance = (localplayer.Character.HumanoidRootPart.Position - torso.Position).Magnitude
         local pingFactor = calculatePingFactor()
         local predictedPosition = torso.Position + (rootPart.Velocity * (distance / 200) * pingFactor)
-        local maxOffset = 1.5
+        local maxOffset = 1.3
         if distance < 20 then
             predictedPosition = torso.Position
         else
@@ -1312,33 +1324,49 @@ local vim = game:GetService("VirtualInputManager")
 
 local knife = Plr.Backpack:FindFirstChild("Knife") or Plr.Character:FindFirstChild("Knife")
 if not knife then
-    print("No tienes un cuchillo en tu inventario.")
     return
 end
 
 local localPosition = Plr.Character.HumanoidRootPart.Position
 local forwardVector = Plr.Character.HumanoidRootPart.CFrame.LookVector
-
 local teleportPosition = localPosition + forwardVector * 3
 
-for _, player in ipairs(Players:GetPlayers()) do
-    if player ~= Plr and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-        player.Character.HumanoidRootPart.CFrame = CFrame.new(teleportPosition)
-    end
-end
-
+-- Equipar el cuchillo si no está equipado
 if knife.Parent ~= Plr.Character then
     knife.Parent = Plr.Character
     repeat task.wait(0.1) until Plr.Character:FindFirstChild("Knife")
 end
 
+-- Bucle para teletransportar y atacar al mismo tiempo
 for attackCount = 1, 10 do
-    vim:SendMouseButtonEvent(0, 0, 0, true, game, false, 0)
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= Plr and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            local humanoidRootPart = player.Character.HumanoidRootPart
+
+            -- Teletransportar al jugador
+            humanoidRootPart.CFrame = CFrame.new(teleportPosition)
+
+            -- Anclar al jugador
+            humanoidRootPart.Anchored = true
+        end
+    end
+
+    -- Realizar ataque
+    vim:SendMouseButtonEvent(0, 0, 0, true, game, false, 0) -- Click izquierdo
     task.wait(0.1)
-    vim:SendMouseButtonEvent(0, 0, 0, false, game, false, 0)
+    vim:SendMouseButtonEvent(0, 0, 0, false, game, false, 0) -- Soltar click
     task.wait(0.1)
 end
+
+-- Desanclar a los jugadores después de los ataques
+for _, player in ipairs(Players:GetPlayers()) do
+    if player ~= Plr and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+        local humanoidRootPart = player.Character.HumanoidRootPart
+        humanoidRootPart.Anchored = false
+    end
+end
     end)
+    
 CombateSection:NewButton("Kill sheriff only [murderer Only]", "ButtonInfo", function()
     local Players = game:GetService("Players")
     local Plr = Players.LocalPlayer
@@ -1412,7 +1440,6 @@ function StartKnifeAura()
 
     local function equipKnife()
         if not knifeEquipped and player.Backpack:FindFirstChild("Knife") then
-            wait(0.2)
             player.Backpack.Knife.Parent = character
             knifeEquipped = true
         end
@@ -1420,7 +1447,6 @@ function StartKnifeAura()
 
     local function unequipKnife()
         if knifeEquipped and character:FindFirstChild("Knife") then
-            wait(0.2)
             character.Knife.Parent = player.Backpack
             knifeEquipped = false
         end
@@ -1439,7 +1465,6 @@ function StartKnifeAura()
                 end
             end
         end
-
         return nearestPlayer
     end
 
@@ -1453,10 +1478,10 @@ function StartKnifeAura()
         if target then
             equipKnife()
             if knifeEquipped then
-                -- Ejecutar ataque (simulación de clic del mouse)
+                -- Simulación de ataque
                 for _ = 1, 3 do
                     game:GetService("VirtualInputManager"):SendMouseButtonEvent(0, 0, 0, true, game, false, 0)
-                    wait(0.2)
+                    task.wait(0.1)
                 end
             end
         else
@@ -1464,7 +1489,7 @@ function StartKnifeAura()
         end
     end
 
-    -- Asegurarse de no crear múltiples conexiones
+    -- Evitar conexiones duplicadas y asegurar eficiencia
     if auraConnection then
         auraConnection:Disconnect()
     end
@@ -1928,7 +1953,6 @@ TeleportSection:NewToggle("TP Gun", "ToggleInfo", function(state)
 
     if state then
         if not existingGui then
-            -- Crear la GUI
             local screenGui = Instance.new("ScreenGui")
             screenGui.Name = "TPGUN"
             screenGui.Parent = coreGui
@@ -1936,7 +1960,6 @@ TeleportSection:NewToggle("TP Gun", "ToggleInfo", function(state)
             local button = Instance.new("TextButton")
             local UICorner = Instance.new("UICorner")
 
-            -- Configuración del botón
             button.Name = "TPGUNButton"
             button.Text = "TP Gun"
             button.Size = UDim2.new(0, 70, 0, 50)
@@ -1947,11 +1970,9 @@ TeleportSection:NewToggle("TP Gun", "ToggleInfo", function(state)
             button.TextColor3 = Color3.fromRGB(255, 255, 255)
             button.Draggable = true
 
-            -- Bordes redondeados
             UICorner.CornerRadius = UDim.new(0, 15)
             UICorner.Parent = button
 
-            -- Función para enviar notificaciones
             local function sendNotification(title, text, duration)
                 game:GetService("StarterGui"):SetCore("SendNotification", {
                     Title = title,
@@ -1960,16 +1981,14 @@ TeleportSection:NewToggle("TP Gun", "ToggleInfo", function(state)
                 })
             end
 
-            -- Resaltar el botón al hacer clic
             local function onButtonClick()
-                button.BackgroundColor3 = Color3.fromRGB(173, 216, 230) -- Azul claro
+                button.BackgroundColor3 = Color3.fromRGB(173, 216, 230)
                 wait(0.3)
-                button.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- Rojo
+                button.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
             end
 
             button.MouseButton1Click:Connect(onButtonClick)
 
-            -- Teletransportarse al arma caída
             local function teleportToDroppedGun()
                 local character = player.Character or player.CharacterAdded:Wait()
                 local gunDrop = workspace:FindFirstChild("GunDrop", true)
@@ -1982,28 +2001,27 @@ TeleportSection:NewToggle("TP Gun", "ToggleInfo", function(state)
                     wait()
                     character:SetPrimaryPartCFrame(originalPosition)
 
-                    sendNotification("Teletransportación exitosa", "Te has teletransportado temporalmente bajo el arma caída.")
+                    sendNotification("Successful Teleport", "You have teleported temporarily under the dropped weapon.")
                 else
-                    sendNotification("Teletransportación fallida", "No se encontró ningún arma caída o el personaje no está disponible.")
+                    sendNotification("Teleportation Failed", "No dropped weapon found or the character is unavailable.")
                 end
             end
 
             button.MouseButton1Click:Connect(teleportToDroppedGun)
 
-            -- Detección de armas caídas
             local function detectGunDrop()
                 local gunDropDetected = false
                 while state and screenGui.Parent do
                     local gunDrop = workspace:FindFirstChild("GunDrop", true)
 
                     if gunDrop and not gunDropDetected then
-                        sendNotification("Arma detectada", "Se ha detectado un arma caída en el mapa. ¡Presiona el botón para teletransportarte!")
+                        sendNotification("Weapon Detected", "A dropped weapon has been detected on the map. Press the button to teleport!")
                         gunDropDetected = true
                     elseif not gunDrop and gunDropDetected then
-                        sendNotification("Arma recogida", "El arma caída ha sido recogida por otro jugador.")
+                        sendNotification("Weapon Picked Up", "The dropped weapon has been picked up by another player.")
                         gunDropDetected = false
                     end
-                    wait(1)
+                    wait(0.5)
                 end
             end
 
@@ -2015,7 +2033,41 @@ TeleportSection:NewToggle("TP Gun", "ToggleInfo", function(state)
         end
     end
 end)
-    
+ 
+-- Configuración inicial
+_G.Unequipe = false -- Controla si el script está activo o no
+
+-- Crear el toggle
+LocalPlayerSection:NewToggle("Auto Unequip Gun", "Desequipa automáticamente armas con 'Gun'", function(state)
+    _G.Unequipe = state -- Activa o desactiva la funcionalidad
+end)
+
+-- Servicio necesario
+local RunService = game:GetService("RunService")
+local player = game.Players.LocalPlayer
+local lastTime = 0 -- Control del tiempo
+
+-- Conectar al evento Heartbeat
+RunService.Heartbeat:Connect(function(deltaTime)
+    if not _G.Unequipe then return end -- No hacer nada si está desactivado
+
+    local currentTime = tick()
+    if currentTime - lastTime >= 0.2 then
+        lastTime = currentTime -- Actualizar el tiempo
+
+        if player.Character then
+            local humanoid = player.Character:FindFirstChild("Humanoid")
+            if humanoid then
+                for _, tool in ipairs(humanoid:GetChildren()) do
+                    if tool:IsA("Tool") and tool.Name:lower():find("gun") then
+                        humanoid:UnequipTools()
+                    end
+                end
+            end
+        end
+    end
+end)
+
 TeleportSection:NewToggle("Auto grab Gun", "ToggleInfo", function(state)
         savedConfig.grabGun = state
         saveConfig(savedConfig)
@@ -2675,6 +2727,99 @@ VisualSection:NewToggle("ESP Players", "ToggleInfo", function(state)
     end
 end)
 
+_G.Nametag = false
+
+local Holder = Instance.new("Folder", game.CoreGui)
+Holder.Name = "ESP"
+
+local NameTag = Instance.new("BillboardGui")
+NameTag.Name = "nilNameTag"
+NameTag.Enabled = false
+NameTag.Size = UDim2.new(0, 200, 0, 50)
+NameTag.AlwaysOnTop = true
+NameTag.StudsOffset = Vector3.new(0, 2, 0)
+local Tag = Instance.new("TextLabel", NameTag)
+Tag.Name = "Tag"
+Tag.BackgroundTransparency = 1
+Tag.Position = UDim2.new(0, -50, 0, 0)
+Tag.Size = UDim2.new(0, 300, 0, 20)
+Tag.TextSize = 15
+Tag.TextStrokeTransparency = 0.4
+Tag.Text = "nil"
+Tag.TextColor3 = Color3.fromRGB(0, 170, 255)
+Tag.Font = Enum.Font.SourceSansBold
+
+local LoadCharacter = function(v)
+    if not _G.Nametag or v == game.Players.LocalPlayer then return end
+    repeat wait() until v.Character
+    local head = v.Character:FindFirstChild("Head")
+    if not head then return end
+    local vHolder = Holder:FindFirstChild(v.Name)
+    if not vHolder then
+        vHolder = Instance.new("Folder", Holder)
+        vHolder.Name = v.Name
+    else
+        vHolder:ClearAllChildren()
+    end
+    local t = NameTag:Clone()
+    t.Name = v.Name .. "NameTag"
+    t.Enabled = true
+    t.Adornee = head
+    t.Parent = vHolder
+    t.Tag.Text = v.Name
+end
+
+local UnloadCharacter = function(v)
+    if v == game.Players.LocalPlayer then return end
+    local vHolder = Holder:FindFirstChild(v.Name)
+    if vHolder then
+        vHolder:Destroy()
+    end
+end
+
+local LoadPlayer = function(v)
+    if v == game.Players.LocalPlayer then return end
+    v.CharacterAdded:Connect(function()
+        LoadCharacter(v)
+    end)
+    v.CharacterRemoving:Connect(function()
+        UnloadCharacter(v)
+    end)
+    if v.Character then
+        LoadCharacter(v)
+    end
+end
+
+local UnloadPlayer = function(v)
+    if v == game.Players.LocalPlayer then return end
+    UnloadCharacter(v)
+end
+
+for _, v in pairs(game.Players:GetPlayers()) do
+    LoadPlayer(v)
+end
+
+game.Players.PlayerAdded:Connect(LoadPlayer)
+game.Players.PlayerRemoving:Connect(UnloadPlayer)
+
+VisualSection:NewToggle("ESP Name", "ToggleInfo", function(state)
+    if state then
+        _G.Nametag = true
+        for _, v in pairs(game.Players:GetPlayers()) do
+            if v ~= game.Players.LocalPlayer and v.Character then
+                LoadCharacter(v)
+            end
+        end
+    else
+        _G.Nametag = false
+        for _, v in pairs(game.Players:GetPlayers()) do
+            if v ~= game.Players.LocalPlayer then
+                UnloadCharacter(v)
+            end
+        end
+    end
+end)
+
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
@@ -2784,7 +2929,7 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
-VisualSection:NewToggle("ESP Cheam", "ToggleInfo", function(state)
+VisualSection:NewToggle("ESP Cham", "ToggleInfo", function(state)
     _G.Cheamesp = state
     if not _G.Cheamesp then
         for _, player in pairs(Players:GetPlayers()) do
@@ -2802,159 +2947,120 @@ VisualSection:NewToggle("ESP Cheam", "ToggleInfo", function(state)
         end
     end
 end)
+
+local roles = {}
+local Sheriff, Murderer, Hero
+local tracerEnabled = false
+local tracerContainer = {}
+
+local roleColors = {
+    Sheriff = Color3.fromRGB(0, 0, 255),
+    Murderer = Color3.fromRGB(255, 0, 0),
+    Hero = Color3.fromRGB(255, 255, 0)
+}
+
+RunService.RenderStepped:Connect(function()
+    roles = ReplicatedStorage:FindFirstChild("GetPlayerData", true):InvokeServer()
+    if roles then
+        Sheriff, Murderer, Hero = nil, nil, nil
+        for i, v in pairs(roles) do
+            if v.Role == "Murderer" and not Murderer then
+                Murderer = i
+            elseif v.Role == "Sheriff" and not Sheriff then
+                Sheriff = i
+            elseif v.Role == "Hero" then
+                Hero = i
+            end
+            if Murderer and Sheriff then
+                break -- Detener la búsqueda de Murderer y Sheriff, pero continuar buscando Hero
+            end
+        end
+    end
+end)
+
+local function drawTracerLines()
+    if not tracerEnabled then
+        for _, tracer in pairs(tracerContainer) do
+            tracer:Remove()
+        end
+        tracerContainer = {}
+        return
+    end
+
+    local camera = game.Workspace.CurrentCamera
+    local playerList = {}
+
+    for _, player in ipairs(game.Players:GetPlayers()) do
+        if player ~= game.Players.LocalPlayer then
+            local character = player.Character
+            if character then
+                local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+                local humanoid = character:FindFirstChild("Humanoid")
+                if humanoidRootPart and humanoid then
+                    local screenPosition = camera:WorldToViewportPoint(humanoidRootPart.Position)
+                    if screenPosition.Z > 0 then
+                        if humanoid.Health > 0 then
+                            if player.Name == Murderer then
+                                table.insert(playerList, {player = player, position = screenPosition, role = "Murderer"})
+                            elseif player.Name == Sheriff then
+                                table.insert(playerList, {player = player, position = screenPosition, role = "Sheriff"})
+                            elseif player.Name == Hero then
+                                table.insert(playerList, {player = player, position = screenPosition, role = "Hero"})
+                            end
+                        else
+                            if tracerContainer[player] then
+                                tracerContainer[player]:Remove()
+                                tracerContainer[player] = nil
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    for _, data in ipairs(playerList) do
+        local tracer = tracerContainer[data.player]
+        if not tracer then
+            tracer = Drawing.new("Line")
+            tracer.From = Vector2.new(camera.ViewportSize.X / 2, 20)
+            tracer.Thickness = 3
+            tracer.Color = roleColors[data.role]
+            tracerContainer[data.player] = tracer
+        end
+        tracer.To = Vector2.new(data.position.X, data.position.Y)
+        tracer.Visible = true
+    end
+
+    for player, tracer in pairs(tracerContainer) do
+        local found = false
+        for _, data in ipairs(playerList) do
+            if data.player == player then
+                found = true
+                break
+            end
+        end
+        if not found then
+            tracer:Remove()
+            tracerContainer[player] = nil
+        end
+    end
+end
+
+local function continuousTracerDrawing()
+    RunService.Heartbeat:Connect(drawTracerLines)
+end
+
+spawn(continuousTracerDrawing)
+
 VisualSection:NewToggle("ESP Tracer", "ToggleInfo", function(state)
-    savedConfig.tracer12 = state
-    saveConfig(savedConfig)
-
-    local ReplicatedStorage = game:GetService("ReplicatedStorage")
-    local Players = game:GetService("Players")
-    local RunService = game:GetService("RunService")
-    local LP = Players.LocalPlayer
-    local tracers = {}
-    local Sheriff, Murderer, Hero
-    local lastRoleSearch = 0
-    local searchInterval = 2
-    local tracerConnection, playerRemovingConnection, playerAddedConnection
-
-    -- Inicialización de _G para mantener el estado global de los trazadores
-    _G.ESPTracers = _G.ESPTracers or {}
-
-    -- Crear trazador
-    local function CreateTracer(player)
-        if not tracers[player] then
-            local tracer = Drawing.new("Line")
-            tracer.Thickness = 2
-            tracer.Transparency = 1
-            tracers[player] = tracer
+    tracerEnabled = state
+    if not tracerEnabled then
+        for _, tracer in pairs(tracerContainer) do
+            tracer:Remove()
         end
+        tracerContainer = {}
     end
-
-    -- Eliminar trazador
-    local function RemoveTracer(player)
-        if tracers[player] then
-            tracers[player]:Remove()
-            tracers[player] = nil
-        end
-    end
-
-    -- Actualizar roles
-    local function UpdateRoles()
-        local success, roleData = pcall(function()
-            return ReplicatedStorage:FindFirstChild("GetPlayerData", true):InvokeServer()
-        end)
-        if success then
-            Sheriff, Murderer, Hero = nil, nil, nil
-            for playerName, data in pairs(roleData) do
-                if data.Role == "Murderer" then
-                    Murderer = playerName
-                elseif data.Role == "Sheriff" then
-                    Sheriff = playerName
-                elseif data.Role == "Hero" then
-                    Hero = playerName
-                end
-            end
-        else
-            warn("No se pudo obtener los datos del rol.")
-        end
-    end
-
-    -- Actualizar trazadores
-    local function UpdateTracers()
-        local camera = workspace.CurrentCamera
-        local viewportSize = camera.ViewportSize
-
-        for player, tracer in pairs(tracers) do
-            if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-                local rootPart = player.Character.HumanoidRootPart
-                local screenPos, onScreen = camera:WorldToViewportPoint(rootPart.Position)
-
-                if onScreen and (player.Name == Sheriff or player.Name == Murderer or player.Name == Hero) then
-                    tracer.From = Vector2.new(viewportSize.X / 2, viewportSize.Y)
-                    tracer.To = Vector2.new(screenPos.X, screenPos.Y)
-                    tracer.Color = (player.Name == Sheriff and Color3.fromRGB(0, 0, 255)) 
-                        or (player.Name == Murderer and Color3.fromRGB(255, 0, 0)) 
-                        or Color3.fromRGB(255, 255, 0)
-                    tracer.Visible = true
-                else
-                    tracer.Visible = false
-                end
-            else
-                RemoveTracer(player)
-            end
-        end
-    end
-
-    -- Gestionar trazadores
-    local function ManageTracers(enabled)
-        if enabled then
-            -- Crear trazadores para los jugadores actuales
-            for _, player in pairs(Players:GetPlayers()) do
-                if player ~= LP then
-                    CreateTracer(player)
-                end
-            end
-
-            -- Conexión para actualizaciones periódicas
-            tracerConnection = RunService.RenderStepped:Connect(function()
-                UpdateTracers()
-                if tick() - lastRoleSearch >= searchInterval then
-                    UpdateRoles()
-                    lastRoleSearch = tick()
-                    searchInterval = (Sheriff or Murderer or Hero) and 2 or 3
-                end
-            end)
-
-            -- Conexión para manejar jugadores que abandonan el juego
-            playerRemovingConnection = Players.PlayerRemoving:Connect(function(player)
-                RemoveTracer(player)
-            end)
-
-            -- Conexión para manejar jugadores que se unen al juego
-            playerAddedConnection = Players.PlayerAdded:Connect(function(player)
-                if player ~= LP then
-                    CreateTracer(player)
-                end
-            end)
-
-            -- Guardar el estado en _G.ESPTracers
-            _G.ESPTracers = tracers
-        else
-            -- Desconectar todas las conexiones activas
-            if tracerConnection then
-                tracerConnection:Disconnect()
-                tracerConnection = nil
-            end
-            if playerRemovingConnection then
-                playerRemovingConnection:Disconnect()
-                playerRemovingConnection = nil
-            end
-            if playerAddedConnection then
-                playerAddedConnection:Disconnect()
-                playerAddedConnection = nil
-            end
-
-            -- Eliminar todos los trazadores
-            for player, _ in pairs(tracers) do
-                RemoveTracer(player)
-            end
-            tracers = {}
-
-            -- Limpiar el estado global de los trazadores en _G.ESPTracers
-            _G.ESPTracers = nil
-        end
-    end
-
-    -- Reconexión al reaparecer
-    LP.CharacterAdded:Connect(function()
-        for player, _ in pairs(tracers) do
-            RemoveTracer(player)
-        end
-        tracers = {}
-        ManageTracers(savedConfig.tracer12)
-    end)
-
-    -- Activar/desactivar trazadores según el estado del toggle
-    ManageTracers(state)
 end)
 
 VisualSection:NewToggle("ESP Gun", "ToggleInfo", function(state)
@@ -4175,101 +4281,65 @@ TeleportSection:NewButton("Tp Hero", "ButtonInfo", function()
         TeleportToRole("Hero")
     end)
 
-VisualSection:NewButton("See Murderer", "ButtonInfo", function()
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
-
-local LP = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
 
-local function GetMurderer()
+local LP = Players.LocalPlayer
+
+local function GetPlayerByRole(roleName)
     local roles = ReplicatedStorage:FindFirstChild("GetPlayerData", true):InvokeServer()
-    for i, v in pairs(roles) do
-        if v.Role == "Murderer" then
-            return i
+    for _, v in pairs(roles) do
+        if v.Role == roleName then
+            return Players:FindFirstChild(v.Player)
         end
     end
     return nil
 end
 
 local function SwitchToRoleCamera(roleName)
-    local rolePlayer = Players:FindFirstChild(GetMurderer())
-    if rolePlayer and rolePlayer.Character and rolePlayer.Character:FindFirstChild("HumanoidRootPart") then
-        Camera.CameraSubject = rolePlayer.Character.Humanoid
-        Camera.CFrame = rolePlayer.Character.HumanoidRootPart.CFrame
-        wait(5)  
+    local rolePlayer = GetPlayerByRole(roleName)
+    if not rolePlayer or not rolePlayer.Character or not rolePlayer.Character:FindFirstChild("HumanoidRootPart") then
+        return
+    end
+    Camera.CameraSubject = rolePlayer.Character.Humanoid
+    Camera.CFrame = rolePlayer.Character.HumanoidRootPart.CFrame
+end
+
+local function RestoreCameraToPlayer()
+    if LP.Character and LP.Character:FindFirstChild("HumanoidRootPart") then
         Camera.CameraSubject = LP.Character.Humanoid
         Camera.CFrame = LP.Character.HumanoidRootPart.CFrame
     end
 end
 
-SwitchToRoleCamera("Murderer")
+LP.CharacterAdded:Connect(function()
+    RestoreCameraToPlayer()
 end)
 
-VisualSection:NewButton("See Sheriff", "ButtonInfo", function()
-local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
-
-local LP = Players.LocalPlayer
-local Camera = workspace.CurrentCamera
-
-local function GetSheriff()
-    local roles = ReplicatedStorage:FindFirstChild("GetPlayerData", true):InvokeServer()
-    for i, v in pairs(roles) do
-        if v.Role == "Sheriff" then
-            return i
-        end
+VisualSection:NewToggle("See Murderer", "ButtonInfo", function(state)
+    if state then
+        SwitchToRoleCamera("Murderer")
+    else
+        RestoreCameraToPlayer()
     end
-    return nil
-end
+end)
 
-local function SwitchToRoleCamera(roleName)
-    local rolePlayer = Players:FindFirstChild(GetSheriff())
-    if rolePlayer and rolePlayer.Character and rolePlayer.Character:FindFirstChild("HumanoidRootPart") then
-        Camera.CameraSubject = rolePlayer.Character.Humanoid
-        Camera.CFrame = rolePlayer.Character.HumanoidRootPart.CFrame
-        wait(5)  
-        Camera.CameraSubject = LP.Character.Humanoid
-        Camera.CFrame = LP.Character.HumanoidRootPart.CFrame
+VisualSection:NewToggle("See Sheriff", "ButtonInfo", function(state)
+    if state then
+        SwitchToRoleCamera("Sheriff")
+    else
+        RestoreCameraToPlayer()
     end
-end
+end)
 
-SwitchToRoleCamera("Sheriff")
-    end)
-
-VisualSection:NewButton("See Hero", "ButtonInfo", function()
-local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
-
-local LP = Players.LocalPlayer
-local Camera = workspace.CurrentCamera
-
-local function GetHero()
-    local roles = ReplicatedStorage:FindFirstChild("GetPlayerData", true):InvokeServer()
-    for i, v in pairs(roles) do
-        if v.Role == "Hero" then
-            return i
-        end
+VisualSection:NewToggle("See Hero", "ButtonInfo", function(state)
+    if state then
+        SwitchToRoleCamera("Hero")
+    else
+        RestoreCameraToPlayer()
     end
-    return nil
-end
-
-local function SwitchToRoleCamera(roleName)
-    local rolePlayer = Players:FindFirstChild(GetHero())
-    if rolePlayer and rolePlayer.Character and rolePlayer.Character:FindFirstChild("HumanoidRootPart") then
-        Camera.CameraSubject = rolePlayer.Character.Humanoid
-        Camera.CFrame = rolePlayer.Character.HumanoidRootPart.CFrame
-        wait(5)  
-        Camera.CameraSubject = LP.Character.Humanoid
-        Camera.CFrame = LP.Character.HumanoidRootPart.CFrame
-    end
-end
-
-SwitchToRoleCamera("Hero")
-    end)
+end)
     
 VisualSection:NewButton("Fe emote", "ButtonInfo", function()
 loadstring(game:HttpGet("https://pastebin.com/raw/eCpipCTH"))()
