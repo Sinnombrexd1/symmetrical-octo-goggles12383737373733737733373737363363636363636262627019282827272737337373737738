@@ -32,7 +32,7 @@ local supportedGameIds = {
     [142823291] = "Murder Mystery 2",
     [100742383703997] = "MMV",
     [72489591238825] = "Game 3",
-    [6924758805] = "Game 4"
+    [96710304115593] = "MMV"
 }
 
 -- ID del jugador VIP
