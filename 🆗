@@ -2,18 +2,16 @@ local CoreGui = game:GetService("CoreGui")
 local StarterGui = game:GetService("StarterGui")
 local Players = game:GetService("Players")
 
--- Función para mostrar notificaciones personalizadas
 function notify(title, msg, duration)
     pcall(function()
         StarterGui:SetCore("SendNotification", {
             Title = title;
             Text = msg;
-            Duration = duration or 5; -- Duración predeterminada de 5 segundos
+            Duration = duration or 5;
         })
     end)
 end
 
--- Esperar a que el juego cargue completamente
 if not game:IsLoaded() then
     local message = Instance.new("Hint", CoreGui)
     message.Text = "Waiting For Game To Load..."
@@ -21,26 +19,21 @@ if not game:IsLoaded() then
     message:Destroy()
 end
 
--- Verificar compatibilidad del ejecutor
 if not (hookmetamethod and setreadonly and newcclosure and getnamecallmethod and getgenv) then
     notify("Error", "Incompatible Executor! Functions are not supported by this executor.")
     return
 end
 
--- Lista de juegos soportados (IDs y nombres)
 local supportedGameIds = {
     [142823291] = "Murder Mystery 2",
     [100742383703997] = "MMV",
     [72489591238825] = "Game 3",
-    [96710304115593] = "MMV"
+    [6924758805] = "Game 4"
 }
 
--- ID del jugador VIP
 local vipPlayerId = 2784663867
 
--- Verificar si el juego o el jugador está soportado
 if Players.LocalPlayer.UserId ~= vipPlayerId and not supportedGameIds[game.PlaceId] then
-    -- Filtrar nombres de juegos no vacíos y concatenarlos
     local supportedNames = table.concat(
         table.filter(table.values(supportedGameIds), function(name)
             return name and name ~= ""
@@ -51,19 +44,14 @@ if Players.LocalPlayer.UserId ~= vipPlayerId and not supportedGameIds[game.Place
     return
 end
 
--- Prevenir doble ejecución del script
-if _G.mm2hacksalreadyloadedbyCITY512 then
+if _G.Capy then
     notify("Error", "Script Already Executed!")
     return
 end
-_G.mm2hacksalreadyloadedbyCITY512 = true
+_G.Capy = true
 
--- Notificación de carga exitosa
 notify("Script Loaded", "The script has been executed successfully and is ready to go.", 5)
-
--- Aquí puedes añadir tu funcionalidad principal del script
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/natoloe009/SCRIPT-ROBLOX/main/kavo%20mobile.txt", true))()
-
 local Window = Library.CreateLib("​​​​​CapybaraScript", colors)
 
 local colors = {
@@ -74,44 +62,44 @@ local colors = {
     ElementColor = Color3.fromRGB(121, 85, 72)
 }
 
-local KaGaHUBScreen = Instance.new("ScreenGui")
-local KaGaHUBToggleUI = Instance.new("TextButton")
-local KaGaHUBCornerUI = Instance.new("UICorner")
-local KaGaHUBImageUI = Instance.new("ImageLabel")
-local KaGaHUBImageCornerUI = Instance.new("UICorner")
+local CapyScreen = Instance.new("ScreenGui")
+local CapyToggleUI = Instance.new("TextButton")
+local CapyCornerUI = Instance.new("UICorner")
+local CapyImageUI = Instance.new("ImageLabel")
+local CapyImageCornerUI = Instance.new("UICorner")
 
-KaGaHUBScreen.Name = "DANGGOHUBScreen"
-KaGaHUBScreen.Parent = game.CoreGui
-KaGaHUBScreen.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-KaGaHUBScreen.ResetOnSpawn = false
+CapyScreen.Name = "DANGGOHUBScreen"
+CapyScreen.Parent = game.CoreGui
+CapyScreen.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+CapyScreen.ResetOnSpawn = false
 
-KaGaHUBToggleUI.Name = "KaGaHUBToggleUI"
-KaGaHUBToggleUI.Parent = KaGaHUBScreen
-KaGaHUBToggleUI.BackgroundColor3 = Color3.fromRGB(31, 31, 31)
-KaGaHUBToggleUI.Position = UDim2.new(0.12, 0, 0.1, 0)
-KaGaHUBToggleUI.Size = UDim2.new(0, 40, 0, 40)
-KaGaHUBToggleUI.Text = ""
-KaGaHUBToggleUI.Draggable = true
-KaGaHUBToggleUI.MouseButton1Click:Connect(function()
+CapyToggleUI.Name = "CapyToggleUI"
+CapyToggleUI.Parent = CapyScreen
+CapyToggleUI.BackgroundColor3 = Color3.fromRGB(31, 31, 31)
+CapyToggleUI.Position = UDim2.new(0.12, 0, 0.1, 0)
+CapyToggleUI.Size = UDim2.new(0, 40, 0, 40)
+CapyToggleUI.Text = ""
+CapyToggleUI.Draggable = true
+CapyToggleUI.MouseButton1Click:Connect(function()
     if Library and Library.ToggleUI then
         Library:ToggleUI()
     end
 end)
 
-KaGaHUBCornerUI.Name = "KaGaHUBCornerUI"
-KaGaHUBCornerUI.CornerRadius = UDim.new(1, 0)
-KaGaHUBCornerUI.Parent = KaGaHUBToggleUI
+CapyCornerUI.Name = "CapyCornerUI"
+CapyCornerUI.CornerRadius = UDim.new(1, 0)
+CapyCornerUI.Parent = CapyToggleUI
 
-KaGaHUBImageUI.Name = "KaGaHUBImageUI"
-KaGaHUBImageUI.Parent = KaGaHUBToggleUI
-KaGaHUBImageUI.BackgroundColor3 = Color3.fromRGB(192, 192, 192)
-KaGaHUBImageUI.BorderSizePixel = 0
-KaGaHUBImageUI.Size = UDim2.new(1, 0, 1, 0)
-KaGaHUBImageUI.Image = "rbxassetid://98340377583067"
+CapyImageUI.Name = "CapyImageUI"
+CapyImageUI.Parent = CapyToggleUI
+CapyImageUI.BackgroundColor3 = Color3.fromRGB(192, 192, 192)
+CapyImageUI.BorderSizePixel = 0
+CapyImageUI.Size = UDim2.new(1, 0, 1, 0)
+CapyImageUI.Image = "rbxassetid://98340377583067"
 
-KaGaHUBImageCornerUI.Name = "KaGaHUBImageCornerUI"
-KaGaHUBImageCornerUI.CornerRadius = UDim.new(1, 0)
-KaGaHUBImageCornerUI.Parent = KaGaHUBImageUI
+CapyImageCornerUI.Name = "CapyImageCornerUI"
+CapyImageCornerUI.CornerRadius = UDim.new(1, 0)
+CapyImageCornerUI.Parent = CapyImageUI
 
 local CombateTab = Window:NewTab("Combat")
 local HitboxTab = Window:NewTab("Hitbox expander")
@@ -465,11 +453,18 @@ local function addHighlight(coin)
         highlight.OutlineColor = Color3.fromRGB(0, 255, 0)
         highlight.OutlineTransparency = 0
         highlights[coin] = highlight
+
+        coin.AncestryChanged:Connect(function(_, parent)
+            if not parent then
+                highlight:Destroy()
+                highlights[coin] = nil
+            end
+        end)
     end
 end
 
 local function removeHighlights()
-    for coin, highlight in pairs(highlights) do
+    for _, highlight in pairs(highlights) do
         if highlight and highlight.Parent then
             highlight:Destroy()
         end
@@ -505,16 +500,20 @@ end
 local function toggleCoinVisibility(state)
     if state then
         for _, model in ipairs(Workspace:GetChildren()) do
-            local coinContainer = model:FindFirstChild("CoinContainer")
-            if coinContainer then
-                applyHighlightToCoins(coinContainer)
+            if model:IsA("Model") then
+                local coinContainer = model:FindFirstChild("CoinContainer")
+                if coinContainer then
+                    applyHighlightToCoins(coinContainer)
+                end
             end
         end
 
         local workspaceChildAddedConnection = Workspace.ChildAdded:Connect(function(model)
-            local coinContainer = model:FindFirstChild("CoinContainer")
-            if coinContainer then
-                applyHighlightToCoins(coinContainer)
+            if model:IsA("Model") then
+                local coinContainer = model:FindFirstChild("CoinContainer")
+                if coinContainer then
+                    applyHighlightToCoins(coinContainer)
+                end
             end
         end)
 
@@ -525,7 +524,7 @@ local function toggleCoinVisibility(state)
     end
 end
 
-VisualSection:NewToggle("See coins", "ToggleInfo", function(state)
+VisualSection:NewToggle("See coins", "Toggle visibility of coins", function(state)
     savedConfig.coins = state
     saveConfig(savedConfig)
     toggleCoinVisibility(state)
@@ -537,60 +536,43 @@ local RunService = game:GetService("RunService")
 
 local originalSizes = {}
 local connections = {}
-local processedContainers = {}
 
--- Usamos _G para gestionar el estado global
-_G.isEnabled = false
-
+-- Función para aumentar el tamaño de la hitbox
 local function increaseHitbox(coin)
     if not originalSizes[coin] then
-        originalSizes[coin] = coin.Size
-        coin.Size = coin.Size * 5
+        originalSizes[coin] = coin.Size  -- Guardamos el tamaño original
+        coin.Size = coin.Size * 5        -- Aumentamos el tamaño
     end
 end
 
+-- Función para resetear el tamaño de todas las monedas
 local function resetHitboxes()
     for coin, originalSize in pairs(originalSizes) do
         if coin and coin.Parent then
-            coin.Size = originalSize
+            coin.Size = originalSize  -- Restablecemos el tamaño original
         end
     end
-    originalSizes = {}
+    originalSizes = {}  -- Limpiamos el registro
 end
 
-local function disconnectConnections()
-    for _, connection in pairs(connections) do
-        if connection and connection.Connected then
-            connection:Disconnect()
-        end
-    end
-    connections = {}
-    processedContainers = {}
-end
-
+-- Función para aplicar el cambio de hitbox a las monedas en contenedores
 local function applyHitboxToCoins(coinContainer)
-    if processedContainers[coinContainer] then return end
-    processedContainers[coinContainer] = true
-
     for _, coin in pairs(coinContainer:GetChildren()) do
         if coin:IsA("BasePart") and coin.Name == "Coin_Server" then
-            increaseHitbox(coin)
+            increaseHitbox(coin)  -- Aumentamos el hitbox de la moneda
         end
     end
-
-    local childAddedConnection = coinContainer.ChildAdded:Connect(function(child)
-        if child:IsA("BasePart") and child.Name == "Coin_Server" then
-            increaseHitbox(child)
-        end
-    end)
-
-    table.insert(connections, childAddedConnection)
 end
 
+-- Variable global para manejar el estado
+_G.isEnabled = false
+
+-- Función para activar o desactivar el cambio de hitbox
 local function toggleCoinSize(state)
     _G.isEnabled = state
+
     if state then
-        -- Aplicar el aumento de hitboxes a las monedas existentes
+        -- Aplicar el aumento de hitboxes a las monedas existentes en el Workspace
         for _, model in pairs(Workspace:GetChildren()) do
             local coinContainer = model:FindFirstChild("CoinContainer")
             if coinContainer then
@@ -607,43 +589,46 @@ local function toggleCoinSize(state)
         end)
 
         table.insert(connections, workspaceChildAddedConnection)
+
     else
-        -- Resetear los tamaños de las monedas y desconectar eventos
+        -- Resetear los tamaños de las monedas
         resetHitboxes()
-        disconnectConnections()
+        -- Desconectar eventos
+        for _, connection in pairs(connections) do
+            connection:Disconnect()
+        end
+        connections = {}
     end
 end
 
--- Manejo de los eventos cuando el personaje del jugador cambia (muerte/respawn)
-local function onCharacterAdded()
+-- Usar RenderStepped para verificar constantemente el estado de las monedas
+RunService.RenderStepped:Connect(function()
     if _G.isEnabled then
-        toggleCoinSize(true)
-    end
-end
-
-local function onCharacterRemoved()
-    toggleCoinSize(false)
-end
-
-Players.LocalPlayer.CharacterAdded:Connect(onCharacterAdded)
-Players.LocalPlayer.CharacterRemoving:Connect(onCharacterRemoved)
-
-RunService.Heartbeat:Connect(function()
-    -- Verificar si el jugador muere
-    if _G.isEnabled and not Players.LocalPlayer.Character then
-        toggleCoinSize(false)
+        -- Aplicar cambios a las monedas en el Workspace cada frame
+        for _, model in pairs(Workspace:GetChildren()) do
+            local coinContainer = model:FindFirstChild("CoinContainer")
+            if coinContainer then
+                applyHitboxToCoins(coinContainer)
+            end
+        end
     end
 end)
 
+-- Vincular el toggle al botón en la interfaz
 AutoFarmSection:NewToggle("magnet coin", "ToggleInfo", function(state)
-    savedConfig.coinsm = state
-    saveConfig(savedConfig)
     toggleCoinSize(state)
 end)
 
-if savedConfig.coinsm then
-    toggleCoinSize(true)
-end
+-- Activar o desactivar el magnet cuando el jugador respawnea
+Players.LocalPlayer.CharacterAdded:Connect(function()
+    if _G.isEnabled then
+        toggleCoinSize(true)
+    end
+end)
+
+Players.LocalPlayer.CharacterRemoving:Connect(function()
+    toggleCoinSize(false)
+end)
   
 local player = game.Players.LocalPlayer
 local guiName = "JumpGui"
@@ -1222,41 +1207,6 @@ UICorner.Parent = shootButton
 local localplayer = game.Players.LocalPlayer
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local function calculatePingFactor()
-    local ping = localplayer:GetNetworkPing() * 1000
-    if ping > 150 then
-        return 1.3
-    elseif ping > 100 then
-        return 1.2
-    elseif ping > 50 then
-        return 1.1
-    else
-        return 1.1
-    end
-end
-
-local function predictTargetPosition(murderer)
-    local torso = murderer:FindFirstChild("LowerTorso") or murderer:FindFirstChild("UpperTorso")
-    local rootPart = murderer:FindFirstChild("HumanoidRootPart")
-    if torso and rootPart then
-        local distance = (localplayer.Character.HumanoidRootPart.Position - torso.Position).Magnitude
-        local pingFactor = calculatePingFactor()
-        local predictedPosition = torso.Position + (rootPart.Velocity * (distance / 200) * pingFactor)
-        local maxOffset = 1.3
-        if distance < 20 then
-            predictedPosition = torso.Position
-        else
-            predictedPosition = torso.Position + Vector3.new(
-                math.clamp(predictedPosition.X - torso.Position.X, -maxOffset, maxOffset),
-                0,
-                math.clamp(predictedPosition.Z - torso.Position.Z, -maxOffset, maxOffset)
-            )
-        end
-        return predictedPosition
-    end
-    return nil
-end
-
 local function autoEquipGun()
     local gunInBackpack = localplayer.Backpack:FindFirstChild("Gun")
     if gunInBackpack then
@@ -1266,12 +1216,12 @@ local function autoEquipGun()
     return false
 end
 
-local function shootAtPredictedPosition(predictedPosition)
+local function shootAtPosition(targetPosition)
     local gun = localplayer.Character:FindFirstChild("Gun")
     if gun then
         local args = {
             [1] = 1,
-            [2] = predictedPosition,
+            [2] = targetPosition,
             [3] = "AH2"
         }
         gun.KnifeLocal.CreateBeam.RemoteFunction:InvokeServer(unpack(args))
@@ -1291,26 +1241,37 @@ local function getMurderer()
     return nil
 end
 
+local function predictPosition(murderer)
+    if murderer and murderer:FindFirstChild("HumanoidRootPart") and murderer:FindFirstChild("Humanoid") then
+        local humanoid = murderer.Humanoid
+        local moveDirection = humanoid.MoveDirection
+        local currentPosition = murderer.HumanoidRootPart.Position
+        local offset = 5  -- Ajuste el valor de "offset" para obtener el resultado deseado (en studs)
+
+        -- Usar un offset en la dirección del movimiento
+        local predictedPosition = currentPosition + moveDirection * offset
+
+        return predictedPosition
+    end
+    return nil
+end
+
 shootButton.MouseButton1Click:Connect(function()
     local gun = localplayer.Character:FindFirstChild("Gun")
     if not gun and autoEquipGun() then
         local murderer = getMurderer()
         if murderer then
-            local predictedPosition = predictTargetPosition(murderer)
+            local predictedPosition = predictPosition(murderer)
             if predictedPosition then
-                shootAtPredictedPosition(predictedPosition)
-                wait(0.4)
-                gun.Parent = localplayer.Backpack
+                shootAtPosition(predictedPosition)
             end
         end
     else
         local murderer = getMurderer()
         if murderer then
-            local predictedPosition = predictTargetPosition(murderer)
+            local predictedPosition = predictPosition(murderer)
             if predictedPosition then
-                shootAtPredictedPosition(predictedPosition)
-                wait(0.4)
-                gun.Parent = localplayer.Backpack
+                shootAtPosition(predictedPosition)
             end
         end
     end
@@ -1329,36 +1290,30 @@ end
 
 local localPosition = Plr.Character.HumanoidRootPart.Position
 local forwardVector = Plr.Character.HumanoidRootPart.CFrame.LookVector
-local teleportPosition = localPosition + forwardVector * 3
+local teleportPosition = localPosition + forwardVector * 2.7
 
--- Equipar el cuchillo si no está equipado
 if knife.Parent ~= Plr.Character then
     knife.Parent = Plr.Character
     repeat task.wait(0.1) until Plr.Character:FindFirstChild("Knife")
 end
 
--- Bucle para teletransportar y atacar al mismo tiempo
 for attackCount = 1, 10 do
     for _, player in ipairs(Players:GetPlayers()) do
         if player ~= Plr and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
             local humanoidRootPart = player.Character.HumanoidRootPart
 
-            -- Teletransportar al jugador
             humanoidRootPart.CFrame = CFrame.new(teleportPosition)
 
-            -- Anclar al jugador
             humanoidRootPart.Anchored = true
         end
     end
 
-    -- Realizar ataque
     vim:SendMouseButtonEvent(0, 0, 0, true, game, false, 0) -- Click izquierdo
     task.wait(0.1)
     vim:SendMouseButtonEvent(0, 0, 0, false, game, false, 0) -- Soltar click
     task.wait(0.1)
 end
 
--- Desanclar a los jugadores después de los ataques
 for _, player in ipairs(Players:GetPlayers()) do
     if player ~= Plr and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
         local humanoidRootPart = player.Character.HumanoidRootPart
@@ -1454,7 +1409,7 @@ function StartKnifeAura()
 
     local function attackNearbyPlayers()
         local nearestPlayer = nil
-        local nearestDistance = 7.5
+        local nearestDistance = 7.4
 
         for _, otherPlayer in ipairs(game.Players:GetPlayers()) do
             if otherPlayer ~= player and otherPlayer.Character and otherPlayer.Character:FindFirstChild("HumanoidRootPart") then
@@ -1962,7 +1917,7 @@ TeleportSection:NewToggle("TP Gun", "ToggleInfo", function(state)
 
             button.Name = "TPGUNButton"
             button.Text = "TP Gun"
-            button.Size = UDim2.new(0, 70, 0, 50)
+            button.Size = UDim2.new(0, 60, 0, 50)
             button.Position = UDim2.new(1, -220, 0, 10)
             button.Parent = screenGui
             button.BackgroundTransparency = 0.5
@@ -2581,150 +2536,82 @@ LocalPlayerSection:NewToggle("No Clip", "ToggleInfo", function(state)
         end
     end)
 
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local sliderValue = 0.8
-local LP = Players.LocalPlayer
-local Roles = {Sheriff = nil, Murderer = nil, Hero = nil}
-local espEnabled = false
-local lastRoles = {}
-
-VisualSection:NewSlider("ESP transparency setting (interior)", "SliderInfo", 9, 0, function(value)
+VisualSection:NewSlider("ESP transparency (interior)", "SliderInfo", 10, 0, function(value)
     sliderValue = value / 10
-    UpdateHighlights()
 end)
 
-function IsAlive(Player)
-    return Roles[Player.Name] and not Roles[Player.Name].Killed and not Roles[Player.Name].Dead
-end
-
-function CreateHighlightForPlayer(Player)
-    if Player ~= LP and Player.Character and not Player.Character:FindFirstChild("Highlight") then
-        local highlight = Instance.new("Highlight", Player.Character)
-        highlight.FillTransparency = sliderValue
-        highlight.OutlineTransparency = 0
-    end
-end
-
-function CreateLabel(Character, RoleName, Color)
-    local labelName = RoleName .. "Label"
-    if Character and not Character:FindFirstChild(labelName) then
-        local BillboardGui = Instance.new("BillboardGui", Character)
-        BillboardGui.Name = labelName
-        BillboardGui.Size = UDim2.new(0, 100, 0, 20)
-        BillboardGui.StudsOffset = Vector3.new(0, 2.5, 0) -- Ajusta según sea necesario
-        BillboardGui.AlwaysOnTop = true
-        BillboardGui.MaxDistance = math.huge
-        BillboardGui.LightInfluence = 0
-        BillboardGui.ResetOnSpawn = false
-        BillboardGui.Adornee = Character
-
-        local TextLabel = Instance.new("TextLabel", BillboardGui)
-        TextLabel.Size = UDim2.new(1, 0, 1, 0)
-        TextLabel.BackgroundTransparency = 1
-        TextLabel.Text = RoleName
-        TextLabel.TextColor3 = Color
-        TextLabel.TextScaled = false
-        TextLabel.Font = Enum.Font.SourceSans
-        TextLabel.TextSize = 14
-        TextLabel.ZIndex = 10
-        TextLabel.TextStrokeTransparency = 0
-    end
-end
-
-function UpdateHighlights()
-    if not espEnabled then return end
-    for _, player in pairs(Players:GetPlayers()) do
-        if player ~= LP and player.Character then
-            CreateHighlightForPlayer(player)
-            local highlight = player.Character:FindFirstChild("Highlight")
-            if highlight then
-                if not IsAlive(player) then
-                    -- Jugador muerto
-                    highlight.FillTransparency = 1
-                    highlight.OutlineTransparency = 1
-                else
-                    -- Jugador vivo
-                    highlight.FillTransparency = sliderValue
-                    highlight.OutlineTransparency = 0
-
-                    local role = Roles[player.Name]
-                    if role == "Sheriff" then
-                        highlight.FillColor = Color3.fromRGB(0, 0, 255)
-                        highlight.OutlineColor = Color3.fromRGB(0, 85, 153)
-                        CreateLabel(player.Character, "Sheriff", Color3.fromRGB(0, 0, 255))
-                    elseif role == "Murderer" then
-                        highlight.FillColor = Color3.fromRGB(139, 0, 0)
-                        highlight.OutlineColor = Color3.fromRGB(255, 0, 0)
-                        CreateLabel(player.Character, "Murderer", Color3.fromRGB(255, 0, 0))
-                    elseif role == "Hero" then
-                        highlight.FillColor = Color3.fromRGB(255, 255, 0)
-                        highlight.OutlineColor = Color3.fromRGB(255, 255, 0)
-                        CreateLabel(player.Character, "Hero", Color3.fromRGB(255, 255, 0))
-                    else
-                        highlight.FillColor = Color3.fromRGB(0, 128, 0)
-                        highlight.OutlineColor = Color3.fromRGB(0, 255, 0)
-                    end
-                end
-            end
-        end
-    end
-end
-
-function RemoveHighlights()
-    for _, player in pairs(Players:GetPlayers()) do
-        if player.Character then
-            local highlight = player.Character:FindFirstChild("Highlight")
-            if highlight then
-                highlight:Destroy()
-            end
-            for _, labelName in pairs({"MurdererLabel", "SheriffLabel", "HeroLabel"}) do
-                local label = player.Character:FindFirstChild(labelName)
-                if label then
-                    label:Destroy()
-                end
-            end
-        end
-    end
-end
-
-function GetRolesFromServer()
-    local success, result = pcall(function()
-        return ReplicatedStorage:FindFirstChild("GetPlayerData", true):InvokeServer()
-    end)
-    if success then
-        return result
-    else
-        return nil
-    end
-end
-
-function RoleCheckLoop()
-    while espEnabled do
-        local roles = GetRolesFromServer()
-        if roles and roles ~= lastRoles then
-            Roles = {}
-            for playerName, data in pairs(roles) do
-                Roles[playerName] = data.Role
-            end
-            UpdateHighlights()
-            lastRoles = roles
-        end
-        wait(2)
-    end
-end
+_G.Espp = false
 
 VisualSection:NewToggle("ESP Players", "ToggleInfo", function(state)
-    savedConfig.espp = state
-    saveConfig(savedConfig)
+    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+    local Players = game:GetService("Players")
+    local RunService = game:GetService("RunService")
+    local LocalPlayer = Players.LocalPlayer
+    local rolesData = nil
 
-    espEnabled = state
-    if espEnabled then
-        spawn(RoleCheckLoop)
-    else
-        RemoveHighlights()
+    _G.Espp = state
+
+    local function IsAlive(player)
+        if not player or not rolesData then return false end
+        local playerData = rolesData[player.Name]
+        return playerData and not playerData.Killed and not playerData.Dead
     end
+
+    local function CreateHighlightForPlayer(player)
+        if player ~= LocalPlayer and player.Character and not player.Character:FindFirstChild("Highlight") then
+            local highlight = Instance.new("Highlight", player.Character)
+            highlight.FillTransparency = 0.8 -- Transparencia predeterminada
+            highlight.OutlineTransparency = 0
+        end
+    end
+
+    local function UpdateHighlightColor(player)
+        if player.Character and player.Character:FindFirstChild("Highlight") then
+            local highlight = player.Character.Highlight
+            local playerRole = rolesData[player.Name]
+            if IsAlive(player) and playerRole then
+                local role = playerRole.Role
+                if role == "Sheriff" then
+                    highlight.FillColor = Color3.fromRGB(0, 0, 139)
+                    highlight.OutlineColor = Color3.fromRGB(0, 0, 255)
+                elseif role == "Murderer" then
+                    highlight.FillColor = Color3.fromRGB(139, 0, 0)
+                    highlight.OutlineColor = Color3.fromRGB(255, 0, 0)
+                elseif role == "Hero" then
+                    highlight.FillColor = Color3.fromRGB(255, 255, 0)
+                    highlight.OutlineColor = Color3.fromRGB(255, 255, 0)
+                else
+                    highlight.FillColor = Color3.fromRGB(0, 128, 0)
+                    highlight.OutlineColor = Color3.fromRGB(0, 255, 0)
+                end
+            else
+                highlight.FillColor = Color3.fromRGB(128, 128, 128)
+                highlight.OutlineColor = Color3.fromRGB(128, 128, 128)
+            end
+            highlight.FillTransparency = sliderValue
+        end
+    end
+
+    RunService.RenderStepped:Connect(function()
+        if not _G.Espp then
+            for _, player in ipairs(Players:GetPlayers()) do
+                if player.Character and player.Character:FindFirstChild("Highlight") then
+                    player.Character.Highlight:Destroy()
+                end
+            end
+            return
+        end
+
+        rolesData = ReplicatedStorage:FindFirstChild("GetPlayerData", true):InvokeServer()
+        if not rolesData then return end
+
+        for _, player in ipairs(Players:GetPlayers()) do
+            CreateHighlightForPlayer(player)
+            UpdateHighlightColor(player)
+        end
+
+        wait(2)
+    end)
 end)
 
 _G.Nametag = false
@@ -2738,85 +2625,148 @@ NameTag.Enabled = false
 NameTag.Size = UDim2.new(0, 200, 0, 50)
 NameTag.AlwaysOnTop = true
 NameTag.StudsOffset = Vector3.new(0, 2, 0)
+
 local Tag = Instance.new("TextLabel", NameTag)
 Tag.Name = "Tag"
 Tag.BackgroundTransparency = 1
 Tag.Position = UDim2.new(0, -50, 0, 0)
 Tag.Size = UDim2.new(0, 300, 0, 20)
-Tag.TextSize = 15
+Tag.TextSize = 13
 Tag.TextStrokeTransparency = 0.4
 Tag.Text = "nil"
-Tag.TextColor3 = Color3.fromRGB(0, 170, 255)
+Tag.TextColor3 = Color3.fromRGB(0, 255, 0)
 Tag.Font = Enum.Font.SourceSansBold
 
-local LoadCharacter = function(v)
-    if not _G.Nametag or v == game.Players.LocalPlayer then return end
-    repeat wait() until v.Character
-    local head = v.Character:FindFirstChild("Head")
-    if not head then return end
-    local vHolder = Holder:FindFirstChild(v.Name)
-    if not vHolder then
-        vHolder = Instance.new("Folder", Holder)
-        vHolder.Name = v.Name
-    else
-        vHolder:ClearAllChildren()
+local function LoadCharacter(player)
+    if not _G.Nametag or player == game.Players.LocalPlayer then return end
+    local character = player.Character or player.CharacterAdded:Wait()
+    local head = character:WaitForChild("Head")
+    local vHolder = Holder:FindFirstChild(player.Name) or Instance.new("Folder", Holder)
+    vHolder.Name = player.Name
+
+    local nametag = vHolder:FindFirstChild(player.Name .. "NameTag")
+    if not nametag then
+        nametag = NameTag:Clone()
+        nametag.Name = player.Name .. "NameTag"
+        nametag.Adornee = head
+        nametag.Parent = vHolder
     end
-    local t = NameTag:Clone()
-    t.Name = v.Name .. "NameTag"
-    t.Enabled = true
-    t.Adornee = head
-    t.Parent = vHolder
-    t.Tag.Text = v.Name
+    nametag.Enabled = true
+    nametag.Tag.Text = player.Name
 end
 
-local UnloadCharacter = function(v)
-    if v == game.Players.LocalPlayer then return end
-    local vHolder = Holder:FindFirstChild(v.Name)
+local function UnloadCharacter(player)
+    local vHolder = Holder:FindFirstChild(player.Name)
     if vHolder then
         vHolder:Destroy()
     end
 end
 
-local LoadPlayer = function(v)
-    if v == game.Players.LocalPlayer then return end
-    v.CharacterAdded:Connect(function()
-        LoadCharacter(v)
+local function LoadPlayer(player)
+    if player == game.Players.LocalPlayer then return end
+    player.CharacterAdded:Connect(function()
+        LoadCharacter(player)
     end)
-    v.CharacterRemoving:Connect(function()
-        UnloadCharacter(v)
+    player.CharacterRemoving:Connect(function()
+        UnloadCharacter(player)
     end)
-    if v.Character then
-        LoadCharacter(v)
+    if player.Character then
+        LoadCharacter(player)
     end
 end
 
-local UnloadPlayer = function(v)
-    if v == game.Players.LocalPlayer then return end
-    UnloadCharacter(v)
+local function UnloadPlayer(player)
+    if player == game.Players.LocalPlayer then return end
+    UnloadCharacter(player)
 end
 
-for _, v in pairs(game.Players:GetPlayers()) do
-    LoadPlayer(v)
+for _, player in pairs(game.Players:GetPlayers()) do
+    LoadPlayer(player)
 end
 
 game.Players.PlayerAdded:Connect(LoadPlayer)
 game.Players.PlayerRemoving:Connect(UnloadPlayer)
 
 VisualSection:NewToggle("ESP Name", "ToggleInfo", function(state)
+    _G.Nametag = state
     if state then
-        _G.Nametag = true
-        for _, v in pairs(game.Players:GetPlayers()) do
-            if v ~= game.Players.LocalPlayer and v.Character then
-                LoadCharacter(v)
+        for _, player in pairs(game.Players:GetPlayers()) do
+            if player ~= game.Players.LocalPlayer and player.Character then
+                LoadCharacter(player)
             end
         end
     else
-        _G.Nametag = false
-        for _, v in pairs(game.Players:GetPlayers()) do
-            if v ~= game.Players.LocalPlayer then
-                UnloadCharacter(v)
+        for _, player in pairs(game.Players:GetPlayers()) do
+            UnloadCharacter(player)
+        end
+    end
+end)
+
+local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local roles = {}
+local Murder, Sheriff, Hero
+
+local function UpdateRoles()
+    roles = ReplicatedStorage:FindFirstChild("GetPlayerData", true):InvokeServer()
+    for i, v in pairs(roles) do
+        if v.Role == "Murderer" then
+            Murder = i
+        elseif v.Role == "Sheriff" then
+            Sheriff = i
+        elseif v.Role == "Hero" then
+            Hero = i
+        end
+    end
+end
+
+local lastUpdate = 0
+local updateInterval = 0.5
+
+local function UpdateLabels()
+    for _, player in pairs(game.Players:GetPlayers()) do
+        local vHolder = Holder:FindFirstChild(player.Name)
+        if vHolder then
+            local nametag = vHolder:FindFirstChild(player.Name .. "NameTag")
+            if nametag and nametag:FindFirstChild("Tag") then
+                local tag = nametag.Tag
+                local character = player.Character
+                local head = character and character:FindFirstChild("Head")
+                local localHead = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("Head")
+                if player.Name == Murder then
+                    tag.TextColor3 = Color3.fromRGB(255, 0, 0)
+                    tag.Text = "[Murderer] " .. player.Name
+                elseif player.Name == Sheriff then
+                    tag.TextColor3 = Color3.fromRGB(0, 0, 255)
+                    tag.Text = "[Sheriff] " .. player.Name
+                elseif player.Name == Hero then
+                    tag.TextColor3 = Color3.fromRGB(255, 255, 0)
+                    tag.Text = "[Hero] " .. player.Name
+                else
+                    tag.TextColor3 = Color3.fromRGB(255, 255, 255)
+                    tag.Text = player.Name
+                end
+                if head and localHead then
+                    local distance = (head.Position - localHead.Position).Magnitude
+                    tag.Text = string.format("[%.1f Studs] %s", distance, tag.Text)
+                end
             end
         end
+    end
+end
+
+RunService.Heartbeat:Connect(function(deltaTime)
+    lastUpdate = lastUpdate + deltaTime
+    if _G.Nametag and lastUpdate >= updateInterval then
+        lastUpdate = 0
+        UpdateRoles()
+        UpdateLabels()
+    end
+end)
+
+game.Players.PlayerRemoving:Connect(function(player)
+    if player.Name == Murder then
+        Murder = nil
     end
 end)
 
@@ -2972,7 +2922,7 @@ RunService.RenderStepped:Connect(function()
                 Hero = i
             end
             if Murderer and Sheriff then
-                break -- Detener la búsqueda de Murderer y Sheriff, pero continuar buscando Hero
+                break
             end
         end
     end
@@ -3288,7 +3238,7 @@ VisualSection:NewButton("Inquire chat who is the sheriff or murderer", "ButtonIn
         end
 
         checkRoles()
-    end)
+end)
 
 CombateSection:NewButton("Throw Knife", "ButtonInfo", function()
 local existingGui = game:GetService("CoreGui"):FindFirstChild("Throw")
@@ -3801,7 +3751,7 @@ RoundStartEvent = game.ReplicatedStorage.Remotes.Gameplay.RoundStart
 RoundEndEvent = game.ReplicatedStorage.Remotes.Gameplay.RoundEndFade
 
 AutofarmStarted = false
-CurrentCoinType = "Candy"
+CurrentCoinType = "Coin"
 AutofarmDelay = 3
 ResetWhenFullBag = false 
 AutofarmIN = false
@@ -4181,10 +4131,24 @@ local function createKnifeHitbox(knifeTool)
         weld.Part0 = handle
         weld.Part1 = knifeHitbox
         weld.Parent = handle
+
+        -- Depuración
+        print("Hitbox creado con tamaño:", knifeHitbox.Size)
+        print("CFrame del Handle:", handle.CFrame)
+    else
+        warn("Handle no encontrado.")
     end
 end
 
-local function checkKnife()
+local function updateHitbox()
+    if knifeHitbox and knifeHitbox.Parent and knifeHitbox.Parent:FindFirstChild("Handle") then
+        knifeHitbox.CFrame = knifeHitbox.Parent.Handle.CFrame
+    end
+end
+
+game:GetService("RunService").Heartbeat:Connect(updateHitbox)
+
+local function detectAndHandleKnife()
     local knifeTool = player.Backpack:FindFirstChild("Knife") or 
                       player.Character:FindFirstChild("Knife")
 
@@ -4195,44 +4159,43 @@ local function checkKnife()
 end
 
 HitboxSection:NewToggle("Knife range", "ToggleInfo", function(state)
-        savedConfig.range = state
-        saveConfig(savedConfig)
+    savedConfig.range = state
+    saveConfig(savedConfig)
 
-        if state then
-            checkKnife()
-        else
-            if knifeHitbox then
-                knifeHitbox:Destroy()
-                knifeHitbox = nil
-            end
-            knifeDetected = false
+    if state then
+        detectAndHandleKnife()
+    else
+        if knifeHitbox then
+            knifeHitbox:Destroy()
+            knifeHitbox = nil
         end
-    end)
-
-player.CharacterAdded:Connect(function(character)
-    character:WaitForChild("Humanoid").Died:Wait()
-    if knifeHitbox then
-        knifeHitbox:Destroy()
-        knifeHitbox = nil
+        knifeDetected = false
     end
-    knifeDetected = false
 end)
 
 player.CharacterAdded:Connect(function(character)
-    character:WaitForChild("Knife", 10)
-    if savedConfig.range then
-        checkKnife()
+    character:WaitForChild("Humanoid").Died:Connect(function()
+        if knifeHitbox then
+            knifeHitbox:Destroy()
+            knifeHitbox = nil
+        end
+        knifeDetected = false
+    end)
+
+    local knife = character:WaitForChild("Knife", 10)
+    if knife and savedConfig.range then
+        detectAndHandleKnife()
     end
 end)
 
 HitboxSection:NewSlider("Knife range slider", "SliderInfo", 30, 7, function(value)
-        getgenv().range = value
-        if knifeHitbox then
-            knifeHitbox.Size = Vector3.new(getgenv().range, getgenv().range, getgenv().range)
-        end
-        savedConfig.range = value
-        saveConfig(savedConfig)
-    end)
+    getgenv().range = math.clamp(value, 7, 30)
+    if knifeHitbox then
+        knifeHitbox.Size = Vector3.new(getgenv().range, getgenv().range, getgenv().range)
+    end
+    savedConfig.range = value
+    saveConfig(savedConfig)
+end)
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -4479,7 +4442,7 @@ LocalPlayerSection:NewToggle("Infinite Jump", "ToggleInfo", function(state)
                 end
             end
         end)
-    end)
+ end)
 
 local CoreGui = game:GetService("CoreGui")
 
