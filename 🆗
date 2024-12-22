@@ -1374,94 +1374,197 @@ end)
 
 local RunService = game:GetService("RunService")
 local player = game.Players.LocalPlayer
-local character
+local vim = game:GetService("VirtualInputManager")
+
 local knifeEquipped = false
 local auraActive = false
 local auraConnection
+local humanoidRootPart
 
-CombateSection:NewToggle("Knife Aura", "ToggleInfo", function(state)
-    savedConfig.Aura = state
-    saveConfig(savedConfig)
-    auraActive = state
-    if auraActive then
-        StartKnifeAura()
-    else
-        StopKnifeAura()
+local function getHumanoidRootPart(character)
+    if character then
+        return character:WaitForChild("HumanoidRootPart", 2)
     end
+    return nil
+end
+
+player.CharacterAdded:Connect(function(character)
+    humanoidRootPart = getHumanoidRootPart(character)
 end)
 
-function StartKnifeAura()
-    character = player.Character or player.CharacterAdded:Wait()
+if player.Character then
+    humanoidRootPart = getHumanoidRootPart(player.Character)
+end
 
-    local function equipKnife()
-        if not knifeEquipped and player.Backpack:FindFirstChild("Knife") then
-            player.Backpack.Knife.Parent = character
-            knifeEquipped = true
-        end
+local function equipKnife()
+    local knife = player.Backpack:FindFirstChild("Knife")
+    if not knifeEquipped and knife then
+        knife.Parent = player.Character
+        knifeEquipped = true
     end
+end
 
-    local function unequipKnife()
-        if knifeEquipped and character:FindFirstChild("Knife") then
-            character.Knife.Parent = player.Backpack
-            knifeEquipped = false
-        end
+local function unequipKnife()
+    local knife = player.Character:FindFirstChild("Knife")
+    if knifeEquipped and knife then
+        knife.Parent = player.Backpack
+        knifeEquipped = false
     end
+end
 
-    local function attackNearbyPlayers()
-        local nearestPlayer = nil
-        local nearestDistance = 7.4
+local function findNearbyPlayer()
+    local nearestPlayer = nil
+    local nearestDistance = 7.3
 
-        for _, otherPlayer in ipairs(game.Players:GetPlayers()) do
-            if otherPlayer ~= player and otherPlayer.Character and otherPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                local distance = (character.HumanoidRootPart.Position - otherPlayer.Character.HumanoidRootPart.Position).Magnitude
+    for _, otherPlayer in ipairs(game.Players:GetPlayers()) do
+        if otherPlayer ~= player and otherPlayer.Character then
+            local otherHumanoidRootPart = otherPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if otherHumanoidRootPart then
+                local distance = (humanoidRootPart.Position - otherHumanoidRootPart.Position).Magnitude
                 if distance <= nearestDistance then
                     nearestPlayer = otherPlayer
                     break
                 end
             end
         end
-        return nearestPlayer
+    end
+    return nearestPlayer
+end
+
+local function handleAura()
+    if not auraActive or not humanoidRootPart then
+        return
     end
 
-    local function handleAura()
-        if not auraActive or not character or not character:FindFirstChild("HumanoidRootPart") then
-            StopKnifeAura()
-            return
+    local target = findNearbyPlayer()
+    if target then
+        equipKnife()
+        if knifeEquipped then
+            vim:SendMouseButtonEvent(0, 0, 0, true, game, false, 0)
+            task.wait(0.1)
+            vim:SendMouseButtonEvent(0, 0, 0, false, game, false, 0)
         end
-
-        local target = attackNearbyPlayers()
-        if target then
-            equipKnife()
-            if knifeEquipped then
-                -- Simulación de ataque
-                for _ = 1, 3 do
-                    game:GetService("VirtualInputManager"):SendMouseButtonEvent(0, 0, 0, true, game, false, 0)
-                    task.wait(0.1)
-                end
-            end
-        else
-            unequipKnife()
-        end
+    else
+        unequipKnife()
     end
+end
 
-    -- Evitar conexiones duplicadas y asegurar eficiencia
-    if auraConnection then
-        auraConnection:Disconnect()
-    end
+local function StartKnifeAura()
+    if auraConnection then auraConnection:Disconnect() end
+    auraActive = true
     auraConnection = RunService.Heartbeat:Connect(handleAura)
 end
 
-function StopKnifeAura()
+local function StopKnifeAura()
     auraActive = false
-    if knifeEquipped and character then
-        character.Knife.Parent = player.Backpack
-        knifeEquipped = false
-    end
+    unequipKnife()
     if auraConnection then
         auraConnection:Disconnect()
         auraConnection = nil
     end
 end
+
+CombateSection:NewToggle("Knife Aura", "ToggleInfo", function(state)
+    if state then
+        StartKnifeAura()
+    else
+        StopKnifeAura()
+    end
+end)
+
+RunService.RenderStepped:Connect(function()
+    if auraActive and not humanoidRootPart and player.Character then
+        humanoidRootPart = getHumanoidRootPart(player.Character)
+    end
+end)
+
+local scriptActive = false
+local detectionRadius = 9.5
+
+CombateSection:NewToggle("Kill aura", "Activa o desactiva el script", function(state)
+    scriptActive = state
+end)
+
+CombateSection:NewSlider("Detection Radius Kill Aura", "Ajusta el radio de detección para los enemigos", 60, 9.4, function(value)
+    detectionRadius = value
+end)
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local player = Players.LocalPlayer
+local humanoidRootPart
+local tpOffset = 2.8
+
+local function hasKnife()
+    local backpack = player:FindFirstChild("Backpack")
+    if backpack and backpack:FindFirstChild("Knife") then
+        return true
+    end
+    local character = player.Character
+    if character and character:FindFirstChild("Knife") then
+        return true
+    end
+    return false
+end
+
+local function getHumanoidRootPart(character)
+    if character then
+        return character:WaitForChild("HumanoidRootPart", 2)
+    end
+    return nil
+end
+
+local function teleportEnemy(enemy)
+    if humanoidRootPart and enemy then
+        local enemyRoot = enemy:FindFirstChild("HumanoidRootPart")
+        if enemyRoot then
+            local forwardDirection = humanoidRootPart.CFrame.LookVector
+            local teleportPosition = humanoidRootPart.Position + forwardDirection * tpOffset
+            enemyRoot.CFrame = CFrame.new(teleportPosition)
+        end
+    end
+end
+
+local function findClosestPlayer()
+    local closestPlayer = nil
+    local closestDistance = detectionRadius
+
+    for _, otherPlayer in ipairs(Players:GetPlayers()) do
+        if otherPlayer ~= player and otherPlayer.Character then
+            local otherRoot = otherPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if otherRoot then
+                local distance = (otherRoot.Position - humanoidRootPart.Position).Magnitude
+                if distance < closestDistance then
+                    closestPlayer = otherPlayer
+                    closestDistance = distance
+                end
+            end
+        end
+    end
+
+    return closestPlayer
+end
+
+local function teleportClosestPlayer()
+    if scriptActive and humanoidRootPart and hasKnife() then
+        local closestPlayer = findClosestPlayer()
+        if closestPlayer and closestPlayer.Character then
+            teleportEnemy(closestPlayer.Character)
+        end
+    end
+end
+
+player.CharacterAdded:Connect(function(character)
+    humanoidRootPart = getHumanoidRootPart(character)
+end)
+
+humanoidRootPart = getHumanoidRootPart(player.Character)
+
+RunService.RenderStepped:Connect(function()
+    if scriptActive and hasKnife() and humanoidRootPart then
+        teleportClosestPlayer()
+    end
+end)
 
 buttonsSection:NewButton("Kill GUI Shoot", "ButtonInfo", function()
         local existingGui = game:GetService("CoreGui"):FindFirstChild("ShootMurdererGui")
@@ -2063,163 +2166,6 @@ spawn(function()
             teleportToGun()
         end
     end
-end)
-
-CombateSection:NewButton("Kill The Closest Player", "ButtonInfo", function()
-local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local player = Players.LocalPlayer
-local character = player.Character or player.CharacterAdded:Wait()
-local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
-local detectionRadius = 9.4
-local tpOffset = 2.8
-
-local scriptActive = false
-local running = false
-local screenGui, tpButton
-
-local previousButtonPosition = UDim2.new(0.5, 34, 0, 10)
-
-local CoreGui = game:GetService("StarterGui")
-
-local function createGui()
-    if screenGui then
-        screenGui:Destroy()
-    end
-
-    screenGui = Instance.new("ScreenGui")
-    tpButton = Instance.new("TextButton")
-
-    screenGui.Name = "tp"
-    screenGui.Parent = player:WaitForChild("PlayerGui")
-
-    tpButton.Name = "tp"
-    tpButton.Size = UDim2.new(0, 100, 0, 50)
-    tpButton.Position = previousButtonPosition
-    tpButton.Text = scriptActive and "ON" or "OFF"
-    tpButton.Font = Enum.Font.Gotham
-    tpButton.TextSize = 25
-    tpButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    tpButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-    tpButton.BackgroundTransparency = 0.6
-    tpButton.Draggable = true
-    tpButton.BorderSizePixel = 0
-    tpButton.Parent = screenGui
-    
-    local UICorner = Instance.new("UICorner")
-    UICorner.CornerRadius = UDim.new(0, 15)
-    UICorner.Parent = tpButton
-
-    tpButton.Changed:Connect(function(property)
-        if property == "Position" then
-            previousButtonPosition = tpButton.Position
-        end
-    end)
-
-    tpButton.MouseButton1Click:Connect(toggleScript)
-end
-
-local function showNotification(title, description, duration)
-    CoreGui:SetCore("SendNotification", {
-        Title = title,
-        Text = description,
-        Duration = duration,
-    })
-end
-
-local function isMurderer()
-    local roles = ReplicatedStorage:FindFirstChild("GetPlayerData", true):InvokeServer()
-    for i, v in pairs(roles) do
-        if i == player.Name and v.Role == "Murderer" then
-            return true
-        end
-    end
-    return false
-end
-
-local function teleportEnemy(enemy)
-    local enemyHumanoidRootPart = enemy:FindFirstChild("HumanoidRootPart")
-    if enemyHumanoidRootPart then
-        local forwardDirection = humanoidRootPart.CFrame.LookVector
-        local teleportPosition = humanoidRootPart.Position + forwardDirection * tpOffset
-        enemyHumanoidRootPart.CFrame = CFrame.new(teleportPosition)
-    end
-end
-
-local function findClosestPlayer()
-    local closestPlayer = nil
-    local closestDistance = detectionRadius
-    for _, otherPlayer in pairs(Players:GetPlayers()) do
-        if otherPlayer ~= player and otherPlayer.Character then
-            local enemyHumanoidRootPart = otherPlayer.Character:FindFirstChild("HumanoidRootPart")
-            if enemyHumanoidRootPart then
-                local distance = (enemyHumanoidRootPart.Position - humanoidRootPart.Position).Magnitude
-                if distance <= closestDistance then
-                    closestPlayer = otherPlayer
-                    closestDistance = distance
-                end
-            end
-        end
-    end
-    return closestPlayer
-end
-
-local function teleportClosestPlayer()
-    while running do
-        if scriptActive then
-            local closestPlayer = findClosestPlayer()
-            if closestPlayer and closestPlayer.Character then
-                local enemyHumanoidRootPart = closestPlayer.Character:FindFirstChild("HumanoidRootPart")
-                while running and closestPlayer.Character and enemyHumanoidRootPart do
-                    local distance = (enemyHumanoidRootPart.Position - humanoidRootPart.Position).Magnitude
-                    if distance > detectionRadius then
-                        break
-                    end
-
-                    teleportEnemy(closestPlayer.Character)
-
-                    if closestPlayer.Character:FindFirstChildOfClass("Humanoid").Health <= 0 then
-                        break
-                    end
-
-                    wait()
-                end
-            end
-        end
-        wait(0.5)
-    end
-end
-
-function toggleScript()
-    
-    if not scriptActive and not isMurderer() then
-        showNotification("Access Denied", "You are not the Murderer", 2.5)
-        return
-    end
-
-    scriptActive = not scriptActive
-    tpButton.Text = scriptActive and "ON" or "OFF"
-    if scriptActive then
-        if not running then
-            running = true
-            spawn(function()
-                teleportClosestPlayer()
-            end)
-        end
-    else
-        running = false
-    end
-end
-
-player.CharacterAdded:Connect(function()
-    humanoidRootPart = player.Character:WaitForChild("HumanoidRootPart")
-    createGui()
-    if scriptActive then
-        toggleScript()
-    end
-end)
-
-createGui()
 end)
 
 TeleportSection:NewButton("Escape Murderer", "ButtonInfo", function()
@@ -3274,6 +3220,7 @@ UICorner.Parent = button
 local player = game.Players.LocalPlayer
 local camera = game.Workspace.CurrentCamera
 local flingActive = false
+local VirtualInputManager = game:GetService("VirtualInputManager")
 
 local function isPlayerVisible(target)
     local targetPosition = target.Character.HumanoidRootPart.Position
@@ -3301,9 +3248,16 @@ end
 local function flingKnifeAt(target)
     if not target or not player.Character or not player.Character:FindFirstChild("Knife") then return end
 
+    -- Simular la tecla "E"
+    VirtualInputManager:SendKeyEvent(true, "E", false, game) -- Presionar "E"
+    wait(0.1) -- Pequeña espera para simular el tiempo de presionar
+    VirtualInputManager:SendKeyEvent(false, "E", false, game) -- Soltar "E"
+    
+    wait(0.5) -- Esperar 0.5 segundos antes de lanzar el cuchillo
+
     local playerPosition = player.Character.HumanoidRootPart.Position
     local targetPosition = target.Character.HumanoidRootPart.Position
-    
+
     -- Dirección desde el jugador local hacia el enemigo
     local direction = (targetPosition - playerPosition).Unit
 
@@ -3751,7 +3705,7 @@ RoundStartEvent = game.ReplicatedStorage.Remotes.Gameplay.RoundStart
 RoundEndEvent = game.ReplicatedStorage.Remotes.Gameplay.RoundEndFade
 
 AutofarmStarted = false
-CurrentCoinType = "Coin"
+CurrentCoinType = "Candy"
 AutofarmDelay = 3
 ResetWhenFullBag = false 
 AutofarmIN = false
@@ -4244,63 +4198,80 @@ TeleportSection:NewButton("Tp Hero", "ButtonInfo", function()
         TeleportToRole("Hero")
     end)
 
-local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Camera = workspace.CurrentCamera
+VisualSection:NewButton("View Murderer", "Switch camera to the murderer", function()
+    local Players = game:GetService("Players")
+    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+    local Camera = workspace.CurrentCamera
 
-local LP = Players.LocalPlayer
-
-local function GetPlayerByRole(roleName)
-    local roles = ReplicatedStorage:FindFirstChild("GetPlayerData", true):InvokeServer()
-    for _, v in pairs(roles) do
-        if v.Role == roleName then
-            return Players:FindFirstChild(v.Player)
+    local function GetMurderer()
+        local roles = ReplicatedStorage:FindFirstChild("GetPlayerData", true):InvokeServer()
+        for i, v in pairs(roles) do
+            if v.Role == "Murderer" then
+                return i
+            end
         end
+        return nil
     end
-    return nil
-end
 
-local function SwitchToRoleCamera(roleName)
-    local rolePlayer = GetPlayerByRole(roleName)
-    if not rolePlayer or not rolePlayer.Character or not rolePlayer.Character:FindFirstChild("HumanoidRootPart") then
-        return
+    local rolePlayer = Players:FindFirstChild(GetMurderer())
+    if rolePlayer and rolePlayer.Character and rolePlayer.Character:FindFirstChild("HumanoidRootPart") then
+        Camera.CameraSubject = rolePlayer.Character.Humanoid
+        Camera.CFrame = rolePlayer.Character.HumanoidRootPart.CFrame
     end
-    Camera.CameraSubject = rolePlayer.Character.Humanoid
-    Camera.CFrame = rolePlayer.Character.HumanoidRootPart.CFrame
-end
+end)
 
-local function RestoreCameraToPlayer()
+VisualSection:NewButton("View Sheriff", "Switch camera to the sheriff", function()
+    local Players = game:GetService("Players")
+    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+    local Camera = workspace.CurrentCamera
+
+    local function GetSheriff()
+        local roles = ReplicatedStorage:FindFirstChild("GetPlayerData", true):InvokeServer()
+        for i, v in pairs(roles) do
+            if v.Role == "Sheriff" then
+                return i
+            end
+        end
+        return nil
+    end
+
+    local rolePlayer = Players:FindFirstChild(GetSheriff())
+    if rolePlayer and rolePlayer.Character and rolePlayer.Character:FindFirstChild("HumanoidRootPart") then
+        Camera.CameraSubject = rolePlayer.Character.Humanoid
+        Camera.CFrame = rolePlayer.Character.HumanoidRootPart.CFrame
+    end
+end)
+
+VisualSection:NewButton("View Hero", "Switch camera to the hero", function()
+    local Players = game:GetService("Players")
+    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+    local Camera = workspace.CurrentCamera
+
+    local function GetHero()
+        local roles = ReplicatedStorage:FindFirstChild("GetPlayerData", true):InvokeServer()
+        for i, v in pairs(roles) do
+            if v.Role == "Hero" then
+                return i
+            end
+        end
+        return nil
+    end
+
+    local rolePlayer = Players:FindFirstChild(GetHero())
+    if rolePlayer and rolePlayer.Character and rolePlayer.Character:FindFirstChild("HumanoidRootPart") then
+        Camera.CameraSubject = rolePlayer.Character.Humanoid
+        Camera.CFrame = rolePlayer.Character.HumanoidRootPart.CFrame
+    end
+end)
+
+VisualSection:NewButton("Return to my camera", "Reset camera to the local player", function()
+    local Players = game:GetService("Players")
+    local Camera = workspace.CurrentCamera
+    local LP = Players.LocalPlayer
+
     if LP.Character and LP.Character:FindFirstChild("HumanoidRootPart") then
         Camera.CameraSubject = LP.Character.Humanoid
         Camera.CFrame = LP.Character.HumanoidRootPart.CFrame
-    end
-end
-
-LP.CharacterAdded:Connect(function()
-    RestoreCameraToPlayer()
-end)
-
-VisualSection:NewToggle("See Murderer", "ButtonInfo", function(state)
-    if state then
-        SwitchToRoleCamera("Murderer")
-    else
-        RestoreCameraToPlayer()
-    end
-end)
-
-VisualSection:NewToggle("See Sheriff", "ButtonInfo", function(state)
-    if state then
-        SwitchToRoleCamera("Sheriff")
-    else
-        RestoreCameraToPlayer()
-    end
-end)
-
-VisualSection:NewToggle("See Hero", "ButtonInfo", function(state)
-    if state then
-        SwitchToRoleCamera("Hero")
-    else
-        RestoreCameraToPlayer()
     end
 end)
     
@@ -4331,10 +4302,8 @@ local isGravityActive = false
 local speedConnection
 local jumpConnection
 
--- Configuración inicial
 game.Workspace.Gravity = defaultGravity
 
--- Actualizar gravedad desde un TextBox
 LocalPlayerSection:NewTextBox("Gravity", "Enter a value", function(value)
     local numericValue = tonumber(value)
     if numericValue then
@@ -4349,7 +4318,6 @@ LocalPlayerSection:NewToggle("Gravity loop", "ToggleInfo", function(state)
     game.Workspace.Gravity = state and increasedGravity or defaultGravity
 end)
 
--- Función para actualizar la velocidad de movimiento
 local function updateWalkSpeed(value)
     local player = game:GetService("Players").LocalPlayer
     if player.Character and player.Character:FindFirstChildOfClass("Humanoid") then
@@ -4357,14 +4325,11 @@ local function updateWalkSpeed(value)
     end
 end
 
--- Actualizar velocidad desde un TextBox
 LocalPlayerSection:NewTextBox("Speed", "Enter a value", function(value)
     local numericValue = tonumber(value)
     if numericValue then
         getgenv().Walkspeed = numericValue
         updateWalkSpeed(numericValue)
-        savedConfig.Walkspeed = numericValue
-        saveConfig(savedConfig)
     else
         warn("Invalid input. Please enter a number.")
     end
@@ -4372,8 +4337,6 @@ end)
 
 LocalPlayerSection:NewToggle("Loop speed", "ToggleInfo", function(state)
     getgenv().loopW = state
-    savedConfig.loopW = state
-    saveConfig(savedConfig)
 
     if state then
         if not speedConnection then
@@ -4389,7 +4352,6 @@ LocalPlayerSection:NewToggle("Loop speed", "ToggleInfo", function(state)
     end
 end)
 
--- Función para actualizar la potencia de salto
 local function updateJumpPower(value)
     local player = game:GetService("Players").LocalPlayer
     if player.Character and player.Character:FindFirstChildOfClass("Humanoid") then
@@ -4397,14 +4359,11 @@ local function updateJumpPower(value)
     end
 end
 
--- Actualizar potencia de salto desde un TextBox
 LocalPlayerSection:NewTextBox("Power Jump", "Enter a value", function(value)
     local numericValue = tonumber(value)
     if numericValue then
         getgenv().Jumppower = numericValue
         updateJumpPower(numericValue)
-        savedConfig.Jumppower = numericValue
-        saveConfig(savedConfig)
     else
         warn("Invalid input. Please enter a number.")
     end
@@ -4412,8 +4371,6 @@ end)
 
 LocalPlayerSection:NewToggle("Power Jump/Loop", "ToggleInfo", function(state)
     getgenv().loopJ = state
-    savedConfig.loopJ = state
-    saveConfig(savedConfig)
 
     if state then
         if not jumpConnection then
@@ -4430,19 +4387,17 @@ LocalPlayerSection:NewToggle("Power Jump/Loop", "ToggleInfo", function(state)
 end)
 
 LocalPlayerSection:NewToggle("Infinite Jump", "ToggleInfo", function(state)
-        savedConfig.jumpi = state
-        saveConfig(savedConfig)
-        getgenv().InfJ = state
+    getgenv().InfJ = state
 
-        game:GetService("UserInputService").JumpRequest:Connect(function()
-            if getgenv().InfJ then
-                local humanoid = game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-                if humanoid then
-                    humanoid:ChangeState("Jumping")
-                end
+    game:GetService("UserInputService").JumpRequest:Connect(function()
+        if getgenv().InfJ then
+            local humanoid = game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                humanoid:ChangeState("Jumping")
             end
-        end)
- end)
+        end
+    end)
+end)
 
 local CoreGui = game:GetService("CoreGui")
 
