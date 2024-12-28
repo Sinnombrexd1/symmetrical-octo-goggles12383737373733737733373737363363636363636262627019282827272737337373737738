@@ -262,22 +262,18 @@ local hitboxColor = Color3.fromRGB(
     savedConfig.hitboxColorB or 255
 )
 local hitboxEnabled = savedConfig.hitboxEnabled or false
-
 local connection
 
--- Verifica si el personaje es válido y tiene HumanoidRootPart
 local function isCharacterValid(character)
     return character and character:FindFirstChild("HumanoidRootPart")
 end
 
--- Actualiza los hitboxes si están habilitados
 local function updateHitboxesIfEnabled()
     if hitboxEnabled then
         hitboxes(true)
     end
 end
 
--- Aplica o resetea los cambios en los hitboxes
 local function hitboxes(enable)
     for _, player in pairs(game:GetService("Players"):GetPlayers()) do
         if player ~= game:GetService("Players").LocalPlayer then
@@ -298,7 +294,6 @@ local function hitboxes(enable)
     end
 end
 
--- Actualiza el color del hitbox
 local function updateHitboxColor()
     hitboxColor = Color3.fromRGB(
         savedConfig.hitboxColorR or 255, 
@@ -327,36 +322,61 @@ HitboxSection:NewToggle("Hitbox Expander", "ToggleInfo", function(state)
     end
 end)
 
-HitboxSection:NewSlider("Hitbox Size", "SliderInfo", 10, 1, function(value)
-    hitboxSize = value
-    savedConfig.hitboxSize = value
-    saveConfig(savedConfig)
-    updateHitboxesIfEnabled()
+HitboxSection:NewTextBox("Hitbox Size", "Enter a value (1-10)", function(value)
+    local number = tonumber(value)
+    if number and number >= 1 and number <= 10 then
+        hitboxSize = number
+        savedConfig.hitboxSize = number
+        saveConfig(savedConfig)
+        updateHitboxesIfEnabled()
+    else
+        print("Invalid value! Enter a number between 1 and 10.")
+    end
 end)
 
-HitboxSection:NewSlider("Hitbox Transparency", "SliderInfo", 9, 0, function(value)
-    hitboxTransparency = value / 10
-    savedConfig.hitboxTransparency = hitboxTransparency
-    saveConfig(savedConfig)
-    updateHitboxesIfEnabled()
+HitboxSection:NewTextBox("Hitbox Transparency", "Enter a value (0-0.9)", function(value)
+    local number = tonumber(value)
+    if number and number >= 0 and number <= 0.9 then
+        hitboxTransparency = number
+        savedConfig.hitboxTransparency = number
+        saveConfig(savedConfig)
+        updateHitboxesIfEnabled()
+    else
+        print("Invalid value! Enter a number between 0 and 0.9.")
+    end
 end)
 
-HitboxSection:NewSlider("Red", "SliderInfo", 255, 0, function(value)
-    savedConfig.hitboxColorR = value
-    saveConfig(savedConfig)
-    updateHitboxColor()
+HitboxSection:NewTextBox("Red", "Enter a value (0-255)", function(value)
+    local number = tonumber(value)
+    if number and number >= 0 and number <= 255 then
+        savedConfig.hitboxColorR = number
+        saveConfig(savedConfig)
+        updateHitboxColor()
+    else
+        print("Invalid value! Enter a number between 0 and 255.")
+    end
 end)
 
-HitboxSection:NewSlider("Green", "SliderInfo", 255, 0, function(value)
-    savedConfig.hitboxColorG = value
-    saveConfig(savedConfig)
-    updateHitboxColor()
+HitboxSection:NewTextBox("Green", "Enter a value (0-255)", function(value)
+    local number = tonumber(value)
+    if number and number >= 0 and number <= 255 then
+        savedConfig.hitboxColorG = number
+        saveConfig(savedConfig)
+        updateHitboxColor()
+    else
+        print("Invalid value! Enter a number between 0 and 255.")
+    end
 end)
 
-HitboxSection:NewSlider("Blue", "SliderInfo", 255, 0, function(value)
-    savedConfig.hitboxColorB = value
-    saveConfig(savedConfig)
-    updateHitboxColor()
+HitboxSection:NewTextBox("Blue", "Enter a value (0-255)", function(value)
+    local number = tonumber(value)
+    if number and number >= 0 and number <= 255 then
+        savedConfig.hitboxColorB = number
+        saveConfig(savedConfig)
+        updateHitboxColor()
+    else
+        print("Invalid value! Enter a number between 0 and 255.")
+    end
 end)
 
 HitboxSection:NewToggle("Hitbox Collision", "ToggleInfo", function(state)
@@ -365,7 +385,7 @@ HitboxSection:NewToggle("Hitbox Collision", "ToggleInfo", function(state)
     saveConfig(savedConfig)
     updateHitboxesIfEnabled()
 end)
-    
+
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local StarterGui = game:GetService("StarterGui")
@@ -1592,7 +1612,7 @@ end
 
 local function findNearbyPlayer()
     local nearestPlayer = nil
-    local nearestDistance = 7.3
+    local nearestDistance = 7.2
 
     for _, otherPlayer in ipairs(game.Players:GetPlayers()) do
         if otherPlayer ~= player and otherPlayer.Character then
@@ -1619,7 +1639,7 @@ local function handleAura()
         equipKnife()
         if knifeEquipped then
             vim:SendMouseButtonEvent(0, 0, 0, true, game, false, 0)
-            task.wait(0.1)
+            task.wait(0.7)
             vim:SendMouseButtonEvent(0, 0, 0, false, game, false, 0)
         end
     else
@@ -2448,84 +2468,56 @@ LocalPlayerSection:NewButton("Anchor character", "ButtonInfo", function()
         end
     end)
 
-local canCollide = false
-local toggleCollisions = false
-local previousCollisions = {}  
+local jugadorLocal = game.Players.LocalPlayer
+local personajeLocal = jugadorLocal.Character or jugadorLocal.CharacterAdded:Wait()
 
-local function togglePlayerCollisions(state)
-    savedConfig.collisions = state
-    saveConfig(savedConfig)
-    toggleCollisions = state
+local colisionesDeshabilitadas = false
 
-    if toggleCollisions then
-        for _, otherPlayer in pairs(game.Players:GetPlayers()) do
-            if otherPlayer ~= game.Players.LocalPlayer then
-                local otherCharacter = otherPlayer.Character
-                if otherCharacter then
-                    previousCollisions[otherPlayer.UserId] = {}
-                    for _, part in pairs(otherCharacter:GetChildren()) do
-                        if part:IsA("BasePart") then
-                            previousCollisions[otherPlayer.UserId][part] = part.CanCollide
-                            part.CanCollide = false
+local function actualizarColisiones(state)
+    colisionesDeshabilitadas = state
+    for _, jugador in pairs(game.Players:GetPlayers()) do
+        if jugador ~= jugadorLocal then
+            local personaje = jugador.Character
+            if personaje then
+                for _, parte in pairs(personaje:GetChildren()) do
+                    if parte:IsA("BasePart") then
+                        parte.CanCollide = not colisionesDeshabilitadas
+                    end
+                end
+            end
+        end
+    end
+end
+
+LocalPlayerSection:NewToggle("Disable players collisions", "ToggleInfo", function(state)
+    actualizarColisiones(state)
+end)
+
+game:GetService("RunService").Stepped:Connect(function()
+    if colisionesDeshabilitadas then
+        for _, jugador in pairs(game.Players:GetPlayers()) do
+            if jugador ~= jugadorLocal then
+                local personaje = jugador.Character
+                if personaje then
+                    for _, parte in pairs(personaje:GetChildren()) do
+                        if parte:IsA("BasePart") then
+                            parte.CanCollide = false
                         end
                     end
                 end
             end
         end
     else
-        for userId, parts in pairs(previousCollisions) do
-            local player = game.Players:GetPlayerByUserId(userId)
-            if player and player.Character then
-                for part, canCollide in pairs(parts) do
-                    if part.Parent == player.Character then
-                        part.CanCollide = canCollide
+        for _, jugador in pairs(game.Players:GetPlayers()) do
+            if jugador ~= jugadorLocal then
+                local personaje = jugador.Character
+                if personaje then
+                    for _, parte in pairs(personaje:GetChildren()) do
+                        if parte:IsA("BasePart") then
+                            parte.CanCollide = true
+                        end
                     end
                 end
-            end
-        end
-        previousCollisions = {}
-    end
-end
-
-LocalPlayerSection:NewToggle("Disable players collisions", "ToggleInfo", function(state)
-    togglePlayerCollisions(state)
-end)
-
-local function updateCollisionsForCharacter(character)
-    local collisionState = toggleCollisions and false or true
-    for _, part in pairs(character:GetChildren()) do
-        if part:IsA("BasePart") then
-            part.CanCollide = collisionState
-        end
-    end
-end
-
-game.Players.PlayerAdded:Connect(function(newPlayer)
-    newPlayer.CharacterAdded:Connect(function(character)
-        if toggleCollisions then
-            updateCollisionsForCharacter(character)
-        end
-    end)
-end)
-
-for _, player in pairs(game.Players:GetPlayers()) do
-    if player ~= game.Players.LocalPlayer then
-        player.CharacterAdded:Connect(function(character)
-            if toggleCollisions then
-                updateCollisionsForCharacter(character)
-            end
-        end)
-        if player.Character then
-            updateCollisionsForCharacter(player.Character)
-        end
-    end
-end
-
-game:GetService("RunService").Stepped:Connect(function()
-    if toggleCollisions then
-        for _, player in pairs(game.Players:GetPlayers()) do
-            if player ~= game.Players.LocalPlayer and player.Character then
-                updateCollisionsForCharacter(player.Character)
             end
         end
     end
@@ -3887,118 +3879,6 @@ EmoteSection:NewButton("Sit", "ButtonInfo", function()
 		game.Players.LocalPlayer.Character.Humanoid.Changed:Once(function()
 			track:Stop()
 		end)
-    end)
-    
-    SettingsAutofarm = {}
-if _G.AutofarmSettings then
-    SettingsAutofarm = _G.AutofarmSettings
-else
-    _G.AutofarmSettings = {}
-    SettingsAutofarm = {AntiAfk = true, DelayFarm = 3}
-end
-
-if _G.AutoFarmMM2IsLoaded then return end
-_G.AutoFarmMM2IsLoaded = true
-
-Player = game.Players.LocalPlayer
-Players = game.Players
-RunService = game:GetService("RunService")
-CoinCollectedEvent = game.ReplicatedStorage.Remotes.Gameplay.CoinCollected
-RoundStartEvent = game.ReplicatedStorage.Remotes.Gameplay.RoundStart
-RoundEndEvent = game.ReplicatedStorage.Remotes.Gameplay.RoundEndFade
-
-AutofarmStarted = false
-CurrentCoinType = "Candy"
-AutofarmDelay = 3
-ResetWhenFullBag = false 
-AutofarmIN = false
-
-bringpose = CFrame.new(math.random(-5, 5), -100, math.random(-5, 5))
-safepart = Instance.new("Part")
-safepart.Anchored = true
-safepart.Massless = true
-safepart.Transparency = 1
-safepart.Size = Vector3.new(2048, 0.5, 2048)
-safepart.CFrame = bringpose * CFrame.new(0, -0.9, 0)
-safepart.Parent = workspace
-
-function returncoincontaier()
-    for _, v in workspace:GetChildren() do
-        if v:FindFirstChild("CoinContainer") and v:IsA("Model") then
-            return v:FindFirstChild("CoinContainer")
-        end
-    end
-    return false
-end
-
-CoinCollectedEvent.OnClientEvent:Connect(function(cointype, current, max)
-    AutofarmIN = true
-    if cointype == CurrentCoinType and tonumber(current) == tonumber(max) then
-        AutofarmIN = false
-        if ResetWhenFullBag then
-            if Player.Character and Player.Character:FindFirstChild("Humanoid") then
-                Player.Character.Humanoid.Health = 0
-            else
-                Player:LoadCharacter()
-            end
-        end
-    end
-end)
-
-function PcallTP(Position)
-    if Player.Character then
-        if Player.Character:FindFirstChild("HumanoidRootPart") then
-            Player.Character.HumanoidRootPart.CFrame = Position
-        end
-    end
-end
-
-spawn(function()
-    while true do
-        if AutofarmStarted and AutofarmIN and Player.Character and returncoincontaier() then
-            PcallTP(bringpose)
-            for _, v in pairs(returncoincontaier():GetChildren()) do
-                if v:GetAttribute("CoinID") == CurrentCoinType and v:FindFirstChild("TouchInterest") then
-                    for i = 1, 7 do
-                        PcallTP(v.CFrame)
-                        task.wait(0.03)
-                    end
-                    break
-                end
-            end
-            PcallTP(bringpose)
-        end
-        task.wait(AutofarmDelay)
-    end
-end)
-
-RoundStartEvent.OnClientEvent:Connect(function()
-    if AutofarmStarted then Player.Character.HumanoidRootPart.CFrame = bringpose end
-    AutofarmIN = true
-end)
-
-RoundEndEvent.OnClientEvent:Connect(function()
-    AutofarmIN = false
-end)
-
-for Configname, Configvalue in pairs(SettingsAutofarm) do
-    if Configname == "DelayFarm" and tonumber(Configvalue) and tonumber(Configvalue) < 8 then
-        AutofarmDelay = tonumber(Configvalue)
-    elseif Configname == "StartAutofarm" and Configvalue == true then
-        AutofarmStarted = true
-    end
-end
-
-AutoFarmSection:NewToggle("Autofarm tp", "ToggleInfo", function(state)
-        savedConfig.Autofarmn = state
-        saveConfig(savedConfig)
-        AutofarmStarted = state
-    end)
-
-AutoFarmSection:NewToggle("Reset when bag is full", "ToggleInfo", function(state)
-        savedConfig.ResetWhenFullBag = state
-        saveConfig(savedConfig)
-        ResetWhenFullBag = state
     end)
 
 local old
