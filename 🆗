@@ -1168,11 +1168,10 @@ local debounceTime = 0.1
 local lastFireTime = 0
 local moveThreshold = 60
 local initialTouchPosition = nil
-local isScriptActive = true
-local isSharpShooterActive = false -- Modo Sharp Shooter
+local isScriptActive = false
+local isSharpShooterActive = false
 local MurdererPlayerName = nil
 
--- Función auxiliar para obtener el HumanoidRootPart de un Character
 local function getHumanoidRootPart(character)
     if character then
         return character:FindFirstChild("HumanoidRootPart") or character:WaitForChild("HumanoidRootPart", 2)
@@ -1180,7 +1179,6 @@ local function getHumanoidRootPart(character)
     return nil
 end
 
--- Obtiene el ping del jugador
 local function getPing()
     local stats = LocalPlayer:FindFirstChild("Stats")
     if stats and stats:FindFirstChild("Ping") then
@@ -1189,7 +1187,6 @@ local function getPing()
     return 0
 end
 
--- Detecta si el objetivo está en el aire
 local function isTargetInAir(targetCharacter)
     if not targetCharacter then return false end
     local humanoid = targetCharacter:FindFirstChild("Humanoid")
@@ -1199,19 +1196,16 @@ local function isTargetInAir(targetCharacter)
     return false
 end
 
--- Calcula el offset basado en el ping, la distancia y si el objetivo está en el aire
 local function calculateOffset(ping, distanceToClosestPlayer, isTargetInAir)
     local horizontalOffset = 0
     local verticalOffset = 0
 
-    -- Si Sharp Shooter está activo, los offsets son más precisos
     if isSharpShooterActive then
-        horizontalOffset = 0.5 -- Ajuste fino para precisión
+        horizontalOffset = 0.5
         verticalOffset = 0
         return horizontalOffset, verticalOffset
     end
 
-    -- Lógica normal de offset
     if ping > 90 then
         horizontalOffset = 1
         verticalOffset = 0
@@ -1226,12 +1220,12 @@ local function calculateOffset(ping, distanceToClosestPlayer, isTargetInAir)
         verticalOffset = 0
     else
         horizontalOffset = 2.5
-        verticalOffset = -1
+        verticalOffset = -0.5
     end
 
     if distanceToClosestPlayer and distanceToClosestPlayer < 2 then
         horizontalOffset = horizontalOffset * 0.4
-        verticalOffset = verticalOffset * 0.3
+        verticalOffset = verticalOffset * 0.2
     end
     if distanceToClosestPlayer and distanceToClosestPlayer > 18 then
         horizontalOffset = horizontalOffset * 0.85
@@ -1239,20 +1233,20 @@ local function calculateOffset(ping, distanceToClosestPlayer, isTargetInAir)
 
     if isTargetInAir then
         horizontalOffset = horizontalOffset * 0.6
+        verticalOffset = verticalOffset * 0.5
     end
 
     return horizontalOffset, verticalOffset
 end
 
--- Predice la posición del objetivo
 local function predictPosition(targetCharacter, distanceToClosestPlayer)
     local humanoidRootPart = getHumanoidRootPart(targetCharacter)
     if humanoidRootPart then
         local targetPosition = humanoidRootPart.Position
         local targetVelocity = humanoidRootPart.Velocity
         local distanceToPlayer = (targetPosition - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
-
-        local predictionTime = math.clamp(distanceToPlayer / 50, 0, 0.1)
+        
+        local predictionTime = math.clamp(distanceToPlayer / 40, 0, 0.1)
         local predictedPosition = targetPosition + targetVelocity * predictionTime
 
         local ping = getPing()
@@ -1265,7 +1259,6 @@ local function predictPosition(targetCharacter, distanceToClosestPlayer)
     return nil
 end
 
--- Obtiene el jugador más cercano o prioriza al Murderer
 local function getClosestPlayer()
     local closestPlayer = nil
     local shortestDistance = math.huge
@@ -1276,7 +1269,6 @@ local function getClosestPlayer()
             if humanoidRootPart then
                 local distance = (LocalPlayer.Character.HumanoidRootPart.Position - humanoidRootPart.Position).Magnitude
 
-                -- Prioriza al Murderer
                 if player.Name == MurdererPlayerName then
                     return player.Character, distance
                 end
@@ -1292,7 +1284,6 @@ local function getClosestPlayer()
     return closestPlayer and closestPlayer.Character, shortestDistance
 end
 
--- Nueva función para disparar a una posición
 local function shootAtPosition(targetPosition)
     local gun = LocalPlayer.Character:FindFirstChild("Gun")
     if gun then
@@ -1312,7 +1303,6 @@ local function shootAtPosition(targetPosition)
     end
 end
 
--- Dispara al jugador más cercano o al Murderer
 local function shootAtClosestPlayer()
     if isScriptActive then
         local closestCharacter, distanceToClosestPlayer = getClosestPlayer()
@@ -1325,7 +1315,6 @@ local function shootAtClosestPlayer()
     end
 end
 
--- Detecta toques en pantalla para disparar
 UserInputService.TouchEnded:Connect(function(input)
     if initialTouchPosition then
         local finalTouchPosition = input.Position
@@ -1344,7 +1333,6 @@ UserInputService.TouchStarted:Connect(function(input)
     initialTouchPosition = input.Position
 end)
 
--- Identifica al Murderer en tiempo real cada 3 segundos
 task.spawn(function()
     while true do
         local remoteFunction = ReplicatedStorage:FindFirstChild("GetPlayerData", true)
@@ -1362,16 +1350,14 @@ task.spawn(function()
                 MurdererPlayerName = nil
             end
         end
-        task.wait(3) -- Espera 3 segundos antes de volver a comprobar
+        task.wait(3)
     end
 end)
 
--- Toggle para activar/desactivar el Silent Aim
 CombateSection:NewToggle("Silent Aim", "Activa o desactiva el script de Silent Aim", function(state)
     isScriptActive = state
 end)
 
--- Toggle para activar/desactivar el modo Sharp Shooter
 CombateSection:NewToggle("Sharp Shooter", "Mejora la precisión del Silent Aim", function(state)
     isSharpShooterActive = state
 end)
