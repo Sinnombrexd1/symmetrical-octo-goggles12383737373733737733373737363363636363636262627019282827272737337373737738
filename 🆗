@@ -439,14 +439,10 @@ end
 
 player.Idled:Connect(simulateMouseActivity)
     end)
-    
-local Players = game:GetService("Players")
-local Workspace = game:GetService("Workspace")
 
 local highlights = {}
 local connections = {}
 
--- Añadir un Highlight a una moneda
 local function addHighlight(coin)
     if not highlights[coin] then
         local highlight = Instance.new("Highlight", coin)
@@ -454,7 +450,6 @@ local function addHighlight(coin)
         highlight.OutlineColor = Color3.fromRGB(0, 255, 0)
         highlights[coin] = highlight
 
-        -- Eliminar si la moneda desaparece
         coin.AncestryChanged:Connect(function()
             if not coin:IsDescendantOf(Workspace) then
                 highlight:Destroy()
@@ -464,7 +459,6 @@ local function addHighlight(coin)
     end
 end
 
--- Aplicar Highlights a todas las monedas
 local function applyHighlights()
     for _, obj in ipairs(Workspace:GetDescendants()) do
         if obj:IsA("BasePart") and obj.Name == "Coin_Server" then
@@ -472,7 +466,6 @@ local function applyHighlights()
         end
     end
 
-    -- Listener para nuevas monedas
     table.insert(connections, Workspace.DescendantAdded:Connect(function(obj)
         if obj:IsA("BasePart") and obj.Name == "Coin_Server" then
             addHighlight(obj)
@@ -480,7 +473,6 @@ local function applyHighlights()
     end))
 end
 
--- Eliminar todos los Highlights y conexiones
 local function clearAll()
     for _, highlight in pairs(highlights) do
         if highlight.Parent then highlight:Destroy() end
@@ -492,19 +484,20 @@ local function clearAll()
     connections = {}
 end
 
--- Alternar visibilidad de las monedas
 local function toggleHighlights(state)
     clearAll()
     if state then applyHighlights() end
 end
 
--- Interfaz para activar/desactivar
+local initialState = false
+
 VisualSection:NewToggle("See coins", "Toggle visibility of coins", function(state)
     toggleHighlights(state)
 end)
 
--- Responder al reaparecer o morir
-Players.LocalPlayer.CharacterAdded:Connect(function() toggleHighlights(true) end)
+toggleHighlights(initialState)
+
+Players.LocalPlayer.CharacterAdded:Connect(function() toggleHighlights(initialState) end)
 Players.LocalPlayer.CharacterRemoving:Connect(clearAll)
 
 local originalSizes = {}
@@ -1147,7 +1140,6 @@ end
 	end)
 
 local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -1157,7 +1149,8 @@ local lastFireTime = 0
 local moveThreshold = 60
 local initialTouchPosition = nil
 local isScriptActive = true
-local MurdererPlayerName
+local isSharpShooterActive = false -- Modo Sharp Shooter
+local MurdererPlayerName = nil
 
 -- Función auxiliar para obtener el HumanoidRootPart de un Character
 local function getHumanoidRootPart(character)
@@ -1191,8 +1184,19 @@ local function calculateOffset(ping, distanceToClosestPlayer, isTargetInAir)
     local horizontalOffset = 0
     local verticalOffset = 0
 
-    if ping <= 50 then
-        horizontalOffset = 1.1
+    -- Si Sharp Shooter está activo, los offsets son más precisos
+    if isSharpShooterActive then
+        horizontalOffset = 0.5 -- Ajuste fino para precisión
+        verticalOffset = 0
+        return horizontalOffset, verticalOffset
+    end
+
+    -- Lógica normal de offset
+    if ping > 90 then
+        horizontalOffset = 1
+        verticalOffset = 0
+    elseif ping <= 50 then
+        horizontalOffset = 1.0
         verticalOffset = 0
     elseif ping <= 70 then
         horizontalOffset = 1.6
@@ -1227,14 +1231,14 @@ local function predictPosition(targetCharacter, distanceToClosestPlayer)
         local targetPosition = humanoidRootPart.Position
         local targetVelocity = humanoidRootPart.Velocity
         local distanceToPlayer = (targetPosition - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
-        
+
         local predictionTime = math.clamp(distanceToPlayer / 50, 0, 0.1)
         local predictedPosition = targetPosition + targetVelocity * predictionTime
 
         local ping = getPing()
         local inAir = isTargetInAir(targetCharacter)
         local horizontalOffset, verticalOffset = calculateOffset(ping, distanceToClosestPlayer, inAir)
-        
+
         predictedPosition = predictedPosition + Vector3.new(horizontalOffset, verticalOffset, 0)
         return Vector3.new(predictedPosition.X, targetPosition.Y, predictedPosition.Z)
     end
@@ -1252,6 +1256,7 @@ local function getClosestPlayer()
             if humanoidRootPart then
                 local distance = (LocalPlayer.Character.HumanoidRootPart.Position - humanoidRootPart.Position).Magnitude
 
+                -- Prioriza al Murderer
                 if player.Name == MurdererPlayerName then
                     return player.Character, distance
                 end
@@ -1276,7 +1281,14 @@ local function shootAtPosition(targetPosition)
             [2] = targetPosition,
             [3] = "AH2"
         }
-        gun.KnifeLocal.CreateBeam.RemoteFunction:InvokeServer(unpack(args))
+        local success, error = pcall(function()
+            gun.KnifeLocal.CreateBeam.RemoteFunction:InvokeServer(unpack(args))
+        end)
+        if not success then
+            warn("Error al disparar: " .. error)
+        end
+    else
+        warn("No se encontró el arma.")
     end
 end
 
@@ -1334,9 +1346,14 @@ task.spawn(function()
     end
 end)
 
--- Toggle para activar/desactivar el script
-CombateSection:NewToggle("Silent aim", "Activa o desactiva el script", function(state)
+-- Toggle para activar/desactivar el Silent Aim
+CombateSection:NewToggle("Silent Aim", "Activa o desactiva el script de Silent Aim", function(state)
     isScriptActive = state
+end)
+
+-- Toggle para activar/desactivar el modo Sharp Shooter
+CombateSection:NewToggle("Sharp Shooter", "Mejora la precisión del Silent Aim", function(state)
+    isSharpShooterActive = state
 end)
 
 CombateSection:NewButton("Shoot the murderer(is not complete)", "ButtonInfo", function()
@@ -2435,53 +2452,50 @@ local canCollide = false
 local toggleCollisions = false
 local previousCollisions = {}  
 
-LocalPlayerSection:NewToggle("Disable players collisions", "ToggleInfo", function(state)
-        savedConfig.collisions = state
-        saveConfig(savedConfig)
-        toggleCollisions = state
+local function togglePlayerCollisions(state)
+    savedConfig.collisions = state
+    saveConfig(savedConfig)
+    toggleCollisions = state
 
-        if toggleCollisions then
-            for _, otherPlayer in pairs(game.Players:GetPlayers()) do
-                if otherPlayer ~= game.Players.LocalPlayer then
-                    local otherCharacter = otherPlayer.Character
-                    if otherCharacter then
-                        previousCollisions[otherPlayer.UserId] = {}
-                        for _, part in pairs(otherCharacter:GetChildren()) do
-                            if part:IsA("BasePart") then
-                                previousCollisions[otherPlayer.UserId][part] = part.CanCollide  
-                                part.CanCollide = false  
-                            end
-                        end
-                    end
-                end
-            end
-        else
-            for userId, parts in pairs(previousCollisions) do
-                local player = game.Players:GetPlayerByUserId(userId)
-                if player and player.Character then
-                    for part, canCollide in pairs(parts) do
-                        if part.Parent == player.Character then
-                            part.CanCollide = canCollide
-                        end
-                    end
-                end
-            end
-            previousCollisions = {}  
-        end
-    end)
-
-local function updateCollisionsForCharacter(character)
     if toggleCollisions then
-        for _, part in pairs(character:GetChildren()) do
-            if part:IsA("BasePart") then
-                part.CanCollide = false
+        for _, otherPlayer in pairs(game.Players:GetPlayers()) do
+            if otherPlayer ~= game.Players.LocalPlayer then
+                local otherCharacter = otherPlayer.Character
+                if otherCharacter then
+                    previousCollisions[otherPlayer.UserId] = {}
+                    for _, part in pairs(otherCharacter:GetChildren()) do
+                        if part:IsA("BasePart") then
+                            previousCollisions[otherPlayer.UserId][part] = part.CanCollide
+                            part.CanCollide = false
+                        end
+                    end
+                end
             end
         end
     else
-        for _, part in pairs(character:GetChildren()) do
-            if part:IsA("BasePart") then
-                part.CanCollide = true
+        for userId, parts in pairs(previousCollisions) do
+            local player = game.Players:GetPlayerByUserId(userId)
+            if player and player.Character then
+                for part, canCollide in pairs(parts) do
+                    if part.Parent == player.Character then
+                        part.CanCollide = canCollide
+                    end
+                end
             end
+        end
+        previousCollisions = {}
+    end
+end
+
+LocalPlayerSection:NewToggle("Disable players collisions", "ToggleInfo", function(state)
+    togglePlayerCollisions(state)
+end)
+
+local function updateCollisionsForCharacter(character)
+    local collisionState = toggleCollisions and false or true
+    for _, part in pairs(character:GetChildren()) do
+        if part:IsA("BasePart") then
+            part.CanCollide = collisionState
         end
     end
 end
