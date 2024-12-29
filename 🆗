@@ -253,15 +253,12 @@ end
 deleteConfigFile()
 end)
 
-local hitboxSize = savedConfig.hitboxSize or 1
-local hitboxTransparency = savedConfig.hitboxTransparency or 0.7
-local hitboxCollisionEnabled = savedConfig.hitboxCollisionEnabled or false
-local hitboxColor = Color3.fromRGB(
-    savedConfig.hitboxColorR or 255, 
-    savedConfig.hitboxColorG or 255, 
-    savedConfig.hitboxColorB or 255
-)
-local hitboxEnabled = savedConfig.hitboxEnabled or false
+local hitboxSize = 1
+local hitboxTransparency = 0.7
+local hitboxCollisionEnabled = false
+local hitboxColor = Color3.fromRGB(255, 255, 255)
+local hitboxEnabled = false
+
 local connection
 
 local function isCharacterValid(character)
@@ -294,19 +291,8 @@ local function hitboxes(enable)
     end
 end
 
-local function updateHitboxColor()
-    hitboxColor = Color3.fromRGB(
-        savedConfig.hitboxColorR or 255, 
-        savedConfig.hitboxColorG or 255, 
-        savedConfig.hitboxColorB or 255
-    )
-    updateHitboxesIfEnabled()
-end
-
 HitboxSection:NewToggle("Hitbox Expander", "ToggleInfo", function(state)
     hitboxEnabled = state
-    savedConfig.hitboxEnabled = state
-    saveConfig(savedConfig)
 
     if connection then
         connection:Disconnect()
@@ -322,67 +308,48 @@ HitboxSection:NewToggle("Hitbox Expander", "ToggleInfo", function(state)
     end
 end)
 
-HitboxSection:NewTextBox("Hitbox Size", "Enter a value (1-10)", function(value)
-    local number = tonumber(value)
-    if number and number >= 1 and number <= 10 then
-        hitboxSize = number
-        savedConfig.hitboxSize = number
-        saveConfig(savedConfig)
+HitboxSection:NewTextBox("Hitbox Size", "Introduce un valor numérico", function(value)
+    local numValue = tonumber(value)
+    if numValue and numValue >= 1 and numValue <= 30 then
+        hitboxSize = numValue
         updateHitboxesIfEnabled()
-    else
-        print("Invalid value! Enter a number between 1 and 10.")
     end
 end)
 
-HitboxSection:NewTextBox("Hitbox Transparency", "Enter a value (0-0.9)", function(value)
-    local number = tonumber(value)
-    if number and number >= 0 and number <= 0.9 then
-        hitboxTransparency = number
-        savedConfig.hitboxTransparency = number
-        saveConfig(savedConfig)
+HitboxSection:NewTextBox("Hitbox Transparency", "Introduce un valor entre 0 y 1", function(value)
+    local numValue = tonumber(value)
+    if numValue and numValue >= 0 and numValue <= 1 then
+        hitboxTransparency = numValue
         updateHitboxesIfEnabled()
-    else
-        print("Invalid value! Enter a number between 0 and 0.9.")
     end
 end)
 
-HitboxSection:NewTextBox("Red", "Enter a value (0-255)", function(value)
-    local number = tonumber(value)
-    if number and number >= 0 and number <= 255 then
-        savedConfig.hitboxColorR = number
-        saveConfig(savedConfig)
-        updateHitboxColor()
-    else
-        print("Invalid value! Enter a number between 0 and 255.")
+HitboxSection:NewTextBox("Red", "Introduce un valor entre 0 y 255", function(value)
+    local numValue = tonumber(value)
+    if numValue and numValue >= 0 and numValue <= 255 then
+        hitboxColor = Color3.fromRGB(numValue, hitboxColor.G * 255, hitboxColor.B * 255)
+        updateHitboxesIfEnabled()
     end
 end)
 
-HitboxSection:NewTextBox("Green", "Enter a value (0-255)", function(value)
-    local number = tonumber(value)
-    if number and number >= 0 and number <= 255 then
-        savedConfig.hitboxColorG = number
-        saveConfig(savedConfig)
-        updateHitboxColor()
-    else
-        print("Invalid value! Enter a number between 0 and 255.")
+HitboxSection:NewTextBox("Green", "Introduce un valor entre 0 y 255", function(value)
+    local numValue = tonumber(value)
+    if numValue and numValue >= 0 and numValue <= 255 then
+        hitboxColor = Color3.fromRGB(hitboxColor.R * 255, numValue, hitboxColor.B * 255)
+        updateHitboxesIfEnabled()
     end
 end)
 
-HitboxSection:NewTextBox("Blue", "Enter a value (0-255)", function(value)
-    local number = tonumber(value)
-    if number and number >= 0 and number <= 255 then
-        savedConfig.hitboxColorB = number
-        saveConfig(savedConfig)
-        updateHitboxColor()
-    else
-        print("Invalid value! Enter a number between 0 and 255.")
+HitboxSection:NewTextBox("Blue", "Introduce un valor entre 0 y 255", function(value)
+    local numValue = tonumber(value)
+    if numValue and numValue >= 0 and numValue <= 255 then
+        hitboxColor = Color3.fromRGB(hitboxColor.R * 255, hitboxColor.G * 255, numValue)
+        updateHitboxesIfEnabled()
     end
 end)
 
 HitboxSection:NewToggle("Hitbox Collision", "ToggleInfo", function(state)
     hitboxCollisionEnabled = state
-    savedConfig.hitboxCollisionEnabled = state
-    saveConfig(savedConfig)
     updateHitboxesIfEnabled()
 end)
 
@@ -390,58 +357,6 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local StarterGui = game:GetService("StarterGui")
 local player = game.Players.LocalPlayer
-
-local notificationCooldown = 4
-local lastNotificationTime = 0
-local connection
-
-VisualSection:NewToggle("Murderer Notification", "ToggleInfo", function(state)
-        local character = player.Character or player.CharacterAdded:Wait()
-        local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
-
-        if state then
-            local roles = ReplicatedStorage:FindFirstChild("GetPlayerData", true):InvokeServer()
-            local murdererName
-
-            for i, v in pairs(roles) do
-                if v.Role == "Murderer" then
-                    murdererName = i
-                    break
-                end
-            end
-
-            if murdererName then
-                connection = RunService.RenderStepped:Connect(function()
-                    local murdererPlayer = game.Players:FindFirstChild(murdererName)
-
-                    if murdererPlayer and murdererPlayer.Character then
-                        local murdererRootPart = murdererPlayer.Character:FindFirstChild("HumanoidRootPart")
-                        if murdererRootPart then
-                            local distance = (humanoidRootPart.Position - murdererRootPart.Position).Magnitude
-                            local heightDifference = math.abs(humanoidRootPart.Position.Y - murdererRootPart.Position.Y)
-
-                            if distance <= 30 and heightDifference <= 5 and (os.clock() - lastNotificationTime) >= notificationCooldown then
-                                lastNotificationTime = os.clock()
-                                StarterGui:SetCore("SendNotification", {
-                                    Title = "¡Careful!",
-                                    Text = "¡The Murderer is Near!",
-                                    Duration = 5
-                                })
-                            end
-                        end
-                    end
-                end)
-            else
-                warn("No se encontró un Murderer.")
-            end
-        else
-            if connection then
-                connection:Disconnect()
-                connection = nil
-            end
-            lastNotificationTime = 0
-        end
-    end)
     
 MICSection:NewButton("Anti afk", "ButtonInfo", function()
     local vu = game:GetService("VirtualUser")
@@ -700,109 +615,109 @@ MICSection:NewToggle("Saltar en segunda vida.", "ToggleInfo", function(state)
         toggleJumpFeature(state)
     end)
 TeleportSection:NewButton("FAKE SPEED GLICH", "ButtonInfo", function()
-local existingGui = game:GetService("CoreGui"):FindFirstChild("fakespeed")
-if existingGui then
-    return
-end
-
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "fakespeed"
-screenGui.Parent = game:GetService("CoreGui")
-
-local button = Instance.new("TextButton")
-local UICorner = Instance.new("UICorner")
-
-button.Name = "Button"
-button.Size = UDim2.new(0, 50, 0, 50)
-button.Position = UDim2.new(0.5, -10, 0.5, -25)
-button.Text = "OFF"
-button.Font = Enum.Font.Gotham
-button.TextSize = 14
-button.TextColor3 = Color3.fromRGB(255, 255, 255)
-button.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-button.BackgroundTransparency = 0.6
-button.Draggable = true
-button.BorderSizePixel = 0
-button.Parent = screenGui
-
-UICorner.CornerRadius = UDim.new(0, 15)
-UICorner.Parent = button
-
-local isActive = false
-local slidingConnection
-
-local function toggleButton()
-    isActive = not isActive
-    if isActive then
-        button.Text = "ON"
-        button.BackgroundColor3 = Color3.fromRGB(173, 216, 230)
-    else
-        button.Text = "OFF"
-        button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    end
-end
-
-button.MouseButton1Click:Connect(toggleButton)
-
-local player = game.Players.LocalPlayer
-local slidingSpeed = 3
-local maxSlidingSpeed = 15 
-local acceleration = 0.2
-local deceleration = 0.1
-local landingDeceleration = 0.05
-local slideAfterLandSpeed = 2
-local slideAfterLandDuration = 0.3
-
-local function setupCharacter(character)
-    local humanoid = character:WaitForChild("Humanoid")
-    local landed = false
-    local slideTime = 0
-
-    local function isInAir()
-        return humanoid:GetState() == Enum.HumanoidStateType.Freefall
+    local existingGui = game:GetService("CoreGui"):FindFirstChild("fakespeed")
+    if existingGui then
+        return
     end
 
-    local function isLanding()
-        return humanoid:GetState() == Enum.HumanoidStateType.Landed
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Name = "fakespeed"
+    screenGui.Parent = game:GetService("CoreGui")
+
+    local button = Instance.new("TextButton")
+    local UICorner = Instance.new("UICorner")
+
+    button.Name = "Button"
+    button.Size = UDim2.new(0, 50, 0, 50)
+    button.Position = UDim2.new(0.5, -10, 0.5, -25)
+    button.Text = "OFF"
+    button.Font = Enum.Font.Gotham
+    button.TextSize = 14
+    button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    button.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    button.BackgroundTransparency = 0.6
+    button.Draggable = true
+    button.BorderSizePixel = 0
+    button.Parent = screenGui
+
+    UICorner.CornerRadius = UDim.new(0, 15)
+    UICorner.Parent = button
+
+    local isActive = false
+    local slidingConnection
+
+    local function toggleButton()
+        isActive = not isActive
+        if isActive then
+            button.Text = "ON"
+            button.BackgroundColor3 = Color3.fromRGB(173, 216, 230)
+        else
+            button.Text = "OFF"
+            button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+        end
     end
 
-    if slidingConnection then
-        slidingConnection:Disconnect()
-    end
+    button.MouseButton1Click:Connect(toggleButton)
 
-    slidingConnection = game:GetService("RunService").RenderStepped:Connect(function(deltaTime)
-        if isInAir() and isActive then
-            local direction = humanoid.MoveDirection
-            if direction.Magnitude > 0 then
-                slidingSpeed = math.min(slidingSpeed + acceleration, maxSlidingSpeed)
-                character:TranslateBy(direction * slidingSpeed * deltaTime)
+    local player = game.Players.LocalPlayer
+    local slidingSpeed = 3
+    local maxSlidingSpeed = 15 
+    local acceleration = 0.2
+    local deceleration = 0.1
+    local landingDeceleration = 0.05
+    local slideAfterLandSpeed = 2
+    local slideAfterLandDuration = 0.3
+
+    local function setupCharacter(character)
+        local humanoid = character:WaitForChild("Humanoid")
+        local landed = false
+        local slideTime = 0
+
+        local function isInAir()
+            return humanoid:GetState() == Enum.HumanoidStateType.Freefall
+        end
+
+        local function isLanding()
+            return humanoid:GetState() == Enum.HumanoidStateType.Landed
+        end
+
+        if slidingConnection then
+            slidingConnection:Disconnect()
+        end
+
+        slidingConnection = game:GetService("RunService").Heartbeat:Connect(function(deltaTime)
+            if isInAir() and isActive then
+                local direction = humanoid.MoveDirection
+                if direction.Magnitude > 0 then
+                    slidingSpeed = math.min(slidingSpeed + acceleration, maxSlidingSpeed)
+                    character:TranslateBy(direction * slidingSpeed * deltaTime)
+                else
+                    slidingSpeed = math.max(slidingSpeed - deceleration, 0)
+                end
+            elseif isLanding() then
+                if not landed then
+                    slidingSpeed = slideAfterLandSpeed
+                    slideTime = 0
+                    landed = true
+                end
+            elseif landed then
+                if slideTime < slideAfterLandDuration then
+                    character:TranslateBy(humanoid.MoveDirection * slidingSpeed * deltaTime)
+                    slideTime = slideTime + deltaTime
+                    slidingSpeed = math.max(slidingSpeed - landingDeceleration, 0)
+                else
+                    landed = false
+                end
             else
                 slidingSpeed = math.max(slidingSpeed - deceleration, 0)
             end
-        elseif isLanding() then
-            if not landed then
-                slidingSpeed = slideAfterLandSpeed
-                slideTime = 0
-                landed = true
-            end
-        elseif landed then
-            if slideTime < slideAfterLandDuration then
-                character:TranslateBy(humanoid.MoveDirection * slidingSpeed * deltaTime)
-                slideTime = slideTime + deltaTime
-                slidingSpeed = math.max(slidingSpeed - landingDeceleration, 0)
-            else
-                landed = false
-            end
-        else
-            slidingSpeed = math.max(slidingSpeed - deceleration, 0)
-        end
-    end)
-end
+        end)
+    end
 
-player.CharacterAdded:Connect(setupCharacter)
-if player.Character then
-    setupCharacter(player.Character)
-end
+    player.CharacterAdded:Connect(setupCharacter)
+    if player.Character then
+        setupCharacter(player.Character)
+    end
 end)
 TeleportSection:NewButton("FAKE Fake bomb trick", "ButtonInfo", function()
 local existingGui = game:GetService("CoreGui"):FindFirstChild("bomb")
@@ -1179,6 +1094,13 @@ local function getHumanoidRootPart(character)
     return nil
 end
 
+local function getTargetPart(character)
+    if character then
+        return character:FindFirstChild("UpperTorso") or character:FindFirstChild("Torso") or character:FindFirstChild("Head") or getHumanoidRootPart(character)
+    end
+    return nil
+end
+
 local function getPing()
     local stats = LocalPlayer:FindFirstChild("Stats")
     if stats and stats:FindFirstChild("Ping") then
@@ -1196,12 +1118,12 @@ local function isTargetInAir(targetCharacter)
     return false
 end
 
-local function calculateOffset(ping, distanceToClosestPlayer, isTargetInAir)
+local function calculateOffset(ping, distanceToClosestPlayer, isTargetInAir, hitboxSize)
     local horizontalOffset = 0
     local verticalOffset = 0
 
     if isSharpShooterActive then
-        horizontalOffset = 0.5
+        horizontalOffset = 0.3
         verticalOffset = 0
         return horizontalOffset, verticalOffset
     end
@@ -1210,17 +1132,22 @@ local function calculateOffset(ping, distanceToClosestPlayer, isTargetInAir)
         horizontalOffset = 1
         verticalOffset = 0
     elseif ping <= 50 then
-        horizontalOffset = 1.0
+        horizontalOffset = 0.8
         verticalOffset = 0
     elseif ping <= 70 then
-        horizontalOffset = 1.6
+        horizontalOffset = 1.2
         verticalOffset = 0
     elseif ping <= 90 then
-        horizontalOffset = 2
+        horizontalOffset = 1.5
         verticalOffset = 0
     else
-        horizontalOffset = 2.5
-        verticalOffset = -0.5
+        horizontalOffset = 2
+        verticalOffset = -0.2
+    end
+
+    if hitboxSize and hitboxSize < 3 then
+        horizontalOffset = horizontalOffset * 0.6
+        verticalOffset = verticalOffset * 0.6
     end
 
     if distanceToClosestPlayer and distanceToClosestPlayer < 2 then
@@ -1240,18 +1167,19 @@ local function calculateOffset(ping, distanceToClosestPlayer, isTargetInAir)
 end
 
 local function predictPosition(targetCharacter, distanceToClosestPlayer)
-    local humanoidRootPart = getHumanoidRootPart(targetCharacter)
-    if humanoidRootPart then
-        local targetPosition = humanoidRootPart.Position
-        local targetVelocity = humanoidRootPart.Velocity
+    local targetPart = getTargetPart(targetCharacter)
+    if targetPart then
+        local targetPosition = targetPart.Position
+        local targetVelocity = targetPart.Velocity
+        local hitboxSize = targetPart.Size.Magnitude
         local distanceToPlayer = (targetPosition - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
-        
+
         local predictionTime = math.clamp(distanceToPlayer / 40, 0, 0.1)
         local predictedPosition = targetPosition + targetVelocity * predictionTime
 
         local ping = getPing()
         local inAir = isTargetInAir(targetCharacter)
-        local horizontalOffset, verticalOffset = calculateOffset(ping, distanceToClosestPlayer, inAir)
+        local horizontalOffset, verticalOffset = calculateOffset(ping, distanceToClosestPlayer, inAir, hitboxSize)
 
         predictedPosition = predictedPosition + Vector3.new(horizontalOffset, verticalOffset, 0)
         return Vector3.new(predictedPosition.X, targetPosition.Y, predictedPosition.Z)
@@ -1505,56 +1433,6 @@ for _, player in ipairs(Players:GetPlayers()) do
     end
 end
     end)
-    
-CombateSection:NewButton("Kill sheriff only [murderer Only]", "ButtonInfo", function()
-    local Players = game:GetService("Players")
-    local Plr = Players.LocalPlayer
-    local vim = game:GetService("VirtualInputManager")
-
-    -- Verificar si el jugador tiene un cuchillo
-    local knife = Plr.Backpack:FindFirstChild("Knife") or Plr.Character:FindFirstChild("Knife")
-    if not knife then
-        warn("No tienes un cuchillo en tu inventario.")
-        return
-    end
-
-    -- Buscar al jugador con el rol de Sheriff
-    local sheriffPlayer = nil
-    for _, player in ipairs(Players:GetPlayers()) do
-        if player ~= Plr and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-            local role = player:FindFirstChild("Role") or player.Character:FindFirstChild("Role")
-            if role and role:IsA("StringValue") and role.Value == "Sheriff" then
-                sheriffPlayer = player
-                break
-            end
-        end
-    end
-
-    if not sheriffPlayer then
-        warn("No se encontró al Sheriff.")
-        return
-    end
-
-    -- Equipar el cuchillo si no está ya equipado
-    if knife.Parent ~= Plr.Character then
-        knife.Parent = Plr.Character
-        repeat task.wait(0.1) until Plr.Character:FindFirstChild("Knife")
-    end
-
-    -- Atacar al Sheriff repetidamente
-    local humanoidRootPart = sheriffPlayer.Character:FindFirstChild("HumanoidRootPart")
-    if humanoidRootPart then
-        for attackCount = 1, 10 do
-            Plr.Character.HumanoidRootPart.CFrame = humanoidRootPart.CFrame * CFrame.new(0, 0, -3) -- Moverse cerca del Sheriff
-            vim:SendMouseButtonEvent(0, 0, 0, true, game, false, 0) -- Simular clic
-            task.wait(0.1)
-            vim:SendMouseButtonEvent(0, 0, 0, false, game, false, 0) -- Soltar clic
-            task.wait(0.1)
-        end
-    else
-        warn("No se pudo encontrar la posición del Sheriff.")
-    end
-end)
 
 local RunService = game:GetService("RunService")
 local player = game.Players.LocalPlayer
@@ -1625,7 +1503,7 @@ local function handleAura()
         equipKnife()
         if knifeEquipped then
             vim:SendMouseButtonEvent(0, 0, 0, true, game, false, 0)
-            task.wait(0.7)
+            task.wait(1)
             vim:SendMouseButtonEvent(0, 0, 0, false, game, false, 0)
         end
     else
@@ -1975,215 +1853,7 @@ if AllBool then
 	end)
 	
 MICSection:NewButton("fling all", "ButtonInfo", function()
-    local Targets = {"All"}
-
-local Players = game:GetService("Players")
-local Player = Players.LocalPlayer
-
-local AllBool = false
-
-local GetPlayer = function(Name)
-    Name = Name:lower()
-    if Name == "all" or Name == "others" then
-        AllBool = true
-        return
-    elseif Name == "random" then
-        local GetPlayers = Players:GetPlayers()
-        if table.find(GetPlayers, Player) then 
-            table.remove(GetPlayers, table.find(GetPlayers, Player)) 
-        end
-        return GetPlayers[math.random(#GetPlayers)]
-    else
-        for _, x in next, Players:GetPlayers() do
-            if x ~= Player then
-                if x.Name:lower():match("^"..Name) or x.DisplayName:lower():match("^"..Name) then
-                    return x
-                end
-            end
-        end
-    end
-    return nil
-end
-
-local Message = function(_Title, _Text, Time)
-    game:GetService("StarterGui"):SetCore("SendNotification", {Title = _Title, Text = _Text, Duration = Time})
-end
-
-local SkidFling = function(TargetPlayer)
-    local Character = Player.Character
-    local Humanoid = Character and Character:FindFirstChildOfClass("Humanoid")
-    local RootPart = Humanoid and Humanoid.RootPart
-
-    local TCharacter = TargetPlayer.Character
-    if not TCharacter then return Message("Error Occurred", "Target player has no character", 5) end
-
-    local THumanoid = TCharacter:FindFirstChildOfClass("Humanoid")
-    local TRootPart = THumanoid and THumanoid.RootPart
-    local THead = TCharacter:FindFirstChild("Head")
-    local Accessory = TCharacter:FindFirstChildOfClass("Accessory")
-    local Handle = Accessory and Accessory:FindFirstChild("Handle")
-
-    if Character and Humanoid and RootPart then
-        if RootPart.Velocity.Magnitude < 50 then
-            getgenv().OldPos = RootPart.CFrame
-        end
-        if THumanoid and THumanoid.Sit and not AllBool then
-            return Message("Error Occurred", "Target is sitting", 5)
-        end
-        if THead then
-            workspace.CurrentCamera.CameraSubject = THead
-        elseif Handle then
-            workspace.CurrentCamera.CameraSubject = Handle
-        elseif THumanoid then
-            workspace.CurrentCamera.CameraSubject = THumanoid
-        end
-        if not TCharacter:FindFirstChildWhichIsA("BasePart") then
-            return
-        end
-        
-        local FPos = function(BasePart, Pos, Ang)
-            RootPart.CFrame = CFrame.new(BasePart.Position) * Pos * Ang
-            Character:SetPrimaryPartCFrame(CFrame.new(BasePart.Position) * Pos * Ang)
-            RootPart.Velocity = Vector3.new(2e8, 2e8 * 10, 2e8)
-            RootPart.RotVelocity = Vector3.new(2e9, 2e9, 2e9)
-        end
-        
-        local SFBasePart = function(BasePart)
-            local TimeToWait = 2
-            local Time = tick()
-            local Angle = 0
-
-            repeat
-                if RootPart and THumanoid then
-                    if BasePart.Velocity.Magnitude < 50 then
-                        Angle = Angle + 100
-
-                        FPos(BasePart, CFrame.new(0, 1.5, 0) + THumanoid.MoveDirection * BasePart.Velocity.Magnitude / 1.25, CFrame.Angles(math.rad(Angle), 0, 0))
-                        task.wait()
-
-                        FPos(BasePart, CFrame.new(0, -1.5, 0) + THumanoid.MoveDirection * BasePart.Velocity.Magnitude / 1.25, CFrame.Angles(math.rad(Angle), 0, 0))
-                        task.wait()
-
-                        FPos(BasePart, CFrame.new(2.25, 1.5, -2.25) + THumanoid.MoveDirection * BasePart.Velocity.Magnitude / 1.25, CFrame.Angles(math.rad(Angle), 0, 0))
-                        task.wait()
-
-                        FPos(BasePart, CFrame.new(-2.25, -1.5, 2.25) + THumanoid.MoveDirection * BasePart.Velocity.Magnitude / 1.25, CFrame.Angles(math.rad(Angle), 0, 0))
-                        task.wait()
-
-                        FPos(BasePart, CFrame.new(0, 1.5, 0) + THumanoid.MoveDirection, CFrame.Angles(math.rad(Angle), 0, 0))
-                        task.wait()
-
-                        FPos(BasePart, CFrame.new(0, -1.5, 0) + THumanoid.MoveDirection, CFrame.Angles(math.rad(Angle), 0, 0))
-                        task.wait()
-                    else
-                        FPos(BasePart, CFrame.new(0, 1.5, THumanoid.WalkSpeed * 2), CFrame.Angles(math.rad(90), 0, 0))
-                        task.wait()
-
-                        FPos(BasePart, CFrame.new(0, -1.5, -THumanoid.WalkSpeed * 2), CFrame.Angles(0, 0, 0))
-                        task.wait()
-
-                        FPos(BasePart, CFrame.new(0, 1.5, THumanoid.WalkSpeed * 2), CFrame.Angles(math.rad(90), 0, 0))
-                        task.wait()
-                        
-                        FPos(BasePart, CFrame.new(0, 1.5, TRootPart.Velocity.Magnitude / 1.25 * 2), CFrame.Angles(math.rad(90), 0, 0))
-                        task.wait()
-
-                        FPos(BasePart, CFrame.new(0, -1.5, -TRootPart.Velocity.Magnitude / 1.25 * 2), CFrame.Angles(0, 0, 0))
-                        task.wait()
-
-                        FPos(BasePart, CFrame.new(0, 1.5, TRootPart.Velocity.Magnitude / 1.25 * 2), CFrame.Angles(math.rad(90), 0, 0))
-                        task.wait()
-
-                        FPos(BasePart, CFrame.new(0, -1.5, 0), CFrame.Angles(math.rad(90), 0, 0))
-                        task.wait()
-
-                        FPos(BasePart, CFrame.new(0, -1.5, 0), CFrame.Angles(0, 0, 0))
-                        task.wait()
-
-                        FPos(BasePart, CFrame.new(0, -1.5, 0), CFrame.Angles(math.rad(-90), 0, 0))
-                        task.wait()
-
-                        FPos(BasePart, CFrame.new(0, -1.5, 0), CFrame.Angles(0, 0, 0))
-                        task.wait()
-                    end
-                else
-                    break
-                end
-            until BasePart.Velocity.Magnitude > 500 or BasePart.Parent ~= TargetPlayer.Character or TargetPlayer.Parent ~= Players or TargetPlayer.Character ~= TCharacter or THumanoid.Sit or Humanoid.Health <= 0 or tick() > Time + TimeToWait
-        end
-        
-        workspace.FallenPartsDestroyHeight = 0/0
-        
-        local BV = Instance.new("BodyVelocity")
-        BV.Name = "EpixVel"
-        BV.Parent = RootPart
-        BV.Velocity = Vector3.new(2e8, 2e8, 2e8)
-        BV.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-        
-        Humanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, false)
-        
-        if TRootPart and THead then
-            if (TRootPart.Position - THead.Position).Magnitude > 5 then
-                SFBasePart(THead)
-            else
-                SFBasePart(TRootPart)
-            end
-        elseif TRootPart then
-            SFBasePart(TRootPart)
-        elseif THead then
-            SFBasePart(THead)
-        elseif Handle then
-            SFBasePart(Handle)
-        else
-            return Message("Error Occurred", "Target is missing everything", 5)
-        end
-        
-        BV:Destroy()
-        Humanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, true)
-        workspace.CurrentCamera.CameraSubject = Humanoid
-        
-        repeat
-            RootPart.CFrame = getgenv().OldPos * CFrame.new(0, 1, 0) 
-            Character:SetPrimaryPartCFrame(getgenv().OldPos * CFrame.new(0, 1, 0)) 
-            Humanoid:ChangeState("GettingUp")
-            for _, x in ipairs(Character:GetChildren()) do
-                if x:IsA("BasePart") then
-                    x.Velocity = Vector3.new()
-                    x.RotVelocity = Vector3.new()
-                end
-            end
-            task.wait()
-        until (RootPart.Position - getgenv().OldPos.p).Magnitude < 25
-        
-        
-        Message("Success", "The Player has been launched successfully", 5)
-        
-        workspace.FallenPartsDestroyHeight = getgenv().FPDH
-    else
-        return Message("Error Occurred", "Random error", 5)
-    end
-end
-
-if not getgenv().Welcome then 
-    Message("CapybaritaYT Script (improved) ", "enjoy it i!", 5) 
-end
-getgenv().Welcome = true
-
-for _, x in ipairs(Targets) do
-    AllBool = false
-    local Target = GetPlayer(x)
-    if x == "All" then
-        for _, Player in ipairs(Players:GetPlayers()) do
-            if Player ~= Players.LocalPlayer and Player.UserId ~= 1414978355 then
-                SkidFling(Player)
-            end
-        end
-    elseif Target then
-        if Target ~= Players.LocalPlayer and Target.UserId ~= 1414978355 then
-            SkidFling(Target)
-        end
-    end
-end
+loadstring(game:HttpGet("https://pastebin.com/raw/HpNf0TYX"))()
     end)
     
 TeleportSection:NewToggle("TP Gun", "ToggleInfo", function(state)
@@ -2276,40 +1946,6 @@ TeleportSection:NewToggle("TP Gun", "ToggleInfo", function(state)
     end
 end)
  
--- Configuración inicial
-_G.Unequipe = false -- Controla si el script está activo o no
-
--- Crear el toggle
-LocalPlayerSection:NewToggle("Auto Unequip Gun", "Desequipa automáticamente armas con 'Gun'", function(state)
-    _G.Unequipe = state -- Activa o desactiva la funcionalidad
-end)
-
--- Servicio necesario
-local RunService = game:GetService("RunService")
-local player = game.Players.LocalPlayer
-local lastTime = 0 -- Control del tiempo
-
--- Conectar al evento Heartbeat
-RunService.Heartbeat:Connect(function(deltaTime)
-    if not _G.Unequipe then return end -- No hacer nada si está desactivado
-
-    local currentTime = tick()
-    if currentTime - lastTime >= 0.2 then
-        lastTime = currentTime -- Actualizar el tiempo
-
-        if player.Character then
-            local humanoid = player.Character:FindFirstChild("Humanoid")
-            if humanoid then
-                for _, tool in ipairs(humanoid:GetChildren()) do
-                    if tool:IsA("Tool") and tool.Name:lower():find("gun") then
-                        humanoid:UnequipTools()
-                    end
-                end
-            end
-        end
-    end
-end)
-
 TeleportSection:NewToggle("Auto grab Gun", "ToggleInfo", function(state)
         savedConfig.grabGun = state
         saveConfig(savedConfig)
@@ -2584,59 +2220,12 @@ RunService.RenderStepped:Connect(function()
 end)
 end)
 
-local RunService = game:GetService("RunService")
-local player = game.Players.LocalPlayer
-local noclipConnection
-local originalCollisions = {}
-
-LocalPlayerSection:NewToggle("No Clip", "ToggleInfo", function(state)
-        savedConfig.noclip = state
-        saveConfig(savedConfig)
-        local character = player.Character
-        if character then
-            if state then
-                
-                for _, child in pairs(character:GetDescendants()) do
-                    if child:IsA("BasePart") then
-                        originalCollisions[child] = child.CanCollide
-                        child.CanCollide = false
-                    end
-                end
-
-                local function Noclip()
-                    for _, child in pairs(character:GetDescendants()) do
-                        if child:IsA("BasePart") then
-                            child.CanCollide = false
-                        end
-                    end
-                end
-                noclipConnection = RunService.Stepped:Connect(Noclip)
-            else
-                if noclipConnection then
-                    noclipConnection:Disconnect()
-                    noclipConnection = nil
-                    
-                    
-                    for part, wasCollidable in pairs(originalCollisions) do
-                        if part and part:IsA("BasePart") then
-                            part.CanCollide = wasCollidable
-                            part.Velocity = Vector3.new(0, 0, 0)
-                            part.RotVelocity = Vector3.new(0, 0, 0)
-                        end
-                    end
-                    originalCollisions = {} 
-
-                    local humanoid = character:FindFirstChildOfClass("Humanoid")
-                    if humanoid then
-                        humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
-                    end
-                end
-            end
-        end
-    end)
-
-VisualSection:NewSlider("ESP transparency (interior)", "SliderInfo", 10, 0, function(value)
-    sliderValue = value / 10
+-- Usamos el TextBox en lugar del slider
+local TextBox = VisualSection:NewTextBox("ESP Transparency (interior)", "TextBoxInfo", function(value)
+    local transparency = tonumber(value)
+    if transparency then
+        sliderValue = transparency / 10  -- Aseguramos que el valor esté en el rango correcto
+    end
 end)
 
 _G.Espp = false
@@ -2694,12 +2283,13 @@ VisualSection:NewToggle("ESP Players", "ToggleInfo", function(state)
                 highlight.OutlineColor = Color3.fromRGB(128, 128, 128)
             end
             
-            -- Ajustar la transparencia según el deslizador
+            -- Ajustar la transparencia según el valor del TextBox
             highlight.FillTransparency = sliderValue
         end
     end
 
-    RunService.RenderStepped:Connect(function()
+    -- Usamos Heartbeat en lugar de RenderStepped
+    RunService.Heartbeat:Connect(function()
         if not _G.Espp then
             -- Eliminar los resaltes existentes cuando desactivas el ESP
             for _, player in ipairs(Players:GetPlayers()) do
@@ -2727,8 +2317,6 @@ VisualSection:NewToggle("ESP Players", "ToggleInfo", function(state)
             CreateHighlightForPlayer(player)
             UpdateHighlightColor(player)
         end
-
-        wait()  -- Ejecutar cada frame sin demoras
     end)
 end)
 
@@ -2896,10 +2484,6 @@ game.Players.PlayerRemoving:Connect(function(player)
         Murder = nil
     end
 end)
-
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
-local Players = game:GetService("Players")
 
 local roles = {}
 local LocalPlayer = Players.LocalPlayer
@@ -3539,84 +3123,6 @@ end
 GodMode()
     end)
 
-LocalPlayerSection:NewToggle("auto second life v1", "ToggleInfo", function(state)
-        savedConfig.Se = toggleState
-        saveConfig(savedConfig)
-
-        local player = game.Players.LocalPlayer
-        local StarterGui = game:GetService("StarterGui")
-        local secondLifeActivated, notificationShown = false, false
-        local mapConnection, characterConnection
-
-        local function activateSecondLife()
-            if not toggleState or secondLifeActivated then return end
-            secondLifeActivated = true
-            local humanoid = player.Character:FindFirstChild("Humanoid")
-            if humanoid then
-                humanoid.Name = "1"
-                local clonedHumanoid = humanoid:Clone()
-                clonedHumanoid.Parent = player.Character
-                clonedHumanoid.Name = "Humanoid"
-                wait(0.1)
-                humanoid:Destroy()
-                workspace.CurrentCamera.CameraSubject = clonedHumanoid
-                player.Character.Animate.Disabled = true
-                wait(0.1)
-                player.Character.Animate.Disabled = false
-            end
-        end
-
-        local function checkNewMap()
-            if toggleState and not notificationShown then
-                StarterGui:SetCore("SendNotification", {
-                    Title = "Second Life",
-                    Text = "New map detected. Second Life will be activated soon.",
-                    Duration = 3
-                })
-                notificationShown = true
-                wait(15)
-                if toggleState and not secondLifeActivated then
-                    activateSecondLife()
-                end
-            end
-        end
-
-        local function resetSecondLife()
-            secondLifeActivated, notificationShown = false, false
-        end
-
-        local function disconnectConnections()
-            if mapConnection then 
-                mapConnection:Disconnect() 
-                mapConnection = nil 
-            end
-            if characterConnection then 
-                characterConnection:Disconnect() 
-                characterConnection = nil 
-            end
-        end
-
-        if toggleState then
-            resetSecondLife()
-            disconnectConnections()
-
-            mapConnection = workspace.DescendantAdded:Connect(function(descendant)
-                if toggleState and (descendant.Name == "Spawn" or descendant.Name == "PlayerSpawn") then
-                    checkNewMap()
-                end
-            end)
-
-            characterConnection = player.CharacterAdded:Connect(function()
-                if toggleState then
-                    resetSecondLife()
-                end
-            end)
-        else
-            disconnectConnections()
-            resetSecondLife()
-        end
-    end)
-
 VisualSection:NewButton("Fps Booster", "ButtonInfo", function()
 loadstring(game:HttpGet(("https://raw.githubusercontent.com/Jorgelinea/Fps/refs/heads/main/Protected_3128182632327016.txt"),true))()
     end)
@@ -3632,94 +3138,6 @@ if humanoid then
 end
 
 humanoidRootPart.CFrame = CFrame.new(humanoidRootPart.Position) * CFrame.Angles(math.rad(-90), 0, 0)
-    end)
-
-local lp = game.Players.LocalPlayer
-local knifeanim
-local fakeGunActive = false
-
-VisualSection:NewToggle("Fake Knife", "ToggleInfo", function(state)
-        savedConfig.Fake = state 
-        saveConfig(savedConfig)
-        if state then
-            if lp.Backpack:FindFirstChild("Knife") then return end
-            
-            local tool = Instance.new("Tool")
-            tool.Name = "Knife"
-            tool.Grip = CFrame.new(0, -1.17, 0.07, 1, 0, 0, 0, 1, 0, 0, 0, 1)
-            tool.GripForward = Vector3.new(0, 0, -1)
-            tool.GripPos = Vector3.new(0, -1.17, 0.07)
-            tool.GripRight = Vector3.new(1, 0, 0)
-            tool.GripUp = Vector3.new(0, 1, 0)
-
-            local handle = Instance.new("Part")
-            handle.Size = Vector3.new(1, 3.42, 1.09)
-            handle.Name = "Handle"
-            handle.Transparency = 1
-            handle.Parent = tool
-
-            tool.Parent = lp.Backpack
-
-            local animation1 = Instance.new("Animation")
-            animation1.AnimationId = "rbxassetid://2467567750"
-            local animation2 = Instance.new("Animation")
-            animation2.AnimationId = "rbxassetid://1957890538"
-            local anims = {animation1, animation2}
-
-            lp:GetMouse().Button1Down:Connect(function()
-                if tool.Parent == lp.Character then
-                    local anim = lp.Character.Humanoid:LoadAnimation(anims[math.random(1, 2)])
-                    anim:Play()
-                end
-            end)
-
-            local knife = lp.Character:WaitForChild("KnifeDisplay")
-            knife.Massless = true
-            local aa = Instance.new("Attachment", handle)
-            local ba = Instance.new("Attachment", knife)
-            local hinge = Instance.new("HingeConstraint", knife)
-            hinge.Attachment0 = aa
-            hinge.Attachment1 = ba
-            hinge.LimitsEnabled = true
-            hinge.LowerAngle = 0
-            hinge.Restitution = 0
-            hinge.UpperAngle = 0
-
-            for _, v in pairs(lp.Character:WaitForChild("UpperTorso"):GetChildren()) do
-                if v:IsA("Weld") and v.Part1 == knife then
-                    v:Destroy()
-                    break
-                end
-            end
-
-            knifeanim = game:GetService("RunService").Heartbeat:Connect(function()
-                if tool.Parent == lp.Character then
-                    knife.CFrame = handle.CFrame
-                elseif lp.Character and knife then
-                    knife.CFrame = lp.Character:WaitForChild("UpperTorso").CFrame * CFrame.new(-0.2, -0.4, 0.5)
-                end
-            end)
-
-            local function animateAndWait()
-                while tool.Parent == lp.Character do
-                    local anim = lp.Character.Humanoid:LoadAnimation(anims[math.random(1, 2)])
-                    anim:Play()
-                    wait(1)
-                end
-            end
-
-            spawn(animateAndWait)
-        else
-            if knifeanim then
-                knifeanim:Disconnect()
-            end
-            if lp.Character:FindFirstChild("Knife") then
-                lp.Character.Knife:Destroy()
-            end
-            if lp.Backpack:FindFirstChild("Knife") then
-                lp.Backpack.Knife:Destroy()
-            end
-        end
     end)
 
 TeleportSection:NewButton("Go to the Lobby", "ButtonInfo", function()
@@ -3867,44 +3285,6 @@ EmoteSection:NewButton("Sit", "ButtonInfo", function()
 		end)
     end)
 
-local old
-local isAntiKickEnabled = false
-
-old = hookmetamethod(game, "__namecall", function(self, ...)
-    local method = tostring(getnamecallmethod())
-    
-    if string.lower(method) == "kick" and isAntiKickEnabled then
-        return wait(9e9)
-    end
-    
-    return old(self, ...)
-end)
-
-local old
-local isAntiKickEnabled = false
-
-old = hookmetamethod(game, "__namecall", function(self, ...)
-    local method = tostring(getnamecallmethod())
-    
-    if string.lower(method) == "kick" and isAntiKickEnabled then
-        return wait(9e9)
-    end
-    
-    return old(self, ...)
-end)
-
-AutoFarmSection:NewToggle("Anti Kick", "ToggleInfo", function(state)
-        savedConfig.antikick = state
-        saveConfig(savedConfig)
-
-        isAntiKickEnabled = state
-        if isAntiKickEnabled then
-            print("Anti Kick Activado")
-        else
-            print("Anti Kick Desactivado")
-        end
-    end)
-
 local D3RenderingDisabled = false
 
 AutoFarmSection:NewToggle("Disable 3D rendering", "ToggleInfo", function(state)
@@ -3917,65 +3297,6 @@ AutoFarmSection:NewToggle("Disable 3D rendering", "ToggleInfo", function(state)
         elseif D3RenderingDisabled and not state then
             D3RenderingDisabled = false
             RunService:Set3dRenderingEnabled(true)
-        end
-    end)
-
-AutoFarmSection:NewToggle("Coin Optimization (is ass)", "ToggleInfo", function(state)
-        savedConfig.Optimization = state
-        saveConfig(savedConfig)
-        local connections = {}
-        
-        local function onTouch(coin, hit)
-            local player = game.Players:GetPlayerFromCharacter(hit.Parent)
-            if player then
-                coin.Transparency = 1
-                coin.CanCollide = false
-                wait(2)
-                coin:Destroy()
-            end
-        end
-
-        local function setupCoin(coin)
-            if coin:IsA("Part") then
-                local connection = coin.Touched:Connect(function(hit)
-                    onTouch(coin, hit)
-                end)
-                table.insert(connections, connection)
-            end
-        end
-
-        local function updateCoinContainer()
-            local coinContainer = workspace:FindFirstChild("Normal") and workspace.Normal:FindFirstChild("CoinContainer")
-            if coinContainer then
-                for _, coin in ipairs(coinContainer:GetChildren()) do
-                    if coin.Name == "CoinVisual" or coin.Name == "Coin_Server" then
-                        setupCoin(coin)
-                    end
-                end
-            end
-        end
-
-        while state do
-            updateCoinContainer()
-            
-            local coinContainer = workspace:FindFirstChild("Normal") and workspace.Normal:FindFirstChild("CoinContainer")
-            if coinContainer then
-                local connection = coinContainer.ChildAdded:Connect(function(newCoin)
-                    if newCoin.Name == "CoinVisual" or newCoin.Name == "Coin_Server" then
-                        setupCoin(newCoin)
-                    end
-                end)
-                table.insert(connections, connection)
-            end
-            
-            wait(1)
-        end
-
-        if not state then
-            for _, connection in ipairs(connections) do
-                connection:Disconnect()
-            end
-            connections = {}
         end
     end)
     
@@ -4128,161 +3449,62 @@ shootButton.MouseButton1Click:Connect(function()
 end)
     end)
 
+local Camera = workspace.CurrentCamera
+
+local function GetPlayerByRole(role)
+    local roles = ReplicatedStorage:FindFirstChild("GetPlayerData", true):InvokeServer()
+    for i, v in pairs(roles) do
+        if v.Role == role then
+            return Players:FindFirstChild(i)
+        end
+    end
+    return nil
+end
+
+local function TeleportToRole(role)
+    local rolePlayer = GetPlayerByRole(role)
+    if rolePlayer and rolePlayer.Character and rolePlayer.Character:FindFirstChild("HumanoidRootPart") then
+        local Character = Players.LocalPlayer.Character
+        if Character then
+            Character:SetPrimaryPartCFrame(rolePlayer.Character.HumanoidRootPart.CFrame)
+        end
+    end
+end
+
+local function ViewRole(role)
+    local rolePlayer = GetPlayerByRole(role)
+    if rolePlayer and rolePlayer.Character and rolePlayer.Character:FindFirstChild("HumanoidRootPart") then
+        Camera.CameraSubject = rolePlayer.Character.Humanoid
+        Camera.CFrame = rolePlayer.Character.HumanoidRootPart.CFrame
+    end
+end
+
 TeleportSection:NewButton("tp Sheriff", "Teletransportarse al Sheriff", function()
-    local Players = game:GetService("Players")
-    local ReplicatedStorage = game:GetService("ReplicatedStorage")
-
-    local LP = Players.LocalPlayer
-    local Character = LP.Character
-    local HumanoidRootPart = Character:FindFirstChild("HumanoidRootPart")
-
-    local function GetSheriff()
-        local roles = ReplicatedStorage:FindFirstChild("GetPlayerData", true):InvokeServer()
-        for i, v in pairs(roles) do
-            if v.Role == "Sheriff" then
-                return Players:FindFirstChild(i)
-            end
-        end
-        return nil
-    end
-
-    local function TeleportToSheriff()
-        local sheriffPlayer = GetSheriff()
-        if sheriffPlayer and sheriffPlayer.Character and sheriffPlayer.Character:FindFirstChild("HumanoidRootPart") then
-            Character:SetPrimaryPartCFrame(sheriffPlayer.Character.HumanoidRootPart.CFrame)
-        end
-    end
-
-    TeleportToSheriff()
+    TeleportToRole("Sheriff")
 end)
 
 TeleportSection:NewButton("tp Murderer", "Teletransportarse al Murderer", function()
-    local Players = game:GetService("Players")
-    local ReplicatedStorage = game:GetService("ReplicatedStorage")
-
-    local LP = Players.LocalPlayer
-    local Character = LP.Character
-    local HumanoidRootPart = Character:FindFirstChild("HumanoidRootPart")
-
-    local function GetMurderer()
-        local roles = ReplicatedStorage:FindFirstChild("GetPlayerData", true):InvokeServer()
-        for i, v in pairs(roles) do
-            if v.Role == "Murderer" then
-                return Players:FindFirstChild(i)
-            end
-        end
-        return nil
-    end
-
-    local function TeleportToMurderer()
-        local murdererPlayer = GetMurderer()
-        if murdererPlayer and murdererPlayer.Character and murdererPlayer.Character:FindFirstChild("HumanoidRootPart") then
-            Character:SetPrimaryPartCFrame(murdererPlayer.Character.HumanoidRootPart.CFrame)
-        end
-    end
-
-    TeleportToMurderer()
+    TeleportToRole("Murderer")
 end)
 
 TeleportSection:NewButton("tp Hero", "Teletransportarse al Hero", function()
-    local Players = game:GetService("Players")
-    local ReplicatedStorage = game:GetService("ReplicatedStorage")
-
-    local LP = Players.LocalPlayer
-    local Character = LP.Character
-    local HumanoidRootPart = Character:FindFirstChild("HumanoidRootPart")
-
-    local function GetHero()
-        local roles = ReplicatedStorage:FindFirstChild("GetPlayerData", true):InvokeServer()
-        for i, v in pairs(roles) do
-            if v.Role == "Hero" then
-                return Players:FindFirstChild(i)
-            end
-        end
-        return nil
-    end
-
-    local function TeleportToHero()
-        local heroPlayer = GetHero()
-        if heroPlayer and heroPlayer.Character and heroPlayer.Character:FindFirstChild("HumanoidRootPart") then
-            Character:SetPrimaryPartCFrame(heroPlayer.Character.HumanoidRootPart.CFrame)
-        end
-    end
-
-    TeleportToHero()
+    TeleportToRole("Hero")
 end)
 
 VisualSection:NewButton("View Murderer", "Switch camera to the murderer", function()
-    local Players = game:GetService("Players")
-    local ReplicatedStorage = game:GetService("ReplicatedStorage")
-    local Camera = workspace.CurrentCamera
-
-    local function GetMurderer()
-        local roles = ReplicatedStorage:FindFirstChild("GetPlayerData", true):InvokeServer()
-        for i, v in pairs(roles) do
-            if v.Role == "Murderer" then
-                return i
-            end
-        end
-        return nil
-    end
-
-    local rolePlayer = Players:FindFirstChild(GetMurderer())
-    if rolePlayer and rolePlayer.Character and rolePlayer.Character:FindFirstChild("HumanoidRootPart") then
-        Camera.CameraSubject = rolePlayer.Character.Humanoid
-        Camera.CFrame = rolePlayer.Character.HumanoidRootPart.CFrame
-    end
+    ViewRole("Murderer")
 end)
 
 VisualSection:NewButton("View Sheriff", "Switch camera to the sheriff", function()
-    local Players = game:GetService("Players")
-    local ReplicatedStorage = game:GetService("ReplicatedStorage")
-    local Camera = workspace.CurrentCamera
-
-    local function GetSheriff()
-        local roles = ReplicatedStorage:FindFirstChild("GetPlayerData", true):InvokeServer()
-        for i, v in pairs(roles) do
-            if v.Role == "Sheriff" then
-                return i
-            end
-        end
-        return nil
-    end
-
-    local rolePlayer = Players:FindFirstChild(GetSheriff())
-    if rolePlayer and rolePlayer.Character and rolePlayer.Character:FindFirstChild("HumanoidRootPart") then
-        Camera.CameraSubject = rolePlayer.Character.Humanoid
-        Camera.CFrame = rolePlayer.Character.HumanoidRootPart.CFrame
-    end
+    ViewRole("Sheriff")
 end)
 
 VisualSection:NewButton("View Hero", "Switch camera to the hero", function()
-    local Players = game:GetService("Players")
-    local ReplicatedStorage = game:GetService("ReplicatedStorage")
-    local Camera = workspace.CurrentCamera
-
-    local function GetHero()
-        local roles = ReplicatedStorage:FindFirstChild("GetPlayerData", true):InvokeServer()
-        for i, v in pairs(roles) do
-            if v.Role == "Hero" then
-                return i
-            end
-        end
-        return nil
-    end
-
-    local rolePlayer = Players:FindFirstChild(GetHero())
-    if rolePlayer and rolePlayer.Character and rolePlayer.Character:FindFirstChild("HumanoidRootPart") then
-        Camera.CameraSubject = rolePlayer.Character.Humanoid
-        Camera.CFrame = rolePlayer.Character.HumanoidRootPart.CFrame
-    end
+    ViewRole("Hero")
 end)
 
 VisualSection:NewButton("Return to my camera", "Reset camera to the local player", function()
-    local Players = game:GetService("Players")
-    local Camera = workspace.CurrentCamera
     local LP = Players.LocalPlayer
-
     if LP.Character and LP.Character:FindFirstChild("HumanoidRootPart") then
         Camera.CameraSubject = LP.Character.Humanoid
         Camera.CFrame = LP.Character.HumanoidRootPart.CFrame
