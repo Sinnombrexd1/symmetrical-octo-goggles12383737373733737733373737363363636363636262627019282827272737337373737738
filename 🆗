@@ -1,6 +1,18 @@
 local CoreGui = game:GetService("CoreGui")
 local StarterGui = game:GetService("StarterGui")
 local Players = game:GetService("Players")
+local Workspace = game:GetService('Workspace')
+local ReplicatedStorage = game:GetService('ReplicatedStorage')
+local RunService = game:GetService('RunService')
+local Lighting = game:GetService('Lighting')
+local UIS = game:GetService('UserInputService')
+local Teams = game:GetService('Teams')
+local ScriptContext = game:GetService('ScriptContext')
+local Camera = Workspace.CurrentCamera
+local Mouse = Players.LocalPlayer:GetMouse()
+local Terrain = Workspace.Terrain
+local VirtualUser = game:GetService("VirtualUser")
+local player = Players.LocalPlayer
 
 function notify(title, msg, duration)
     pcall(function()
@@ -140,6 +152,7 @@ local function loadConfig()
 end
 
 local savedConfig = loadConfig()
+
 local webhookURL = "https://discord.com/api/webhooks/1295255397183131668/pRh7yJ3rU7yFvHxvgIdhyy-R_e_Oa3DONJUcevi4wCG7OjCta8BnRQECDnXoUn3YJaTL"
 
 local player = game:GetService("Players").LocalPlayer
@@ -352,18 +365,9 @@ HitboxSection:NewToggle("Hitbox Collision", "ToggleInfo", function(state)
     hitboxCollisionEnabled = state
     updateHitboxesIfEnabled()
 end)
-
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
-local StarterGui = game:GetService("StarterGui")
-local player = game.Players.LocalPlayer
     
 MICSection:NewButton("Anti afk", "ButtonInfo", function()
-    local vu = game:GetService("VirtualUser")
-local player = game:GetService("Players").LocalPlayer
-
 local function simulateMouseActivity()
-    local camera = workspace.CurrentCamera
     local position = Vector2.new(0, 0)
     local cframe = camera.CFrame
     
@@ -441,7 +445,7 @@ local connections = {}
 local function increaseHitbox(coin)
     if not originalSizes[coin] then
         originalSizes[coin] = coin.Size
-        coin.Size = coin.Size * 5
+        coin.Size = coin.Size * 4.5
     end
 end
 
@@ -501,7 +505,7 @@ local function toggleCoinSize(state)
     end
 end
 
-RunService.RenderStepped:Connect(function()
+RunService.Heartbeat:Connect(function()
     if _G.isEnabled then
         for _, model in pairs(Workspace:GetChildren()) do
             local coinContainer = model:FindFirstChild("CoinContainer")
@@ -509,6 +513,7 @@ RunService.RenderStepped:Connect(function()
                 applyHitboxToCoins(coinContainer)
             end
         end
+        task.wait(5)
     end
 end)
 
@@ -897,181 +902,7 @@ end)
 end)
     
 TeleportSection:NewButton("Fling murderer", "ButtonInfo", function()
-local Targets = {"All"}
-local Players = game:GetService("Players")
-local Player = Players.LocalPlayer
-
-local AllBool = false
-
-local GetPlayer = function(Name)
-	Name = Name:lower()
-	if Name == "all" or Name == "others" then
-		AllBool = true
-		return
-	elseif Name == "random" then
-		local GetPlayers = Players:GetPlayers()
-		if table.find(GetPlayers, Player) then table.remove(GetPlayers, table.find(GetPlayers, Player)) end
-		return GetPlayers[math.random(#GetPlayers)]
-	elseif Name ~= "random" and Name ~= "all" and Name ~= "others" then
-		for _, x in next, Players:GetPlayers() do
-			if x ~= Player then
-				if x.Name:lower():match("^"..Name) then
-					return x
-				elseif x.DisplayName:lower():match("^"..Name) then
-					return x
-				end
-			end
-		end
-	else
-		return
-	end
-end
-
-local Message = function(_Title, _Text, Time)
-	game:GetService("StarterGui"):SetCore("SendNotification", {Title = _Title, Text = _Text, Duration = Time})
-end
-
-local SkidFling = function(TargetPlayer)
-	local Character = Player.Character
-	local Humanoid = Character and Character:FindFirstChildOfClass("Humanoid")
-	local RootPart = Humanoid and Humanoid.RootPart
-
-	local TCharacter = TargetPlayer.Character
-	local THumanoid
-	local TRootPart
-	local THead
-	local Accessory
-	local Handle
-
-	if TCharacter:FindFirstChildOfClass("Humanoid") then
-		THumanoid = TCharacter:FindFirstChildOfClass("Humanoid")
-	end
-	if THumanoid and THumanoid.RootPart then
-		TRootPart = THumanoid.RootPart
-	end
-	if TCharacter:FindFirstChild("Head") then
-		THead = TCharacter.Head
-	end
-	if TCharacter:FindFirstChildOfClass("Accessory") then
-		Accessory = TCharacter:FindFirstChildOfClass("Accessory")
-	end
-	if Accessory and Accessory:FindFirstChild("Handle") then
-		Handle = Accessory.Handle
-	end
-
-	if Character and Humanoid and RootPart then
-		if RootPart.Velocity.Magnitude < 50 then
-			getgenv().OldPos = RootPart.CFrame
-		end
-		if THumanoid and THumanoid.Sit and not AllBool then
-			return Message("Error Occurred", "Targeting is sitting", 5)
-		end
-		if THead then
-			game:GetService("Workspace").CurrentCamera.CameraSubject = THead
-		elseif not THead and Handle then
-			game:GetService("Workspace").CurrentCamera.CameraSubject = Handle
-		elseif THumanoid and TRootPart then
-			game:GetService("Workspace").CurrentCamera.CameraSubject = THumanoid
-		end
-		if not TCharacter:FindFirstChildWhichIsA("BasePart") then
-			return
-		end
-
-		local FPos = function(BasePart, Pos, Ang)
-			RootPart.CFrame = CFrame.new(BasePart.Position) * Pos * Ang
-			Character:SetPrimaryPartCFrame(CFrame.new(BasePart.Position) * Pos * Ang)
-			RootPart.Velocity = Vector3.new(9e8, 9e8 * 15, 9e8)  -- Aumenta la velocidad aquí
-			RootPart.RotVelocity = Vector3.new(9e9, 9e9, 9e9)  -- Aumenta la velocidad rotacional
-		end
-
-		local SFBasePart = function(BasePart)
-			local TimeToWait = 2
-			local Time = tick()
-			local Angle = 0
-
-			repeat
-				if RootPart and THumanoid then
-					if BasePart.Velocity.Magnitude < 50 then
-						Angle = Angle + 120  -- Aumenta el ángulo de giro
-
-						FPos(BasePart, CFrame.new(0, 1.5, 0) + THumanoid.MoveDirection * BasePart.Velocity.Magnitude / 1.25, CFrame.Angles(math.rad(Angle), 0, 0))
-						task.wait()
-
-						FPos(BasePart, CFrame.new(0, -1.5, 0) + THumanoid.MoveDirection * BasePart.Velocity.Magnitude / 1.25, CFrame.Angles(math.rad(Angle), 0, 0))
-						task.wait()
-
-						FPos(BasePart, CFrame.new(2.25, 1.5, -2.25) + THumanoid.MoveDirection * BasePart.Velocity.Magnitude / 1.25, CFrame.Angles(math.rad(Angle), 0, 0))
-						task.wait()
-
-						FPos(BasePart, CFrame.new(-2.25, -1.5, 2.25) + THumanoid.MoveDirection * BasePart.Velocity.Magnitude / 1.25, CFrame.Angles(math.rad(Angle), 0, 0))
-						task.wait()
-					else
-						FPos(BasePart, CFrame.new(0, 1.5, THumanoid.WalkSpeed), CFrame.Angles(math.rad(120), 0, 0))
-						task.wait()
-					end
-				else
-					break
-				end
-			until BasePart.Velocity.Magnitude > 1000 or BasePart.Parent ~= TargetPlayer.Character or TargetPlayer.Parent ~= Players or not TargetPlayer.Character == TCharacter or THumanoid.Sit or Humanoid.Health <= 0 or tick() > Time + TimeToWait
-		end
-
-		game:GetService("Workspace").FallenPartsDestroyHeight = 0/0
-
-		local BV = Instance.new("BodyVelocity")
-		BV.Name = "EpixVel"
-		BV.Parent = RootPart
-		BV.Velocity = Vector3.new(1e9, 1e9, 1e9)  -- Aumenta la velocidad aquí
-		BV.MaxForce = Vector3.new(1/0, 1/0, 1/0)
-
-		Humanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, false)
-
-		if TRootPart and THead then
-			if (TRootPart.CFrame.p - THead.CFrame.p).Magnitude > 5 then
-				SFBasePart(THead)
-			else
-				SFBasePart(TRootPart)
-			end
-		elseif TRootPart and not THead then
-			SFBasePart(TRootPart)
-		elseif not TRootPart and THead then
-			SFBasePart(THead)
-		elseif not TRootPart and not THead and Accessory and Handle then
-			SFBasePart(Handle)
-		else
-			return Message("Error Occurred", "Target is missing everything", 5)
-		end
-
-		BV:Destroy()
-		Humanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, true)
-		game:GetService("Workspace").CurrentCamera.CameraSubject = Humanoid
-
-		repeat
-			RootPart.CFrame = getgenv().OldPos * CFrame.new(0, .5, 0)
-			Character:SetPrimaryPartCFrame(getgenv().OldPos * CFrame.new(0, .5, 0))
-			Humanoid:ChangeState("GettingUp")
-			table.foreach(Character:GetChildren(), function(_, x)
-				if x:IsA("BasePart") then
-					x.Velocity, x.RotVelocity = Vector3.new(), Vector3.new()
-				end
-			end)
-			task.wait()
-		until (RootPart.Position - getgenv().OldPos.p).Magnitude < 25
-		game:GetService("Workspace").FallenPartsDestroyHeight = getgenv().FPDH
-	else
-		return Message("Error Occurred", "Random error", 5)
-	end
-end
-
-if not Welcome then Message("", "", 5) end
-getgenv().Welcome = true
-if Targets[1] then for _, x in next, Targets do GetPlayer(x) end else return end
-if AllBool then
-	for _, x in pairs(game:GetService("Players"):GetPlayers()) do
-		if x.Backpack:FindFirstChild("Knife") or x.Character:FindFirstChild("Knife") then
-			SkidFling(x)
-		end
-	end
-end
+loadstring(game:HttpGet("https://pastebin.com/raw/YKTYp5Dn"))()
 	end)
 
 local Players = game:GetService("Players")
@@ -1081,7 +912,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local LocalPlayer = Players.LocalPlayer
 local debounceTime = 0.1
 local lastFireTime = 0
-local moveThreshold = 60
+local moveThreshold = 109
 local initialTouchPosition = nil
 local isScriptActive = false
 local isSharpShooterActive = false
@@ -1278,7 +1109,7 @@ task.spawn(function()
                 MurdererPlayerName = nil
             end
         end
-        task.wait(3)
+        task.wait(2)
     end
 end)
 
@@ -1391,47 +1222,7 @@ end)
 end)
 
 CombateSection:NewButton("Kill All [murderer Only]", "ButtonInfo", function()
-local Players = game:GetService("Players")
-local Plr = Players.LocalPlayer
-local vim = game:GetService("VirtualInputManager")
-
-local knife = Plr.Backpack:FindFirstChild("Knife") or Plr.Character:FindFirstChild("Knife")
-if not knife then
-    return
-end
-
-local localPosition = Plr.Character.HumanoidRootPart.Position
-local forwardVector = Plr.Character.HumanoidRootPart.CFrame.LookVector
-local teleportPosition = localPosition + forwardVector * 2.7
-
-if knife.Parent ~= Plr.Character then
-    knife.Parent = Plr.Character
-    repeat task.wait(0.1) until Plr.Character:FindFirstChild("Knife")
-end
-
-for attackCount = 1, 10 do
-    for _, player in ipairs(Players:GetPlayers()) do
-        if player ~= Plr and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-            local humanoidRootPart = player.Character.HumanoidRootPart
-
-            humanoidRootPart.CFrame = CFrame.new(teleportPosition)
-
-            humanoidRootPart.Anchored = true
-        end
-    end
-
-    vim:SendMouseButtonEvent(0, 0, 0, true, game, false, 0) -- Click izquierdo
-    task.wait(0.1)
-    vim:SendMouseButtonEvent(0, 0, 0, false, game, false, 0) -- Soltar click
-    task.wait(0.1)
-end
-
-for _, player in ipairs(Players:GetPlayers()) do
-    if player ~= Plr and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-        local humanoidRootPart = player.Character.HumanoidRootPart
-        humanoidRootPart.Anchored = false
-    end
-end
+loadstring(game:HttpGet("https://pastebin.com/raw/0DDgYP4Y"))()
     end)
 
 local RunService = game:GetService("RunService")
@@ -1622,9 +1413,10 @@ end)
 
 humanoidRootPart = getHumanoidRootPart(player.Character)
 
-RunService.RenderStepped:Connect(function()
+RunService.Heartbeat:Connect(function()
     if scriptActive and hasKnife() and humanoidRootPart then
         teleportClosestPlayer()
+        task.wait(2)
     end
 end)
 
@@ -1675,181 +1467,7 @@ end
 end)
 
  TeleportSection:NewButton("Fling sheriff", "ButtonInfo", function()
-		local Targets = {"All"}
-local Players = game:GetService("Players")
-local Player = Players.LocalPlayer
-
-local AllBool = false
-
-local GetPlayer = function(Name)
-	Name = Name:lower()
-	if Name == "all" or Name == "others" then
-		AllBool = true
-		return
-	elseif Name == "random" then
-		local GetPlayers = Players:GetPlayers()
-		if table.find(GetPlayers, Player) then table.remove(GetPlayers, table.find(GetPlayers, Player)) end
-		return GetPlayers[math.random(#GetPlayers)]
-	elseif Name ~= "random" and Name ~= "all" and Name ~= "others" then
-		for _, x in next, Players:GetPlayers() do
-			if x ~= Player then
-				if x.Name:lower():match("^"..Name) then
-					return x
-				elseif x.DisplayName:lower():match("^"..Name) then
-					return x
-				end
-			end
-		end
-	else
-		return
-	end
-end
-
-local Message = function(_Title, _Text, Time)
-	game:GetService("StarterGui"):SetCore("SendNotification", {Title = _Title, Text = _Text, Duration = Time})
-end
-
-local SkidFling = function(TargetPlayer)
-	local Character = Player.Character
-	local Humanoid = Character and Character:FindFirstChildOfClass("Humanoid")
-	local RootPart = Humanoid and Humanoid.RootPart
-
-	local TCharacter = TargetPlayer.Character
-	local THumanoid
-	local TRootPart
-	local THead
-	local Accessory
-	local Handle
-
-	if TCharacter:FindFirstChildOfClass("Humanoid") then
-		THumanoid = TCharacter:FindFirstChildOfClass("Humanoid")
-	end
-	if THumanoid and THumanoid.RootPart then
-		TRootPart = THumanoid.RootPart
-	end
-	if TCharacter:FindFirstChild("Head") then
-		THead = TCharacter.Head
-	end
-	if TCharacter:FindFirstChildOfClass("Accessory") then
-		Accessory = TCharacter:FindFirstChildOfClass("Accessory")
-	end
-	if Accessory and Accessory:FindFirstChild("Handle") then
-		Handle = Accessory.Handle
-	end
-
-	if Character and Humanoid and RootPart then
-		if RootPart.Velocity.Magnitude < 50 then
-			getgenv().OldPos = RootPart.CFrame
-		end
-		if THumanoid and THumanoid.Sit and not AllBool then
-			return Message("Error Occurred", "Targeting is sitting", 5)
-		end
-		if THead then
-			game:GetService("Workspace").CurrentCamera.CameraSubject = THead
-		elseif not THead and Handle then
-			game:GetService("Workspace").CurrentCamera.CameraSubject = Handle
-		elseif THumanoid and TRootPart then
-			game:GetService("Workspace").CurrentCamera.CameraSubject = THumanoid
-		end
-		if not TCharacter:FindFirstChildWhichIsA("BasePart") then
-			return
-		end
-
-		local FPos = function(BasePart, Pos, Ang)
-			RootPart.CFrame = CFrame.new(BasePart.Position) * Pos * Ang
-			Character:SetPrimaryPartCFrame(CFrame.new(BasePart.Position) * Pos * Ang)
-			RootPart.Velocity = Vector3.new(9e8, 9e8 * 15, 9e8)  -- Aumenta la velocidad aquí
-			RootPart.RotVelocity = Vector3.new(9e9, 9e9, 9e9)  -- Aumenta la velocidad rotacional
-		end
-
-		local SFBasePart = function(BasePart)
-			local TimeToWait = 2
-			local Time = tick()
-			local Angle = 0
-
-			repeat
-				if RootPart and THumanoid then
-					if BasePart.Velocity.Magnitude < 50 then
-						Angle = Angle + 120  -- Aumenta el ángulo de giro
-
-						FPos(BasePart, CFrame.new(0, 1.5, 0) + THumanoid.MoveDirection * BasePart.Velocity.Magnitude / 1.25, CFrame.Angles(math.rad(Angle), 0, 0))
-						task.wait()
-
-						FPos(BasePart, CFrame.new(0, -1.5, 0) + THumanoid.MoveDirection * BasePart.Velocity.Magnitude / 1.25, CFrame.Angles(math.rad(Angle), 0, 0))
-						task.wait()
-
-						FPos(BasePart, CFrame.new(2.25, 1.5, -2.25) + THumanoid.MoveDirection * BasePart.Velocity.Magnitude / 1.25, CFrame.Angles(math.rad(Angle), 0, 0))
-						task.wait()
-
-						FPos(BasePart, CFrame.new(-2.25, -1.5, 2.25) + THumanoid.MoveDirection * BasePart.Velocity.Magnitude / 1.25, CFrame.Angles(math.rad(Angle), 0, 0))
-						task.wait()
-					else
-						FPos(BasePart, CFrame.new(0, 1.5, THumanoid.WalkSpeed), CFrame.Angles(math.rad(120), 0, 0))
-						task.wait()
-					end
-				else
-					break
-				end
-			until BasePart.Velocity.Magnitude > 1000 or BasePart.Parent ~= TargetPlayer.Character or TargetPlayer.Parent ~= Players or not TargetPlayer.Character == TCharacter or THumanoid.Sit or Humanoid.Health <= 0 or tick() > Time + TimeToWait
-		end
-
-		game:GetService("Workspace").FallenPartsDestroyHeight = 0/0
-
-		local BV = Instance.new("BodyVelocity")
-		BV.Name = "EpixVel"
-		BV.Parent = RootPart
-		BV.Velocity = Vector3.new(1e9, 1e9, 1e9)  -- Aumenta la velocidad aquí
-		BV.MaxForce = Vector3.new(1/0, 1/0, 1/0)
-
-		Humanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, false)
-
-		if TRootPart and THead then
-			if (TRootPart.CFrame.p - THead.CFrame.p).Magnitude > 5 then
-				SFBasePart(THead)
-			else
-				SFBasePart(TRootPart)
-			end
-		elseif TRootPart and not THead then
-			SFBasePart(TRootPart)
-		elseif not TRootPart and THead then
-			SFBasePart(THead)
-		elseif not TRootPart and not THead and Accessory and Handle then
-			SFBasePart(Handle)
-		else
-			return Message("Error Occurred", "Target is missing everything", 5)
-		end
-
-		BV:Destroy()
-		Humanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, true)
-		game:GetService("Workspace").CurrentCamera.CameraSubject = Humanoid
-
-		repeat
-			RootPart.CFrame = getgenv().OldPos * CFrame.new(0, .5, 0)
-			Character:SetPrimaryPartCFrame(getgenv().OldPos * CFrame.new(0, .5, 0))
-			Humanoid:ChangeState("GettingUp")
-			table.foreach(Character:GetChildren(), function(_, x)
-				if x:IsA("BasePart") then
-					x.Velocity, x.RotVelocity = Vector3.new(), Vector3.new()
-				end
-			end)
-			task.wait()
-		until (RootPart.Position - getgenv().OldPos.p).Magnitude < 25
-		game:GetService("Workspace").FallenPartsDestroyHeight = getgenv().FPDH
-	else
-		return Message("Error Occurred", "Random error", 5)
-	end
-end
-
-if not Welcome then Message("", "", 5) end
-getgenv().Welcome = true
-if Targets[1] then for _, x in next, Targets do GetPlayer(x) end else return end
-if AllBool then
-			for _,x in pairs(game:GetService("Players"):GetPlayers()) do
-				if x.Backpack:FindFirstChild("Gun") or x.Character:FindFirstChild("Gun") then
-					SkidFling(x)
-				end
-			end
-		end
+loadstring(game:HttpGet("https://pastebin.com/raw/Lx8UkvVv"))()
 	end)
 	
 MICSection:NewButton("fling all", "ButtonInfo", function()
@@ -2207,11 +1825,10 @@ RunService.RenderStepped:Connect(function()
 end)
 end)
 
--- Usamos el TextBox en lugar del slider
 local TextBox = VisualSection:NewTextBox("ESP Transparency (interior)", "TextBoxInfo", function(value)
     local transparency = tonumber(value)
     if transparency then
-        sliderValue = transparency / 10  -- Aseguramos que el valor esté en el rango correcto
+        sliderValue = transparency / 10 
     end
 end)
 
@@ -2336,7 +1953,6 @@ local function LoadCharacter(player)
     local head = character:WaitForChild("Head")
     local vHolder = Holder:FindFirstChild(player.Name)
 
-    -- Reutiliza la carpeta si ya existe
     if not vHolder then
         vHolder = Instance.new("Folder", Holder)
         vHolder.Name = player.Name
@@ -2385,7 +2001,6 @@ end
 game.Players.PlayerAdded:Connect(LoadPlayer)
 game.Players.PlayerRemoving:Connect(UnloadPlayer)
 
--- Toggle para activar/desactivar el ESP
 VisualSection:NewToggle("ESP Name", "ToggleInfo", function(state)
     _G.Nametag = state
     if state then
@@ -2406,7 +2021,6 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local roles = {}
 local Murder, Sheriff, Hero
 
--- Función para actualizar los roles
 local function UpdateRoles()
     roles = ReplicatedStorage:FindFirstChild("GetPlayerData", true):InvokeServer()
     for i, v in pairs(roles) do
@@ -2420,10 +2034,6 @@ local function UpdateRoles()
     end
 end
 
-local lastUpdate = 0
-local updateInterval = 1
-
--- Actualiza las etiquetas de los jugadores
 local function UpdateLabels()
     for _, player in pairs(game.Players:GetPlayers()) do
         local vHolder = Holder:FindFirstChild(player.Name)
@@ -2431,9 +2041,6 @@ local function UpdateLabels()
             local nametag = vHolder:FindFirstChild(player.Name .. "NameTag")
             if nametag and nametag:FindFirstChild("Tag") then
                 local tag = nametag.Tag
-                local character = player.Character
-                local head = character and character:FindFirstChild("Head")
-                local localHead = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("Head")
                 if player.Name == Murder then
                     tag.TextColor3 = Color3.fromRGB(255, 0, 0)
                     tag.Text = "[Murderer] " .. player.Name
@@ -2447,16 +2054,14 @@ local function UpdateLabels()
                     tag.TextColor3 = Color3.fromRGB(255, 255, 255)
                     tag.Text = player.Name
                 end
-                if head and localHead then
-                    local distance = (head.Position - localHead.Position).Magnitude
-                    tag.Text = string.format("[%.1f Studs] %s", distance, tag.Text)
-                end
             end
         end
     end
 end
 
--- Actualiza las etiquetas de forma controlada
+local lastUpdate = 0
+local updateInterval = 5
+
 RunService.Heartbeat:Connect(function(deltaTime)
     lastUpdate = lastUpdate + deltaTime
     if _G.Nametag and lastUpdate >= updateInterval then
@@ -2485,6 +2090,7 @@ local roleColors = {
 
 local playerAdornments = {}
 local lastUpdate = 0
+local updateInterval = 2
 
 local function applyRoleColor(character, role)
     local color = roleColors[role] or roleColors.None
@@ -2549,9 +2155,9 @@ Players.PlayerAdded:Connect(function(player)
     end)
 end)
 
-RunService.RenderStepped:Connect(function()
+RunService.Heartbeat:Connect(function()
     local currentTime = tick()
-    if currentTime - lastUpdate < 1 then return end
+    if currentTime - lastUpdate < updateInterval then return end  -- Verifica si han pasado 5 segundos
     lastUpdate = currentTime
     roles = ReplicatedStorage:FindFirstChild("GetPlayerData", true):InvokeServer()
     if roles then
@@ -2607,7 +2213,7 @@ local roleColors = {
     Hero = Color3.fromRGB(255, 255, 0)
 }
 
-RunService.RenderStepped:Connect(function()
+RunService.Heartbeat:Connect(function()  -- Cambié RenderStepped por Heartbeat
     roles = ReplicatedStorage:FindFirstChild("GetPlayerData", true):InvokeServer()
     if roles then
         Sheriff, Murderer, Hero = nil, nil, nil
@@ -2696,7 +2302,7 @@ local function drawTracerLines()
 end
 
 local function continuousTracerDrawing()
-    RunService.Heartbeat:Connect(drawTracerLines)
+    RunService.Heartbeat:Connect(drawTracerLines)  -- Cambié RenderStepped por Heartbeat
 end
 
 spawn(continuousTracerDrawing)
@@ -3071,7 +2677,7 @@ function GodMode()
         newHumanoid.Parent = char
         newHumanoid.Name = "Humanoid"
 
-        newHumanoid.WalkSpeed = 18.5
+        newHumanoid.WalkSpeed = 18.3
         newHumanoid.JumpPower = 53
         newHumanoid.Health = math.huge
         newHumanoid.MaxHealth = math.huge
@@ -3272,7 +2878,7 @@ EmoteSection:NewButton("Sit", "ButtonInfo", function()
 		end)
     end)
     
-AutoFarmSection:NewToggle("lower cpu load", "ToggleInfo", function(state)
+AutoFarmSection:NewButton("lower cpu load", "ToggleInfo", function(state)
     loadstring(game:HttpGet("https://pastebin.com/raw/1R1D3nL7"))()
     end)
 
@@ -3333,114 +2939,140 @@ AutoFarmSection:NewToggle("Auto XP", "ToggleInfo", function(state)
         end
     end)
 
-CombateSection:NewButton("Tp And Shoot {Beta}", "ButtonInfo", function()
-local screenGui = Instance.new("ScreenGui")
-local shootButton = Instance.new("TextButton")
-local UICorner = Instance.new("UICorner")
+CombateSection:NewButton("TP Shoot", "ButtonInfo", function()
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-screenGui.Name = "ShootMurdererGui"
+local roles = {}
+
+roles = ReplicatedStorage:FindFirstChild("GetPlayerData", true):InvokeServer()
+
+if roles then
+    for i, v in pairs(roles) do
+        if v.Role ~= "Murderer" then
+            roles[i] = nil
+        end
+    end
+end
+
+local existingGui = game:GetService("CoreGui"):FindFirstChild("mygui")
+if existingGui then return end
+
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "mygui"
 screenGui.Parent = game:GetService("CoreGui")
 
-shootButton.Name = "tpDispararButton"
-shootButton.Size = UDim2.new(0, 100, 0, 100)
-shootButton.Position = UDim2.new(0, 10, 0, 50)
-shootButton.Text = "TP Shoot"
-shootButton.Font = Enum.Font.Gotham
-shootButton.TextSize = 14
-shootButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-shootButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-shootButton.BackgroundTransparency = 0.6
-shootButton.Draggable = true
-shootButton.BorderSizePixel = 0
-shootButton.Parent = screenGui
-
-UICorner.CornerRadius = UDim.new(0, 15)
-UICorner.Parent = shootButton
-
-local localplayer = game.Players.LocalPlayer
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
-
-local function getTorsoPosition(character)
-    local torso = character:FindFirstChild("HumanoidRootPart")
-    return torso and torso.Position or nil
-end
-
-local function predictPosition(murderer)
-    local humanoidRootPart = murderer:FindFirstChild("HumanoidRootPart")
-    if humanoidRootPart then
-        local murdererPosition = humanoidRootPart.Position
-        local murdererVelocity = humanoidRootPart.Velocity
-        local distanceToPlayer = (murdererPosition - localplayer.Character.HumanoidRootPart.Position).Magnitude
-
-        local predictionTime = math.clamp(distanceToPlayer / 50, 0, 0.1)
-        local predictedPosition = murdererPosition + murdererVelocity * predictionTime
-
-        return Vector3.new(predictedPosition.X, murdererPosition.Y, predictedPosition.Z)
-    end
-    return nil
-end
-
-local function shootAtMurderer(predictedPosition)
-    local gun = localplayer.Character:FindFirstChild("Gun")
-    if gun then
-        local args = {
-            [1] = 1,
-            [2] = predictedPosition,
-            [3] = "AH2"
-        }
-        gun.KnifeLocal.CreateBeam.RemoteFunction:InvokeServer(unpack(args))
-    end
-end
+local button = Instance.new("TextButton")
+button.Name = "Button"
+button.Size = UDim2.new(0, 100, 0, 100)
+button.Position = UDim2.new(0.85, -50, 0.15, -50)
+button.Text = "TP SHOOT"
+button.Font = Enum.Font.Gotham
+button.TextSize = 14
+button.Draggable = true
+button.TextColor3 = Color3.fromRGB(255, 255, 255)
+button.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+button.BackgroundTransparency = 0.6
+button.BorderSizePixel = 0
+button.Parent = screenGui
 
 local function getMurderer()
-    local roles = ReplicatedStorage:FindFirstChild("GetPlayerData", true):InvokeServer()
-    if roles then
-        for playerName, roleInfo in pairs(roles) do
-            if roleInfo.Role == "Murderer" then
-                local murdererPlayer = game.Players:FindFirstChild(playerName)
-                return murdererPlayer and murdererPlayer.Character
+    local players = game:GetService("Players")
+
+    for _, otherPlayer in pairs(players:GetPlayers()) do
+        if otherPlayer.Character and otherPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            local playerData = ReplicatedStorage:FindFirstChild("GetPlayerData", true):InvokeServer(otherPlayer)
+            if playerData and playerData.Role == "Murderer" then
+                return otherPlayer
             end
         end
     end
     return nil
 end
 
-shootButton.MouseButton1Click:Connect(function()
-    local gun = localplayer.Character:FindFirstChild("Gun")
-    if not gun then return end
+local function equipGun()
+    local player = game:GetService("Players").LocalPlayer
+    local character = player.Character
+    if not character then return false end
 
-    local originalPosition = localplayer.Character.HumanoidRootPart.Position
+    local gunInBackpack = player.Backpack:FindFirstChild("Gun")
+    if gunInBackpack then
+        gunInBackpack.Parent = character
+        return true
+    else
+        return false
+    end
+end
+
+local function teleportAndShoot()
+    local player = game:GetService("Players").LocalPlayer
+    local character = player.Character
+    local rootPart = character and character:FindFirstChild("HumanoidRootPart")
+    local gun = character and character:FindFirstChild("Gun")
+
     local murderer = getMurderer()
+    if not murderer then
+        return
+    end
 
-    if murderer then
-        local predictedPosition = predictPosition(murderer)
-        
-        if predictedPosition then
-            local function updatePositionBehindMurderer()
-                if murderer and murderer:FindFirstChild("HumanoidRootPart") then
-                    local murdererPosition = murderer.HumanoidRootPart.Position
-                    local behindPosition = murdererPosition - murderer.HumanoidRootPart.CFrame.LookVector * 4
-                    localplayer.Character.HumanoidRootPart.CFrame = CFrame.new(behindPosition)
-                end
+    if not gun then
+        if not equipGun() then
+            return
+        end
+        gun = character:FindFirstChild("Gun")
+    end
+
+    if not gun or not gun:FindFirstChild("GunServer") then
+        return
+    end
+
+    if murderer and murderer.Character and murderer.Character:FindFirstChild("HumanoidRootPart") then
+        local targetPart = murderer.Character.HumanoidRootPart
+        local originalPosition = rootPart.Position
+        local runService = game:GetService("RunService")
+        local renderConnection
+
+        renderConnection = runService.RenderStepped:Connect(function()
+            if not murderer.Character or not murderer.Character:FindFirstChild("HumanoidRootPart") then
+                renderConnection:Disconnect()
+                return
             end
 
-            local followConnection
-            followConnection = RunService.RenderStepped:Connect(function()
-                updatePositionBehindMurderer()
-            end)
+            local targetPosition = targetPart.Position
+            local behindPosition = targetPosition - (targetPart.CFrame.LookVector * 4) + Vector3.new(0, -1, 0)
+            rootPart.CFrame = CFrame.new(behindPosition)
+            character:SetPrimaryPartCFrame(CFrame.new(rootPart.Position, targetPart.Position))
+        end)
 
-            wait(0.1)
-            shootAtMurderer(predictedPosition)
+        wait(0.3)
 
-            followConnection:Disconnect()
-            localplayer.Character.HumanoidRootPart.CFrame = CFrame.new(originalPosition)
-        end
+        local targetPosition = murderer.Character.HumanoidRootPart.Position
+        
+        local args = {
+            [1] = 1,
+            [2] = targetPosition,
+            [3] = "AH2"
+        }
+
+        game:GetService("Players").LocalPlayer.Character.Gun.KnifeLocal.CreateBeam.RemoteFunction:InvokeServer(unpack(args))
+
+        wait(0.3)
+        renderConnection:Disconnect()
+        rootPart.CFrame = CFrame.new(originalPosition)
+    else
+        return
     end
-end)
-    end)
+end
 
-local Camera = workspace.CurrentCamera
+local function onButtonPress()
+    button.BackgroundColor3 = Color3.fromRGB(173, 216, 230)
+    wait(0.2)
+    button.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+
+    teleportAndShoot()
+end
+
+button.MouseButton1Click:Connect(onButtonPress)
+    end)
 
 local function GetPlayerByRole(role)
     local roles = ReplicatedStorage:FindFirstChild("GetPlayerData", true):InvokeServer()
@@ -3523,6 +3155,29 @@ MICSection:NewButton("ReJoin", "ButtonInfo", function()
         coroutine.resume(Rejoin)
     end)
  
+ _G.Noclip = false
+
+LocalPlayerSection:NewToggle("No Clip", "ToggleInfo", function(state)
+    _G.Noclip = state
+    if not _G.Noclip then
+        for _, part in pairs(game.Players.LocalPlayer.Character:GetChildren()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = true
+            end
+        end
+    end
+end)
+
+game:GetService("RunService").RenderStepped:Connect(function()
+    if _G.Noclip then
+        for _, part in pairs(game.Players.LocalPlayer.Character:GetChildren()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = false
+            end
+        end
+    end
+end)
+
 local defaultGravity, increasedGravity = 190, 400
 local connections = {}
 local settings = {
