@@ -18,7 +18,7 @@ local UserInputService = game:GetService('UserInputService')
 
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/Sinnombrexd1/Whwhwhwhwansjw/refs/heads/main/Lib", true))()
 
-local ui = Library:CreateUI("Murder Mystery 2 / 26.3", "By CapybaraScript")
+local ui = Library:CreateUI("Murder Mystery 2 / 27", "By CapybaraScript")
 task.wait(0.3)
 local tab1 = ui:AddTab("Combat")
 local tab2 = ui:AddTab("Hitbox expander")
@@ -53,158 +53,6 @@ local savedConfig = loadConfig()
 
 setfpscap(math.huge)
 print("Fps unblock")
-
-local LocalPlayerData = {LastCFrame}
-local SilentAim = {CurrentPrediction = Vector3.zero}
-local SilentAimEnabled = false
-local Colors = {}
-function Colors:GetColor(Object, Type)
-	local ColorTable = {
-		Innocent = { Solid = Color3.new(0,1,0), Cham = Color3.fromRGB(75,151,75), ESP = Color3.fromRGB(75,255,75) },
-		Murderer = { Solid = Color3.new(1,0,0), Cham = Color3.fromRGB(196,40,28), ESP = Color3.fromRGB(255,40,29) },
-		Sheriff = { Solid = Color3.new(0,0,1), Cham = Color3.fromRGB(98,37,209), ESP = Color3.fromRGB(75,75,255) },
-		Hero = { Solid = Color3.new(1,1,0), Cham = Color3.fromRGB(245,205,48), ESP = Color3.fromRGB(245,205,48) }
-	}
-	return Object and Type and ColorTable[Object] and ColorTable[Object][Type] or ColorTable[Object] or ColorTable
-end
-function ToggleSilentAim(state)
-	SilentAimEnabled = state
-end
-local Roles = {RoleTable = {}, Murderers = {}, Sheriffs = {}, Hero, GameMode}
-function Roles:FindWeapon(WeaponName, Player, GetInstance)
-	local FinalResult = nil
-	pcall(function()
-		if not (WeaponName and Player) then return end
-		local function CheckWeapon(Weapon, IsLocal)
-			if not (Weapon and Weapon:IsA("Tool")) then return end
-			if Weapon.Name == "Knife" then
-				local Handle, KnifeServer, Stab, Throw = Weapon:FindFirstChild("Handle"), Weapon:FindFirstChild("KnifeServer"), Weapon:FindFirstChild("Stab"), Weapon:FindFirstChild("Throw")
-				if not (Handle and KnifeServer and Stab and Throw) then return end
-				return GetInstance and {KnifeServer = KnifeServer, Stab = Stab, Throw = Throw, Handle = Handle} or true
-			end
-		end
-		local Parents = {Player.Character, Player:FindFirstChildOfClass("Backpack")}
-		for _, Parent in pairs(Parents) do
-			if Parent then
-				local Weapon = Parent:FindFirstChild(WeaponName)
-				local Result = Weapon and CheckWeapon(Weapon, Player == LocalPlayer)
-				if Result then FinalResult = Result end
-			end
-		end
-	end)
-	return FinalResult
-end
-function Roles:UpdateRole()
-	local GetPlayerData = ReplicatedStorage:FindFirstChild("Remotes") and ReplicatedStorage.Remotes:FindFirstChild("Extras") and ReplicatedStorage.Remotes.Extras:FindFirstChild("GetPlayerData", true)
-	if not GetPlayerData then return end
-	pcall(function()
-		self.RoleTable, self.CanGetRoles = GetPlayerData:InvokeServer(), true
-	end)
-	for Name, Data in pairs(self.RoleTable or Players:GetPlayers()) do
-		local ThePlayer = self.RoleTable and Players:FindFirstChild(Name) or (not self.RoleTable and Data)
-		if ThePlayer then
-			if (self.RoleTable and Data.Role == "Murderer") or (not self.RoleTable and self:FindWeapon("Knife", ThePlayer, false)) then
-				if not table.find(self.Murderers, ThePlayer.Name) then table.insert(self.Murderers, ThePlayer.Name) end
-			elseif (self.RoleTable and Data.Role == "Sheriff") or (not self.RoleTable and self:FindWeapon("Gun", ThePlayer, false)) then
-				if not table.find(self.Sheriffs, ThePlayer.Name) then table.insert(self.Sheriffs, ThePlayer.Name) end
-			elseif self.RoleTable and Data.Role == "Hero" and self:FindWeapon("Gun", ThePlayer, false) then
-				self.Hero = ThePlayer.Name
-			else
-				for Role, Player in pairs(self) do
-					if tostring(Role) == "Sheriffs" or tostring(Role) == "Murderers" then
-						local Finded = table.find(self[tostring(Role)], ThePlayer.Name)
-						if Finded then table.remove(self[tostring(Role)], Finded) end
-					elseif tostring(Role) == "Hero" and Player == ThePlayer.Name then
-						self.Hero = nil
-					end
-				end
-			end
-		end
-	end
-end
-local Rays = {}
-function Rays:GetPrediction(Type)
-	local LocalRoot = LocalPlayer.Character and LocalPlayer.Character.PrimaryPart
-	if not LocalRoot then return end
-	local function GetClosestPlayer(PlayerList)
-		local ClosestPlayer, ClosestDistance = nil, math.huge
-		for _, Player in pairs(PlayerList or Players:GetPlayers()) do
-			if Player ~= LocalPlayer then
-				local LocalRoot, OtherRoot = LocalPlayer.Character and LocalPlayer.Character.PrimaryPart, Player.Character and Player.Character.PrimaryPart
-				if LocalRoot and OtherRoot then
-					local Distance = (LocalRoot.Position - OtherRoot.Position).Magnitude
-					if Distance < ClosestDistance then
-						ClosestPlayer, ClosestDistance = Player, Distance
-					end
-				end
-			end
-		end
-		return ClosestPlayer
-	end
-	local Result
-local Target = GetClosestPlayer()  
-	if Target then  
-		local TargetRoot = Target.Character and Target.Character.PrimaryPart  
-		if TargetRoot then  
-			local TargetVelocity = TargetRoot.AssemblyLinearVelocity  
-			Result = TargetRoot.Position + (TargetVelocity * Vector3.new(1, 0, 1) * 0.35 * ((LocalRoot.Position - TargetRoot.Position).Magnitude / 20)) + Vector3.new(0, TargetVelocity.Y * 0.08, 0)
-		end  
-	end  
-	return Result  
-end
-task.spawn(function()
-	while true do
-		if SilentAimEnabled then
-			Roles:UpdateRole()
-		end
-		task.wait(2)
-	end
-end)
-RunService.RenderStepped:Connect(function()
-	local Character = LocalPlayer.Character
-	if Character then
-		local Humanoid = Character:FindFirstChildOfClass("Humanoid")
-		local LocalRoot = Humanoid and Humanoid.RootPart
-		if LocalRoot then
-			if (LocalRoot.AssemblyAngularVelocity.Magnitude > 130 or LocalRoot.AssemblyLinearVelocity.Magnitude > 230) then
-				if LocalPlayerData.LastCFrame then
-					LocalRoot.AssemblyLinearVelocity, LocalRoot.AssemblyAngularVelocity = Vector3.zero, Vector3.zero
-					LocalRoot.CFrame = LocalPlayerData.LastCFrame
-					Humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
-				end
-			else
-				LocalPlayerData.LastCFrame = LocalRoot.CFrame
-			end
-		end
-		for _, Player in pairs(Players:GetPlayers()) do
-			if Player ~= LocalPlayer then
-				local OtherRoot = Player.Character and Player.Character.PrimaryPart
-				if OtherRoot and (OtherRoot.AssemblyAngularVelocity.Magnitude > 130 or OtherRoot.AssemblyLinearVelocity.Magnitude > 230) then
-					OtherRoot.AssemblyLinearVelocity, OtherRoot.AssemblyAngularVelocity = Vector3.zero, Vector3.zero
-					for _, Childs in pairs(OtherRoot.Parent:GetDescendants()) do
-						if Childs:IsA("BasePart") then Childs.CanCollide = false end
-					end
-				end
-			end
-		end
-		if table.find(Roles.Murderers, LocalPlayer.Name) and SilentAimEnabled then
-			SilentAim.CurrentPrediction = Rays:GetPrediction("Knife") or SilentAim.CurrentPrediction
-		end
-	end
-end)
-setreadonly(RawMetatable, false)
-RawMetatable.__namecall = newcclosure(function(Object, ...)
-	local NamecallMethod = getnamecallmethod()
-	local Arguments = {...}
-	if SilentAimEnabled and NamecallMethod == "FireServer" and tostring(Object) == "Throw" then
-		local Success, Error = pcall(function()
-			Arguments[1] = CFrame.new(SilentAim.CurrentPrediction)
-		end)
-		if Error then warn("Error! :",Error) end
-	end
-	return OldNameCall(Object, unpack(Arguments))
-end)
-setreadonly(RawMetatable, true)
 
 local blockPosition = Vector3.new(-74, 6, 693)
 local blockSize = Vector3.new(100, 2, 100)
@@ -622,9 +470,68 @@ end)
 
 Library.addLabel(tab1, "For Murderer")
 
+local SilentAim = {CurrentPrediction = Vector3.zero}
+local SilentAimEnabled = false
+
+function ToggleSilentAim(state)
+	SilentAimEnabled = state
+end
+
 Library.addToggle(tab1, "Knife Silent Aim", false, function(state)
     ToggleSilentAim(state)
 end)
+
+local Rays = {}
+function Rays:GetPrediction()
+	local LocalRoot = LocalPlayer.Character and LocalPlayer.Character.PrimaryPart
+	if not LocalRoot then return end
+
+	local function GetClosestPlayer()
+		local ClosestPlayer, ClosestDistance = nil, math.huge
+		for _, Player in pairs(Players:GetPlayers()) do
+			if Player ~= LocalPlayer then
+				local OtherRoot = Player.Character and Player.Character.PrimaryPart
+				if OtherRoot then
+					local Distance = (LocalRoot.Position - OtherRoot.Position).Magnitude
+					if Distance < ClosestDistance then
+						ClosestPlayer, ClosestDistance = Player, Distance
+					end
+				end
+			end
+		end
+		return ClosestPlayer
+	end
+
+	local Target = GetClosestPlayer()
+	if Target then  
+		local TargetRoot = Target.Character and Target.Character.PrimaryPart  
+		if TargetRoot then  
+			local TargetVelocity = TargetRoot.AssemblyLinearVelocity  
+			return TargetRoot.Position + (TargetVelocity * Vector3.new(1, 0, 1) * 0.25 * ((LocalRoot.Position - TargetRoot.Position).Magnitude / 20)) + Vector3.new(0, math.clamp(TargetVelocity.Y * 0.08, -2, 2), 0)
+		end  
+	end  
+	return nil
+end
+
+RunService.RenderStepped:Connect(function()
+	if SilentAimEnabled then
+		SilentAim.CurrentPrediction = Rays:GetPrediction() or SilentAim.CurrentPrediction
+	end
+end)
+
+setreadonly(RawMetatable, false)
+RawMetatable.__namecall = newcclosure(function(Object, ...)
+	local NamecallMethod = getnamecallmethod()
+	local Arguments = {...}
+	if SilentAimEnabled and NamecallMethod == "FireServer" and tostring(Object) == "Throw" then
+		local Success, Error = pcall(function()
+			Arguments[1] = CFrame.new(SilentAim.CurrentPrediction)
+		end)
+		if Error then warn("Error! :",Error) end
+	end
+	return OldNameCall(Object, unpack(Arguments))
+end)
+setreadonly(RawMetatable, true)
 
 Library.addButton(tab1, "Kill All [murderer Only]", function()
     loadstring(game:HttpGet("https://pastebin.com/raw/0DDgYP4Y"))()
@@ -1173,28 +1080,36 @@ getgenv().Nametag = false
 getgenv().Cheamesp = false  
 getgenv().TracerEnabled = false  
 getgenv().Highlight = false  
-  
+
+getgenv().ChamTransparency = 0.7  
+getgenv().HighlightTransparency = 0.5  
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local LocalPlayer = Players.LocalPlayer
+
 local Holder = Instance.new("Folder", game.CoreGui)  
 Holder.Name = "ESP"  
-  
+
 local tracerContainer = {}  
 local highlights = {}  
 local rolesCache = {}  
-  
+
 local roleColors = {  
     Sheriff = Color3.fromRGB(0, 0, 200),  
     Murderer = Color3.fromRGB(255, 0, 0),  
     Hero = Color3.fromRGB(255, 255, 0),  
     None = Color3.fromRGB(0, 140, 0)  
 }  
-  
+
 local outlineColors = {  
     Sheriff = Color3.fromRGB(0, 0, 255),  
     Murderer = Color3.fromRGB(139, 0, 0),  
     Hero = Color3.fromRGB(255, 255, 0),  
     None = Color3.fromRGB(0, 128, 0)  
 }  
-  
+
 local function CreateNameTag()  
     local NameTag = Instance.new("BillboardGui")  
     NameTag.Name = "NameTag"  
@@ -1211,7 +1126,7 @@ local function CreateNameTag()
     Tag.Font = Enum.Font.SourceSansBold  
     return NameTag  
 end  
-  
+
 local function LoadCharacter(player)  
     if not getgenv().Nametag or player == LocalPlayer then return end  
     local character = player.Character  
@@ -1221,17 +1136,20 @@ local function LoadCharacter(player)
     local vHolder = Holder:FindFirstChild(player.Name) or Instance.new("Folder", Holder)  
     vHolder.Name = player.Name  
     local nametag = vHolder:FindFirstChild("NameTag") or CreateNameTag()  
-    nametag.Parent, nametag.Adornee, nametag.Enabled = vHolder, head, true  
-    nametag.Tag.Text, nametag.Tag.TextColor3 = player.Name, roleColors.None  
+    nametag.Parent = vHolder  
+    nametag.Adornee = head  
+    nametag.Enabled = true  
+    nametag.Tag.Text = player.Name  
+    nametag.Tag.TextColor3 = roleColors.None  
 end  
-  
+
 local function UnloadCharacter(player)  
     local vHolder = Holder:FindFirstChild(player.Name)  
     if vHolder then vHolder:Destroy() end  
 end  
-  
+
 local function applyAdornmentsWithDelay(character)  
-    if not character or not getgenv().Cheamesp then return end -- Corregido: Verifica Cheamesp  
+    if not character or not getgenv().Cheamesp then return end  
     for _, part in pairs(character:GetChildren()) do  
         if part:IsA("BasePart") then  
             task.delay(0.1, function()  
@@ -1243,14 +1161,14 @@ local function applyAdornmentsWithDelay(character)
                     adornment.Adornee = part  
                     adornment.AlwaysOnTop = true  
                     adornment.ZIndex = 5  
-                    adornment.Transparency = 0.7  
+                    adornment.Transparency = getgenv().ChamTransparency  
                     adornment.Parent = part  
                 end  
             end)  
         end  
     end  
 end  
-  
+
 local function ManagePlayer(player)  
     if player == LocalPlayer then return end  
     player.CharacterAdded:Connect(function(character)  
@@ -1260,7 +1178,7 @@ local function ManagePlayer(player)
         if getgenv().Highlight then  
             local highlight = Instance.new("Highlight")  
             highlight.Name = "ESP_Highlight"  
-            highlight.FillTransparency = 0.5  
+            highlight.FillTransparency = getgenv().HighlightTransparency  
             highlight.OutlineTransparency = 0  
             highlight.Parent = character  
             highlights[player] = highlight  
@@ -1279,11 +1197,11 @@ local function ManagePlayer(player)
         applyAdornmentsWithDelay(player.Character)  
     end  
 end  
-  
+
 for _, player in pairs(Players:GetPlayers()) do  
     ManagePlayer(player)  
 end  
-  
+
 Players.PlayerAdded:Connect(ManagePlayer)  
 Players.PlayerRemoving:Connect(function(player)  
     UnloadCharacter(player)  
@@ -1296,7 +1214,7 @@ Players.PlayerRemoving:Connect(function(player)
         highlights[player] = nil  
     end  
 end)  
-  
+
 local function UpdateRoles()  
     local success, roles = pcall(function()  
         return ReplicatedStorage:FindFirstChild("GetPlayerData", true):InvokeServer()  
@@ -1308,18 +1226,18 @@ local function UpdateRoles()
     end  
     return rolesCache  
 end  
-  
+
 local function UpdateLabels()  
     for _, player in pairs(Players:GetPlayers()) do  
-        local nametag = Holder:FindFirstChild(player.Name) and Holder[player.Name]:FindFirstChild("NameTag")  
+        local vHolder = Holder:FindFirstChild(player.Name)
+        local nametag = vHolder and vHolder:FindFirstChild("NameTag")
         if nametag then  
-            local tag = nametag.Tag  
             local role = rolesCache[player.Name] or "None"  
-            tag.TextColor3 = roleColors[role] or roleColors.None  
+            nametag.Tag.TextColor3 = roleColors[role] or roleColors.None  
         end  
     end  
 end  
-  
+
 local function applyRoleColor(character, role)  
     if not character or not getgenv().Cheamesp then return end  
     local color = roleColors[role] or roleColors.None  
@@ -1333,14 +1251,16 @@ local function applyRoleColor(character, role)
                 adornment.Adornee = part  
                 adornment.AlwaysOnTop = true  
                 adornment.ZIndex = 5  
-                adornment.Transparency = 0.7  
+                adornment.Transparency = getgenv().ChamTransparency  
                 adornment.Parent = part  
-            end  
+            else
+                adornment.Transparency = getgenv().ChamTransparency  
+            end
             adornment.Color3 = color  
         end  
     end  
 end  
-  
+
 local function removeESP(character)  
     if not character then return end  
     for _, part in pairs(character:GetChildren()) do  
@@ -1350,15 +1270,15 @@ local function removeESP(character)
         end  
     end  
 end  
-  
+
 local function drawTracerLines()  
-    if not getgenv().TracerEnabled then  
-        for _, tracer in pairs(tracerContainer) do  
-            tracer:Remove()  
-        end  
-        tracerContainer = {}  
-        return  
-    end  
+    if not getgenv().TracerEnabled then
+        for _, tracer in pairs(tracerContainer) do
+            tracer:Remove()
+        end
+        tracerContainer = {}
+        return
+    end
     local camera = workspace.CurrentCamera  
     for _, player in pairs(Players:GetPlayers()) do  
         if player ~= LocalPlayer and player.Character then  
@@ -1387,53 +1307,58 @@ local function drawTracerLines()
         end  
     end  
 end  
-  
+
 local lastRoleUpdate = 0  
 local lastColorUpdate = 0  
-  
-RunService.Heartbeat:Connect(function()  
-    if not (getgenv().Nametag or getgenv().Cheamesp or getgenv().Highlight or getgenv().TracerEnabled) then  
-        return  
-    end  
-      
-    local currentTime = os.clock()  
-    if currentTime - lastRoleUpdate >= 3 then  
-        UpdateRoles()  
-        lastRoleUpdate = currentTime  
-    end  
-    if currentTime - lastColorUpdate >= 1 then  
-        if getgenv().Nametag then  
-            UpdateLabels()  
-        end  
-        if getgenv().Cheamesp then  
-            for _, player in pairs(Players:GetPlayers()) do  
-                if player ~= LocalPlayer and player.Character then  
-                    local role = rolesCache[player.Name] or "None"  
-                    applyRoleColor(player.Character, role)  
-                end  
-            end  
-        end  
-        if getgenv().Highlight then  
-            for player, highlight in pairs(highlights) do  
-                if player.Character then  
-                    local role = rolesCache[player.Name] or "None"  
-                    highlight.FillColor = roleColors[role] or roleColors.None  
-                    highlight.OutlineColor = outlineColors[role] or outlineColors.None  
-                end  
-            end  
-        end  
-        lastColorUpdate = currentTime  
-    end  
-    drawTracerLines()  
-end)  
-  
+
+task.spawn(function()
+    while true do
+        task.wait(0.03)
+        if (getgenv().Nametag or getgenv().Cheamesp or getgenv().Highlight or getgenv().TracerEnabled) then
+            local currentTime = os.clock()
+            if currentTime - lastRoleUpdate >= 3 then
+                UpdateRoles()
+                lastRoleUpdate = currentTime
+            end
+            if currentTime - lastColorUpdate >= 1 then
+                if getgenv().Nametag then
+                    UpdateLabels()
+                end
+                if getgenv().Cheamesp then
+                    for _, player in pairs(Players:GetPlayers()) do
+                        if player ~= LocalPlayer and player.Character then
+                            local role = rolesCache[player.Name] or "None"
+                            applyRoleColor(player.Character, role)
+                        end
+                    end
+                end
+                if getgenv().Highlight then
+                    for player, highlight in pairs(highlights) do
+                        if player.Character then
+                            local role = rolesCache[player.Name] or "None"
+                            highlight.FillColor = roleColors[role] or roleColors.None
+                            highlight.OutlineColor = outlineColors[role] or outlineColors.None
+                        end
+                    end
+                end
+                lastColorUpdate = currentTime
+            end
+            drawTracerLines()
+        end
+    end
+end)
+
 Library.addLabel(tab3, "ESP Players")
 
 Library.addToggle(tab3, "ESP Name", false, function(state)
     getgenv().Nametag = state
     for _, player in pairs(Players:GetPlayers()) do
         if player ~= LocalPlayer then
-            if state then LoadCharacter(player) else UnloadCharacter(player) end
+            if state then 
+                LoadCharacter(player) 
+            else 
+                UnloadCharacter(player) 
+            end
         end
     end
 end)
@@ -1469,7 +1394,7 @@ Library.addToggle(tab3, "ESP Highlight", false, function(state)
             if player ~= LocalPlayer and player.Character then
                 local highlight = Instance.new("Highlight")
                 highlight.Name = "ESP_Highlight"
-                highlight.FillTransparency = 0.5
+                highlight.FillTransparency = getgenv().HighlightTransparency
                 highlight.OutlineTransparency = 0
                 highlight.Parent = player.Character
                 highlights[player] = highlight
@@ -1479,6 +1404,32 @@ Library.addToggle(tab3, "ESP Highlight", false, function(state)
         for player, highlight in pairs(highlights) do
             highlight:Destroy()
             highlights[player] = nil
+        end
+    end
+end)
+
+Library.addSlider(tab3, "Esp transparency", 0, 100, 50, 1, function(value)
+    local highlightTransparency = value / 100
+    local chamTransparency = math.min(value / 100, 0.9)
+    getgenv().HighlightTransparency = highlightTransparency
+    getgenv().ChamTransparency = chamTransparency
+
+    for player, highlight in pairs(highlights) do
+        if highlight then
+            highlight.FillTransparency = highlightTransparency
+        end
+    end
+
+    for _, player in pairs(Players:GetPlayers()) do
+        if player.Character then
+            for _, part in pairs(player.Character:GetChildren()) do
+                if part:IsA("BasePart") then
+                    local adornment = part:FindFirstChild("espAdornment")
+                    if adornment then
+                        adornment.Transparency = chamTransparency
+                    end
+                end
+            end
         end
     end
 end)
@@ -1514,6 +1465,8 @@ local function sendNotification(player, role)
 end
 
 local function getRoles()
+    if not getgenv().toggleNotifications then return end
+
     print("Searching for players with roles...")
 
     local success, roles = pcall(function()
@@ -1539,22 +1492,18 @@ local function getRoles()
     end
 
     if not murderFound then
-        print("Murderer not detected, searching again...")
         getgenv().notificationsSent.Murderer = false
     end
 
     if not sheriffFound then
-        print("Sheriff not detected, searching again...")
         getgenv().notificationsSent.Sheriff = false
     end
 end
 
 local function startSearching()
     while true do
-        if localPlayer.Character and localPlayer.Character:FindFirstChild("Humanoid") then
+        if getgenv().toggleNotifications and localPlayer.Character and localPlayer.Character:FindFirstChild("Humanoid") then
             getRoles()
-        else
-            print("Waiting for the player to respawn...")
         end
         wait(2)
     end
@@ -1568,11 +1517,9 @@ end)
 
 task.spawn(startSearching)
 
-getgenv().toggleNotifications = false
-
 Library.addToggle(tab3, "Role Notification", false, function(state)
     getgenv().toggleNotifications = state
-    if getgenv().toggleNotifications then
+    if state then
         print("Role notifications enabled.")
     else
         print("Role notifications disabled.")
@@ -2030,22 +1977,17 @@ Library.addButton(tab4, "Fling sheriff", function()
     loadstring(game:HttpGet("https://pastebin.com/raw/Lx8UkvVv"))()
 end)
 
-Library.addLabel(tab4, "Grab Gun")
+Library.addLabel(tab4, "Gun stuff")
 local player = game.Players.LocalPlayer
 local coreGui = game:GetService("CoreGui")
-getgenv().savedConfig = getgenv().savedConfig or {}
 local autoGrabThread
-
-local function saveConfig(config)
-    getgenv().savedConfig = config
-end
+local auraThread
+local viewThread
 
 Library.addToggle(tab4, "Bring Gun", false, function(state)
-    getgenv().savedConfig.tpgun1 = state
-    saveConfig(getgenv().savedConfig)
     local existingGui = coreGui:FindFirstChild("TPGUN")
     if existingGui then existingGui:Destroy() end
-    
+
     if state then
         local screenGui = Instance.new("ScreenGui")
         screenGui.Name = "TPGUN"
@@ -2080,26 +2022,23 @@ Library.addToggle(tab4, "Bring Gun", false, function(state)
 end)
 
 Library.addToggle(tab4, "Auto grab Gun", false, function(state)
-    getgenv().savedConfig.grabGun = state
-    saveConfig(getgenv().savedConfig)
-    
     if autoGrabThread then
         task.cancel(autoGrabThread)
         autoGrabThread = nil
     end
-    
+
     if state then
         autoGrabThread = task.spawn(function()
             local function hasKnife()
                 local character = player.Character
                 return character and (player.Backpack:FindFirstChild("Knife") or character:FindFirstChild("Knife"))
             end
-            
-            while getgenv().savedConfig.grabGun do
+
+            while state do
                 if not hasKnife() then
                     local gunDrop = workspace:FindFirstChild("GunDrop", true)
                     local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
-                    
+
                     if gunDrop and root then
                         firetouchinterest(root, gunDrop, 0)
                         task.wait(0.001)
@@ -2107,6 +2046,53 @@ Library.addToggle(tab4, "Auto grab Gun", false, function(state)
                     end
                 end
                 task.wait(0.3)
+            end
+        end)
+    end
+end)
+
+Library.addToggle(tab4, "Gun Aura", false, function(state)
+    if auraThread then
+        task.cancel(auraThread)
+        auraThread = nil
+    end
+
+    if state then
+        auraThread = task.spawn(function()
+            while state do
+                local character = player.Character
+                local root = character and character:FindFirstChild("HumanoidRootPart")
+                local gunDrop = workspace:FindFirstChild("GunDrop", true)
+
+                if root and gunDrop then
+                    local distance = (root.Position - gunDrop.Position).Magnitude
+                    if distance <= 7 then
+                        firetouchinterest(root, gunDrop, 0)
+                        task.wait(0.001)
+                        firetouchinterest(root, gunDrop, 1)
+                    end
+                end
+                task.wait(0.1)
+            end
+        end)
+    end
+end)
+
+Library.addToggle(tab4, "View Drop Gun", false, function(state)
+    if viewThread then
+        task.cancel(viewThread)
+        viewThread = nil
+        workspace.CurrentCamera.CameraSubject = player.Character and player.Character:FindFirstChild("Humanoid") or player
+    end
+
+    if state then
+        viewThread = task.spawn(function()
+            while state do
+                local gunDrop = workspace:FindFirstChild("GunDrop", true)
+                if gunDrop then
+                    workspace.CurrentCamera.CameraSubject = gunDrop
+                end
+                task.wait(0.1)
             end
         end)
     end
@@ -2357,7 +2343,7 @@ local autoCollectCoins = false
 local maxCoinDistance = 110
 local moveSpeed = 27
 local checkInterval = 0.5
-local moveToSpeed = 34
+local moveToSpeed = 35
 local verticalOffset = 0.1
 local teleportCooldown = 3
 
@@ -2409,7 +2395,7 @@ function handleCoinTouched(coin)
         if not autoCollectCoins then return end 
         if Players:GetPlayerFromCharacter(hit.Parent) then
             disconnectConnection(connection)
-            task_wait(0.02)
+            task_wait(0.01)
             coin:Destroy()
         end
     end)
@@ -2940,6 +2926,31 @@ end
 
 plr.CharacterAdded:Connect(function()
     disconnectAllConnections()
+    task.wait(0.5)
+
+    if settings.speed.loop then
+        settings.connections.speed = RunService.Heartbeat:Connect(function()
+            updateHumanoid("WalkSpeed", settings.speed.value)
+        end)
+    else
+        updateHumanoid("WalkSpeed", settings.speed.value)
+    end
+
+    if settings.jump.loop then
+        settings.connections.jump = RunService.Heartbeat:Connect(function()
+            updateHumanoid("JumpPower", settings.jump.power)
+        end)
+    else
+        updateHumanoid("JumpPower", settings.jump.power)
+    end
+
+    if settings.jump.infinite then
+        settings.connections.infinite = UserInputService.JumpRequest:Connect(function()
+            local character = plr.Character or plr.CharacterAdded:Wait()
+            local humanoid = character:FindFirstChildOfClass("Humanoid")
+            if humanoid then humanoid:ChangeState("Jumping") end
+        end)
+    end
 end)
 
 Library.addSlider(tab6, "Speed", 0, 100, settings.speed.value, 1, function(value)
