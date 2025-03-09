@@ -16,7 +16,7 @@ local RawMetatable = getrawmetatable(game)
 local OldNameCall = RawMetatable.__namecall
 local UserInputService = game:GetService('UserInputService')
 
-local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/Sinnombrexd1/Whwhwhwhwansjw/refs/heads/main/Lib", true))()
+local Library = loadstring(game:HttpGet("https://pastebin.com/raw/q2EQcpar", true))()
 
 local ui = Library:CreateUI("Murder Mystery 2 / 27", "By CapybaraScript")
 task.wait(0.3)
@@ -172,12 +172,17 @@ end
 function Rays:GetGunPrediction()
     local LocalRoot = LocalPlayer.Character and LocalPlayer.Character.PrimaryPart
     if not LocalRoot then return end
-    local function GetClosestPlayer()
+
+    local function GetClosestArmedPlayer()
         local ClosestPlayer, ClosestDistance = nil, math.huge
         for _, Player in pairs(Players:GetPlayers()) do
             if Player ~= LocalPlayer then
                 local TargetRoot = Player.Character and Player.Character.PrimaryPart
-                if TargetRoot then
+                local Backpack = Player:FindFirstChild("Backpack")
+                local HasKnife = (Backpack and Backpack:FindFirstChild("Knife")) or (Player.Character and Player.Character:FindFirstChild("Knife"))
+                local HasGun = (Backpack and Backpack:FindFirstChild("Gun")) or (Player.Character and Player.Character:FindFirstChild("Gun"))
+
+                if TargetRoot and (HasKnife or HasGun) then
                     local Distance = (LocalRoot.Position - TargetRoot.Position).Magnitude
                     if Distance < ClosestDistance then
                         ClosestPlayer, ClosestDistance = Player, Distance
@@ -187,7 +192,8 @@ function Rays:GetGunPrediction()
         end
         return ClosestPlayer
     end
-    local Target = GetClosestPlayer()
+
+    local Target = GetClosestArmedPlayer()
     if Target then
         local TargetRoot = Target.Character and Target.Character.PrimaryPart
         if TargetRoot then
@@ -197,16 +203,20 @@ function Rays:GetGunPrediction()
             local distanceFactorH = (clampedDistance / 20) * HorizontalDistanceMultiplier
             local distanceFactorV = (clampedDistance / 20) * VerticalDistanceMultiplier
             local Prediction
+
             if PredictionType == "Dynamic" then
-                Prediction = TargetRoot.Position + (TargetVelocity * Vector3.new(1, 0, 1) * HorizontalOffsetMultiplier * distanceFactorH) + Vector3.new(0, math.clamp(TargetVelocity.Y * VerticalOffsetMultiplier * distanceFactorV, -2, 2), 0)
+                Prediction = TargetRoot.Position + (TargetVelocity * Vector3.new(1, 0, 1) * HorizontalOffsetMultiplier * distanceFactorH) 
+                    + Vector3.new(0, math.clamp(TargetVelocity.Y * VerticalOffsetMultiplier * distanceFactorV, -2, 2), 0)
             elseif PredictionType == "Static" then
                 Prediction = TargetRoot.Position
             else
                 Prediction = TargetRoot.Position + (TargetVelocity * Vector3.new(1, 0, 1) * HorizontalOffsetMultiplier * distanceFactorH)
             end
+
             if GunSharpnessEnabled then
                 Prediction = Prediction + (TargetVelocity * SharpnessMultiplier * clampedDistance / 20)
             end
+
             return Prediction
         end
     end
@@ -315,6 +325,7 @@ RawMetatable.__namecall = newcclosure(function(Object, ...)
     end
     return OldNameCall(Object, unpack(Arguments))
 end)
+
 
 Library.addButton(tab1, "Shoot the murderer (Button)", function()
 local RunService = game:GetService("RunService")
@@ -889,7 +900,6 @@ local function modifyRootPart()
     end)
 end
 
--- Verificar que Library y tab2 no son nil
 if Library and tab2 then
     Library.addToggle(tab2, "Hitbox Expander", settings.Enabled, function(state)
         settings.Enabled = state
@@ -943,7 +953,7 @@ Library.addButton(tab2, "Knife reach", function()
             if tool:IsA("Tool") and tool.Name == "Knife" then
                 local handle = tool:FindFirstChild("Handle")
                 if handle and handle:IsA("Part") then
-                    handle.Size = Vector3.new(7, 7, 7)
+                    handle.Size = Vector3.new(5, 7, 5)
                     handle.Massless = true
                     handle.Anchored = false
                     handle.CanCollide = false
@@ -2025,7 +2035,7 @@ Library.addToggle(tab4, "Gun Aura", false, function(state)
 
                 if root and gunDrop then
                     local distance = (root.Position - gunDrop.Position).Magnitude
-                    if distance <= 7 then
+                    if distance <= 10 then
                         firetouchinterest(root, gunDrop, 0)
                         task.wait(0.001)
                         firetouchinterest(root, gunDrop, 1)
@@ -2636,7 +2646,7 @@ local function toggle(state)
                 for _, model in ipairs(Workspace:GetChildren()) do
                     checkContainer(model)
                 end
-                task.wait(3)
+                task.wait(1)  -- Reducción de espera para que se revise más frecuentemente
             end
         end)
     else
@@ -2652,7 +2662,7 @@ end
 
 Library.addToggle(tab5, "magnet coin", false, function(state)
     if Players.LocalPlayer then
-        toggle(getgenv().magnetcoin)
+        toggle(state)
         Players.LocalPlayer.CharacterAdded:Connect(function()
             if getgenv().magnetcoin then toggle(true) end
         end)
@@ -2841,7 +2851,8 @@ Library.addToggle(tab6, "Noclip", false, function(state)
 end)
 
 RunService.Stepped:Connect(function()
-    if getgenv().Noclip and player.Character then
+    if not getgenv().Noclip then return end
+    if player.Character then
         for _, part in pairs(player.Character:GetDescendants()) do
             if part:IsA("BasePart") and part.Parent == player.Character then
                 if not originalStates[part] then
