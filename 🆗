@@ -104,12 +104,12 @@ local VisualTracerPredictionEnabled = false
 local VisualTracerDrawing = nil
 local VisualPredictionCircle = nil
 
-local HorizontalOffsetMultiplier = 0.23
-local VerticalOffsetMultiplier = 0.03
-local HorizontalDistanceMultiplier = 0.3
-local VerticalDistanceMultiplier = 0.1
-local MaxDistanceForMultiplier = 33
-local SharpnessMultiplier = 0.20
+local HorizontalOffsetMultiplier = 0.13
+local VerticalOffsetMultiplier = 0.0001
+local HorizontalDistanceMultiplier = 0.01
+local VerticalDistanceMultiplier = 0.0001
+local MaxDistanceForMultiplier = 24
+local SharpnessMultiplier = 0.11
 
 function ToggleSilentAim(state)
     SilentAimEnabled = state
@@ -1377,7 +1377,7 @@ Library.addToggle(tab3, "ESP Highlight", false, function(state)
     end
 end)
 
-Library.addSlider(tab3, "Esp transparency", 0, 100, 50, 1, function(value)
+Library.addSlider(tab3, "Esp transparency", 0, 100, 80, 1, function(value)
     local highlightTransparency = value / 100
     local chamTransparency = math.min(value / 100, 0.9)
     getgenv().HighlightTransparency = highlightTransparency
@@ -1749,6 +1749,28 @@ local function checkRoles()
 end
 
 checkRoles()
+end)
+
+Library.addButton(tab3, "Reset Cam", function()
+local player = game:GetService("Players").LocalPlayer
+local character = player.Character
+if not character then return end
+
+local humanoid = character:FindFirstChildWhichIsA('Humanoid')
+if not humanoid then return end
+
+local camera = workspace.CurrentCamera
+camera.CameraType = Enum.CameraType.Custom
+camera.CameraSubject = humanoid
+
+player.CameraMinZoomDistance = 0.5
+player.CameraMaxZoomDistance = 400
+player.CameraMode = Enum.CameraMode.Classic
+
+local head = character:FindFirstChild("Head")
+if head then
+    head.Anchored = false
+end
 end)
 
 Library.addButton(tab3, "Fps Booster", function()
@@ -2861,6 +2883,27 @@ RunService.Stepped:Connect(function()
                 part.CanCollide = false
             end
         end
+    end
+end)
+
+local config = {
+    FOV = 130,
+    FOVEnabled = false
+}
+
+Library.addToggle(tab6, "Activate FOV", false, function(state)
+    config.FOVEnabled = state
+    if state then
+        workspace.CurrentCamera.FieldOfView = config.FOV
+    else
+        workspace.CurrentCamera.FieldOfView = 70
+    end
+end)
+
+Library.addSlider(tab6, "Adjust FOV", 0, 150, 1, 1, function(value)
+    config.FOV = value
+    if config.FOVEnabled then
+        workspace.CurrentCamera.FieldOfView = value
     end
 end)
 
