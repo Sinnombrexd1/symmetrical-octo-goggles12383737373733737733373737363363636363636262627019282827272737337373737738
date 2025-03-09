@@ -16,7 +16,7 @@ local RawMetatable = getrawmetatable(game)
 local OldNameCall = RawMetatable.__namecall
 local UserInputService = game:GetService('UserInputService')
 
-local Library = loadstring(game:HttpGet("https://pastebin.com/raw/q2EQcpar", true))()
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/Sinnombrexd1/Whwhwhwhwansjw/refs/heads/main/Lib", true))()
 
 local ui = Library:CreateUI("Murder Mystery 2 / 27", "By CapybaraScript")
 task.wait(0.3)
