@@ -19,7 +19,6 @@ local UserInputService = game:GetService('UserInputService')
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/Sinnombrexd1/Whwhwhwhwansjw/refs/heads/main/Lib", true))()
 
 local ui = Library:CreateUI("Murder Mystery 2 / 27", "By CapybaraScript")
-task.wait(0.3)
 local tab1 = ui:AddTab("Combat")
 local tab2 = ui:AddTab("Hitbox expander")
 local tab3 = ui:AddTab("Visual")
@@ -327,7 +326,7 @@ RawMetatable.__namecall = newcclosure(function(Object, ...)
 end)
 
 
-Library.addButton(tab1, "Shoot the murderer (Button)", function()
+Library.addButton(tab1, "Shoot the murderer (Button)", "Disparar al murderer (botton)", function()
 local RunService = game:GetService("RunService")
 local StarterGui = game:GetService("StarterGui")
 local Players = game:GetService("Players")
@@ -503,7 +502,7 @@ end)
 
 Library.addLabel(tab1, "For Murderer")
 
-Library.addButton(tab1, "Kill All [murderer Only]", function()
+Library.addButton(tab1, "Kill All [murderer Only]", "Matar a todo [ser murderer] ", function()
     loadstring(game:HttpGet("https://pastebin.com/raw/0DDgYP4Y"))()
 end)
 
@@ -676,7 +675,7 @@ end)
  
 Library.addLabel(tab1, "Cam aimbot")
  
-Library.addButton(tab1, "Cam Aimbot murderer", function()
+Library.addButton(tab1, "Cam Aimbot murderer", "", function()
 local RS, Players, ReplicatedStorage = game:GetService("RunService"), game:GetService("Players"), game:GetService("ReplicatedStorage")
 local LP, Camera = Players.LocalPlayer, workspace.CurrentCamera
 
@@ -724,7 +723,7 @@ RS.RenderStepped:Connect(function()
 end)
 end)
 
-Library.addButton(tab1, "TP Shoot", function()
+Library.addButton(tab1, "TP Shoot", "", function()
 local existingGui = game:GetService("CoreGui"):FindFirstChild("tps")
 if existingGui then return end
 
@@ -946,7 +945,7 @@ end
 
 modifyRootPart()
 
-Library.addButton(tab2, "Knife reach", function()
+Library.addButton(tab2, "Knife reach", "Alcance del cuchillo", function()
     local character = game.Players.LocalPlayer.Character
     if character then
         for _, tool in ipairs(character:GetChildren()) do
@@ -1714,7 +1713,7 @@ end)
 
 Library.addLabel(tab3, "snitch role")
 
-Library.addButton(tab3, "Inquire chat who is the sheriff or murderer", function()
+Library.addButton(tab3, "Inquire chat who is the sheriff or murderer", "decir en el chat quien es murderer o sheriff", function()
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TextChatService = game:GetService("TextChatService")
 
@@ -1751,7 +1750,7 @@ end
 checkRoles()
 end)
 
-Library.addButton(tab3, "Reset Cam", function()
+Library.addButton(tab3, "Reset Cam", "resetear la cámara", function()
 local player = game:GetService("Players").LocalPlayer
 local character = player.Character
 if not character then return end
@@ -1773,11 +1772,11 @@ if head then
 end
 end)
 
-Library.addButton(tab3, "Fps Booster", function()
+Library.addButton(tab3, "Fps Booster", "fps refuerzo", function()
     loadstring(game:HttpGet(("https://raw.githubusercontent.com/Jorgelinea/Fps/refs/heads/main/Protected_3128182632327016.txt"),true))()
 end)
 
-Library.addButton(tab3, "fake death", function()
+Library.addButton(tab3, "fake death", "muerte falsa", function()
     local p = game.Players.LocalPlayer
     local c = p.Character or p.CharacterAdded:Wait()
     local h = c:WaitForChild("Humanoid")
@@ -1816,19 +1815,19 @@ end
 
 Library.addLabel(tab3, "View Roles")
 
-Library.addButton(tab3, "View Murderer", function()
+Library.addButton(tab3, "View Murderer", "Ver murderer", function()
     ViewRole("Murderer")
 end)
 
-Library.addButton(tab3, "View Sheriff", function()
+Library.addButton(tab3, "View Sheriff", "Ver sheriff", function()
     ViewRole("Sheriff")
 end)
 
-Library.addButton(tab3, "View Hero", function()
+Library.addButton(tab3, "View Hero", "Ver hero", function()
     ViewRole("Hero")
 end)
 
-Library.addButton(tab3, "Return to my camera", function()
+Library.addButton(tab3, "Return to my camera", "regresar a mi cámara", function()
     local LP = Players.LocalPlayer
     if LP.Character and LP.Character:FindFirstChild("HumanoidRootPart") then
         Camera.CameraSubject = LP.Character.Humanoid
@@ -1836,11 +1835,11 @@ Library.addButton(tab3, "Return to my camera", function()
     end
 end)
 
-Library.addButton(tab3, "Fe emote", function()
+Library.addButton(tab3, "Fe emote", "", function()
     loadstring(game:HttpGet("https://pastebin.com/raw/eCpipCTH"))()
 end)
 
-Library.addButton(tab4, "FAKE SPEED GLICH", function()
+Library.addButton(tab4, "FAKE SPEED GLICH", "", function()
 if game:GetService("CoreGui"):FindFirstChild("fakespeed") then return end
 
 local gui = Instance.new("ScreenGui")
@@ -1896,7 +1895,7 @@ end
 plr.CharacterAdded:Connect(setup)
 if plr.Character then setup(plr.Character) end
 end)
-Library.addButton(tab4, "FAKE Fake bomb trick", function()
+Library.addButton(tab4, "FAKE Fake bomb trick", "", function()
 local player = game:GetService("Players").LocalPlayer
 local coreGui, replicatedStorage = game:GetService("CoreGui"), game:GetService("ReplicatedStorage")
 
@@ -1956,15 +1955,15 @@ player.CharacterAdded:Connect(reset)
 reset()
 end)
 
-Library.addButton(tab4, "Auto Wallhop", function()
+Library.addButton(tab4, "Auto Wallhop", "", function()
     loadstring(game:HttpGet('https://pastebin.com/raw/vpRrW1KA'))()
 end)
 
-Library.addButton(tab4, "Fling murderer", function()
+Library.addButton(tab4, "Fling murderer", "", function()
     loadstring(game:HttpGet("https://pastebin.com/raw/YKTYp5Dn"))()
 end)
 
-Library.addButton(tab4, "Fling sheriff", function()
+Library.addButton(tab4, "Fling sheriff", "", function()
     loadstring(game:HttpGet("https://pastebin.com/raw/Lx8UkvVv"))()
 end)
 
@@ -2089,7 +2088,7 @@ Library.addToggle(tab4, "View Drop Gun", false, function(state)
     end
 end)
 
-Library.addButton(tab4, "be invisible", function()
+Library.addButton(tab4, "be invisible", "", function()
     loadstring(game:HttpGet('https://pastebin.com/raw/GgYsFfDK'))()
 end)
 
@@ -2142,7 +2141,7 @@ end)
 
 Library.addLabel(tab4, "Teleport To A Specific Location")
 
-Library.addButton(tab4, "Go to the Lobby", function()
+Library.addButton(tab4, "Go to the Lobby", "", function()
     local player = game.Players.LocalPlayer
     local spawns = workspace:WaitForChild("Lobby"):WaitForChild("Spawns"):GetChildren()
 
@@ -2152,11 +2151,11 @@ Library.addButton(tab4, "Go to the Lobby", function()
     end
 end)
 
-Library.addButton(tab4, "Vote Map", function()
+Library.addButton(tab4, "Vote Map", "", function()
     game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-109, 141, 88)
 end)
 
-Library.addButton(tab4, "Go to Map", function()
+Library.addButton(tab4, "Go to Map", "", function()
     for i,v in pairs(workspace:GetDescendants()) do
         if v.Name == "Spawn" then
             game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(v.Position) * CFrame.new(0, 2.5, 0)
@@ -2166,7 +2165,7 @@ Library.addButton(tab4, "Go to Map", function()
     end
 end)
 
-Library.addButton(tab4, "void (Safe)", function()
+Library.addButton(tab4, "void (Safe)", "", function()
     local player = game.Players.LocalPlayer
     local character = player.Character or player.CharacterAdded:Wait()
     local hrp = character:WaitForChild("HumanoidRootPart")
@@ -2177,15 +2176,15 @@ end)
 
 Library.addLabel(tab4, "teleport a role player")
 
-Library.addButton(tab4, "tp Sheriff", function()
+Library.addButton(tab4, "tp Sheriff", "", function()
     TeleportToRole("Sheriff")
 end)
 
-Library.addButton(tab4, "tp Murderer", function()
+Library.addButton(tab4, "tp Murderer", "", function()
     TeleportToRole("Murderer")
 end)
 
-Library.addButton(tab4, "tp Hero", function()
+Library.addButton(tab4, "tp Hero", "", function()
     TeleportToRole("Hero")
 end)
 
@@ -2309,7 +2308,7 @@ Library.addToggle(tab5, "Destroy dead body", false, function(state)
     end
 end)
 
-Library.addButton(tab5, "lower cpu load", function()
+Library.addButton(tab5, "lower cpu load", "", function()
     loadstring(game:HttpGet("https://pastebin.com/raw/KAzmS50Z"))()
 end)
 
@@ -2743,7 +2742,7 @@ Library.addToggle(tab5, "Auto XP", false, function(state)
     getgenv().scriptEnabled = state
 end)
 
-Library.addButton(tab6, "Anchor character", function()
+Library.addButton(tab6, "Anchor character", "", function()
     local char = game.Players.LocalPlayer.Character or game.Players.LocalPlayer.CharacterAdded:Wait()
     
     isAnchored = not isAnchored
@@ -2809,7 +2808,7 @@ game:GetService("RunService").Stepped:Connect(function()
     end
 end)
 
-Library.addButton(tab6, "second life", function()
+Library.addButton(tab6, "second life", "Segunda vida", function()
 local function GodMode()
     local p = game.Players.LocalPlayer
     local c = p.Character or p.CharacterAdded:Wait()
@@ -3027,7 +3026,7 @@ Library.addToggle(tab6, "Infinite Jump", false, function(state)
     end
 end)
 
-Library.addButton(tab7, "Get all the emotes", function()
+Library.addButton(tab7, "Get all the emotes", "obtener todos los emotes", function()
     local PlayerGui = game.Players.LocalPlayer:WaitForChild("PlayerGui")
     local Emotes = PlayerGui:WaitForChild("MainGUI"):WaitForChild("Game"):FindFirstChild("Emotes")
 
@@ -3050,7 +3049,7 @@ Library.addButton(tab7, "Get all the emotes", function()
     end
 end)
 
-Library.addButton(tab7, "Ninja", function()
+Library.addButton(tab7, "Ninja", "", function()
     local anim = Instance.new('Animation')
     anim.AnimationId = "rbxassetid://2431864798"
     local track = game.Players.LocalPlayer.Character.Humanoid.Animator:LoadAnimation(anim)
@@ -3060,7 +3059,7 @@ Library.addButton(tab7, "Ninja", function()
     end)
 end)
 
-Library.addButton(tab7, "Dab", function()
+Library.addButton(tab7, "Dab", "", function()
     local anim = Instance.new('Animation')
     anim.AnimationId = "rbxassetid://2445521505"
     local track = game.Players.LocalPlayer.Character.Humanoid.Animator:LoadAnimation(anim)
@@ -3070,7 +3069,7 @@ Library.addButton(tab7, "Dab", function()
     end)
 end)
 
-Library.addButton(tab7, "Floss", function()
+Library.addButton(tab7, "Floss", "", function()
     local anim = Instance.new('Animation')
     anim.AnimationId = "rbxassetid://2452938820"
     local track = game.Players.LocalPlayer.Character.Humanoid.Animator:LoadAnimation(anim)
@@ -3080,7 +3079,7 @@ Library.addButton(tab7, "Floss", function()
     end)
 end)
 
-Library.addButton(tab7, "Headless", function()
+Library.addButton(tab7, "Headless", "", function()
     local anim = Instance.new('Animation')
     anim.AnimationId = "rbxassetid://2513694073"
     local track = game.Players.LocalPlayer.Character.Humanoid.Animator:LoadAnimation(anim)
@@ -3090,7 +3089,7 @@ Library.addButton(tab7, "Headless", function()
     end)
 end)
 
-Library.addButton(tab7, "Zen", function()
+Library.addButton(tab7, "Zen", "", function()
     local anim = Instance.new('Animation')
     anim.AnimationId = "rbxassetid://2431812646"
     local track = game.Players.LocalPlayer.Character.Humanoid.Animator:LoadAnimation(anim)
@@ -3100,7 +3099,7 @@ Library.addButton(tab7, "Zen", function()
     end)
 end)
 
-Library.addButton(tab7, "Zombie", function()
+Library.addButton(tab7, "Zombie", "", function()
     local anim = Instance.new('Animation')
     anim.AnimationId = "rbxassetid://2513692312"
     local track = game.Players.LocalPlayer.Character.Humanoid.Animator:LoadAnimation(anim)
@@ -3110,7 +3109,7 @@ Library.addButton(tab7, "Zombie", function()
     end)
 end)
 
-Library.addButton(tab7, "Sit", function()
+Library.addButton(tab7, "Sit", "", function()
     local anim = Instance.new('Animation')
     anim.AnimationId = "rbxassetid://2431845940"
     local track = game.Players.LocalPlayer.Character.Humanoid.Animator:LoadAnimation(anim)
@@ -3120,7 +3119,7 @@ Library.addButton(tab7, "Sit", function()
     end)
 end)
 
-Library.addButton(tab8, "Delete Settings", function()
+Library.addButton(tab8, "Delete Settings", "", function()
     local configFileName = "mm2Config.txt"
 
     local function deleteConfigFile()
@@ -3132,7 +3131,7 @@ Library.addButton(tab8, "Delete Settings", function()
     deleteConfigFile()
 end)
 
-Library.addButton(tab8, "Anti afk", function()
+Library.addButton(tab8, "Anti afk", "", function()
     local C = game:GetService("VirtualUser")
     game:GetService("Players").LocalPlayer.Idled:connect(function()
        C:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
@@ -3192,17 +3191,17 @@ Library.addToggle(tab8, "Jump into second life.", false, function(state)
     getgenv().toggleJumpFeature(state)
 end)
 
-Library.addButton(tab8, "fling all", function()
+Library.addButton(tab8, "fling all", "", function()
     loadstring(game:HttpGet("https://pastebin.com/raw/HpNf0TYX"))()
 end)
 
-Library.addButton(tab8, "ReJoin", function()
+Library.addButton(tab8, "ReJoin", "", function()
     local ts = game:GetService("TeleportService")
     local p = game:GetService("Players").LocalPlayer
     ts:Teleport(game.PlaceId, p)
 end)
 
-Library.addButton(tab8, "Server hop", function() 
+Library.addButton(tab8, "Server hop", "", function() 
     local function serverHop()
         local teleportService = game:GetService("TeleportService")
         teleportService:Teleport(game.PlaceId)
