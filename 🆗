@@ -18,7 +18,7 @@ local UserInputService = game:GetService('UserInputService')
 
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/Sinnombrexd1/Whwhwhwhwansjw/refs/heads/main/Lib", true))()
 
-local ui = Library:CreateUI("Murder Mystery 2 / 42", "By CapybaraScript")
+local ui = Library:CreateUI("Murder Mystery 2 / 39", "By CapybaraScript")
 
 local tab1 = ui:AddTab("Combat")
 local tab2 = ui:AddTab("Hitbox expander")
@@ -133,7 +133,7 @@ function Rays:GetKnifePrediction()
         return ClosestPlayer  
     end  
 
-    local function GetClosestSheriff()  
+local function GetClosestSheriff()  
         local ClosestSheriff, ClosestDistance = nil, math.huge  
         for _, Player in pairs(Players:GetPlayers()) do  
             if Player ~= LocalPlayer then  
@@ -154,9 +154,9 @@ function Rays:GetKnifePrediction()
 
     local Target = nil  
     if getgenv().KnifeTargetingMode == "Prioritize the Sheriff" then  
-        Target = GetClosestSheriff() or GetClosestPlayer()  
+        Target = GetClosestSheriff() or GetClosestPlayer()
     else  
-        Target = GetClosestPlayer()  
+        Target = GetClosestPlayer()
     end  
 
     if Target then  
