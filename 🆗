@@ -18,7 +18,7 @@ local UserInputService = game:GetService('UserInputService')
 
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/Sinnombrexd1/Whwhwhwhwansjw/refs/heads/main/Lib", true))()
 
-local ui = Library:CreateUI("Murder Mystery 2 / 39", "By CapybaraScript")
+local ui = Library:CreateUI("Murder Mystery 2 / 42", "By CapybaraScript")
 
 local tab1 = ui:AddTab("Combat")
 local tab2 = ui:AddTab("Hitbox expander")
@@ -153,7 +153,7 @@ function Rays:GetKnifePrediction()
     end  
 
     local Target = nil  
-    if getgenv().KnifeTargetingMode == "Priorizar al Sheriff" then  
+    if getgenv().KnifeTargetingMode == "Prioritize the Sheriff" then  
         Target = GetClosestSheriff() or GetClosestPlayer()  
     else  
         Target = GetClosestPlayer()  
@@ -183,7 +183,7 @@ RunService.RenderStepped:Connect(function()
             getgenv().SilentAim.CurrentPrediction = TargetPrediction  
         end  
     end  
-end)  
+end)
 
 getgenv().SilentAim = {CurrentPrediction = Vector3.zero}  
 getgenv().SilentAimEnabled = false  
@@ -1196,6 +1196,7 @@ local function ManagePlayer(player)
         if getgenv().Highlight then  
             local highlight = Instance.new("Highlight")  
             highlight.Name = "ESP_Highlight"  
+            highlight.Color = Color3.fromRGB(0, 255, 0)
             highlight.FillTransparency = getgenv().HighlightTransparency  
             highlight.OutlineTransparency = 0  
             highlight.Parent = character  
@@ -2814,8 +2815,10 @@ end
 
 Library.addLabel(tab6, "It also works as an anti-fling")
 
+local colisionesDeshabilitadas = false
+
 Library.addToggle(tab6, "Disable players collisions", false, function(state)
-    actualizarColisiones(state)
+    colisionesDeshabilitadas = state
 end)
 
 game:GetService("RunService").Stepped:Connect(function()
