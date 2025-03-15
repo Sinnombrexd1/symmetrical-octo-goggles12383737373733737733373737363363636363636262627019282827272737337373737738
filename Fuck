@@ -18,7 +18,7 @@ local UserInputService = game:GetService('UserInputService')
 
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/Sinnombrexd1/Whwhwhwhwansjw/refs/heads/main/Lib", true))()
 
-local ui = Library:CreateUI("Murder Mystery 2 / 49", "By CapybaraScript")
+local ui = Library:CreateUI("Murder Mystery 2 / 55", "By CapybaraScript")
 
 local tab1 = ui:AddTab("Combat")
 local tab2 = ui:AddTab("Hitbox expander")
@@ -95,123 +95,118 @@ if not blockExists(blockPosition, blockSize) then
     end
 end
 
-getgenv().SilentAim = {CurrentPrediction = Vector3.zero}  
-getgenv().KnifeAimEnabled = false  
-getgenv().KnifeTargetingMode = "Normal"  
+getgenv().KnifeSilentAim = {CurrentPrediction = Vector3.zero}
+getgenv().KnifeAimEnabled = false
+getgenv().KnifeTargetingMode = "Normal"
 
-local KnifeSpeed = 25
+getgenv().GunSilentAim = {CurrentPrediction = Vector3.zero}
+getgenv().SilentAimEnabled = false
+getgenv().GunSharpnessEnabled = false
+getgenv().PredictionType = "Normal"
 
-function ToggleKnifeAim(state)  
-    getgenv().KnifeAimEnabled = state  
-end  
+getgenv().HorizontalOffsetMultiplier = 0.9
+getgenv().VerticalOffsetMultiplier = 0.000001
+getgenv().HorizontalDistanceMultiplier = 0.006
+getgenv().VerticalDistanceMultiplier = 0.000001
+getgenv().MaxDistanceForMultiplier = 20
+getgenv().SharpnessMultiplier = 0.5
 
-Library.addToggle(tab1, "Knife Silent Aim", false, function(state) ToggleKnifeAim(state) end)  
+local KnifeSpeed = 20
 
-Library.addDropdown(tab1, "Knife Aiming Mode", "Normal", {"Normal", "Prioritize the Sheriff"}, function(selected)  
-    getgenv().KnifeTargetingMode = selected  
-end)  
-
-local Rays = {}  
-
-function Rays:GetKnifePrediction()  
-    local LocalRoot = LocalPlayer.Character and LocalPlayer.Character.PrimaryPart  
-    if not LocalRoot then return end  
-
-    local function GetClosestPlayer()  
-        local ClosestPlayer, ClosestDistance = nil, math.huge  
-        for _, Player in pairs(Players:GetPlayers()) do  
-            if Player ~= LocalPlayer then  
-                local TargetRoot = Player.Character and Player.Character.PrimaryPart  
-                if TargetRoot then  
-                    local Distance = (LocalRoot.Position - TargetRoot.Position).Magnitude  
-                    if Distance < ClosestDistance then  
-                        ClosestPlayer, ClosestDistance = Player, Distance  
-                    end  
-                end  
-            end  
-        end  
-        return ClosestPlayer  
-    end  
-
-local function GetClosestSheriff()  
-        local ClosestSheriff, ClosestDistance = nil, math.huge  
-        for _, Player in pairs(Players:GetPlayers()) do  
-            if Player ~= LocalPlayer then  
-                local TargetRoot = Player.Character and Player.Character.PrimaryPart  
-                local Backpack = Player:FindFirstChild("Backpack")  
-                local HasGun = (Backpack and Backpack:FindFirstChild("Gun")) or (Player.Character and Player.Character:FindFirstChild("Gun"))  
-
-                if TargetRoot and HasGun then  
-                    local Distance = (LocalRoot.Position - TargetRoot.Position).Magnitude  
-                    if Distance < ClosestDistance then  
-                        ClosestSheriff, ClosestDistance = Player, Distance  
-                    end  
-                end  
-            end  
-        end  
-        return ClosestSheriff  
-    end  
-
-    local Target = nil  
-    if getgenv().KnifeTargetingMode == "Prioritize the Sheriff" then  
-        Target = GetClosestSheriff() or GetClosestPlayer()
-    else  
-        Target = GetClosestPlayer()
-    end  
-
-    if Target then  
-        local TargetRoot = Target.Character and Target.Character.PrimaryPart  
-        if TargetRoot then  
-            local TargetVelocity = TargetRoot.AssemblyLinearVelocity  
-            local Distance = (LocalRoot.Position - TargetRoot.Position).Magnitude  
-            
-            local TravelTime = Distance / KnifeSpeed  
-            local Prediction = TargetRoot.Position + (TargetVelocity * TravelTime * 0.3)  
-            
-            Prediction = Prediction + Vector3.new(0, math.clamp(TargetVelocity.Y * -0.0001, -1, 1), 0)  
-
-            return Prediction  
-        end  
-    end  
-    return nil  
-end  
-
-RunService.RenderStepped:Connect(function()  
-    if getgenv().KnifeAimEnabled then  
-        local TargetPrediction = Rays:GetKnifePrediction()  
-        if TargetPrediction then  
-            getgenv().SilentAim.CurrentPrediction = TargetPrediction  
-        end  
-    end  
+Library.addToggle(tab1, "Knife Silent Aim", false, function(state)
+    getgenv().KnifeAimEnabled = state
 end)
 
-getgenv().SilentAim = {CurrentPrediction = Vector3.zero}  
-getgenv().SilentAimEnabled = false  
-getgenv().GunSharpnessEnabled = false  
-getgenv().PredictionType = "Normal"  
+Library.addDropdown(tab1, "Knife Aiming Mode", "Normal", {"Normal", "Prioritize the Sheriff"}, function(selected)
+    getgenv().KnifeTargetingMode = selected
+end)
 
-getgenv().HorizontalOffsetMultiplier = 0.12
-getgenv().VerticalOffsetMultiplier = 0.00001  
-getgenv().HorizontalDistanceMultiplier = 0.01  
-getgenv().VerticalDistanceMultiplier = 0.00001  
-getgenv().MaxDistanceForMultiplier = 24
-getgenv().SharpnessMultiplier = 0.10
+Library.addToggle(tab1, "Gun Silent Aim", false, function(state)
+    getgenv().SilentAimEnabled = state
+end)
 
-function ToggleSilentAim(state)  
-    getgenv().SilentAimEnabled = state  
-end  
+Library.addToggle(tab1, "Gun Sharpness Shooter", false, function(state)
+    getgenv().GunSharpnessEnabled = state
+end)
 
-function ToggleGunSharpness(state)  
-    getgenv().GunSharpnessEnabled = state  
-end  
+Library.addDropdown(tab1, "Gun Prediction Type", "Normal", {"Normal", "Dynamic", "Static", "With Ping"}, function(selected)
+    getgenv().PredictionType = selected
+end)
 
-Library.addToggle(tab1, "Gun Silent Aim", false, function(state) ToggleSilentAim(state) end)  
-Library.addToggle(tab1, "Gun Sharpness Shooter", false, function(state) ToggleGunSharpness(state) end)  
-Library.addDropdown(tab1, "Gun Prediction Type", "Normal", {"Normal", "Dynamic", "Static", "With Ping"}, function(selected)  
-    getgenv().PredictionType = selected  
-end)  
+local function HasItem(player, itemName)
+    local Backpack = player:FindFirstChild("Backpack")
+    local Character = player.Character
+    return (Backpack and Backpack:FindFirstChild(itemName)) or (Character and Character:FindFirstChild(itemName))
+end
 
-local Rays = {}  
+local function GetClosestTarget(isKnifeMode)
+    local ClosestPlayer, ClosestDistance = nil, math.huge
+    local LocalRoot = LocalPlayer.Character and LocalPlayer.Character.PrimaryPart
+    if not LocalRoot then return end
+
+    local LocalHasGun = HasItem(LocalPlayer, "Gun")
+    local LocalHasKnife = HasItem(LocalPlayer, "Knife")
+
+    for _, Player in pairs(Players:GetPlayers()) do
+        if Player ~= LocalPlayer then
+            local TargetRoot = Player.Character and Player.Character.PrimaryPart
+            if TargetRoot then
+                local Distance = (LocalRoot.Position - TargetRoot.Position).Magnitude
+                if Distance < ClosestDistance then
+                    if isKnifeMode then
+                        if getgenv().KnifeTargetingMode == "Prioritize the Sheriff" and HasItem(Player, "Gun") then
+                            ClosestPlayer, ClosestDistance = Player, Distance
+                        elseif not getgenv().KnifeTargetingMode or not HasItem(Player, "Gun") then
+                            ClosestPlayer, ClosestDistance = Player, Distance
+                        end
+                    else
+                        if LocalHasGun and HasItem(Player, "Knife") then
+                            ClosestPlayer, ClosestDistance = Player, Distance
+                        elseif LocalHasKnife then
+                            ClosestPlayer, ClosestDistance = Player, Distance
+                        end
+                    end
+                end
+            end
+        end
+    end
+    return ClosestPlayer
+end
+
+local function GetKnifePrediction()
+    if not getgenv().KnifeAimEnabled then return nil end
+    local LocalRoot = LocalPlayer.Character and LocalPlayer.Character.PrimaryPart
+    if not LocalRoot then return end
+
+    local Target = GetClosestTarget(true)
+    if Target then
+        local TargetRoot = Target.Character and Target.Character.PrimaryPart
+        if TargetRoot then
+            local TargetVelocity = TargetRoot.AssemblyLinearVelocity
+            local Distance = (LocalRoot.Position - TargetRoot.Position).Magnitude
+            local TravelTime = Distance / KnifeSpeed
+            return TargetRoot.Position + (TargetVelocity * TravelTime * 0.3)
+        end
+    end
+    return nil
+end
+
+local function GetGunPrediction()
+    if not getgenv().SilentAimEnabled then return nil end
+    local LocalRoot = LocalPlayer.Character and LocalPlayer.Character.PrimaryPart
+    if not LocalRoot then return end
+
+    local Target = GetClosestTarget(false)
+    if Target then
+        local TargetRoot = Target.Character and Target.Character.PrimaryPart
+        if TargetRoot then
+            local TargetVelocity = TargetRoot.AssemblyLinearVelocity
+            local Distance = (LocalRoot.Position - TargetRoot.Position).Magnitude
+            return TargetRoot.Position + (TargetVelocity * 0.1)
+        end
+    end
+    return nil
+end
 
 local function getPing()
     local stats = LocalPlayer:FindFirstChild("Stats")
@@ -243,92 +238,37 @@ local function calculatePingOffset(ping)
     end
 end
 
-function Rays:GetGunPrediction()  
-    local LocalRoot = LocalPlayer.Character and LocalPlayer.Character.PrimaryPart  
-    if not LocalRoot then return end  
-
-local function GetClosestArmedPlayer()  
-    local ClosestPlayer, ClosestDistance = nil, math.huge  
-    for _, Player in pairs(Players:GetPlayers()) do  
-        if Player ~= LocalPlayer then  
-            local TargetRoot = Player.Character and Player.Character.PrimaryPart  
-            local Backpack = Player:FindFirstChild("Backpack")  
-            local Character = Player.Character  
-            
-            local EquippedTool = Character and Character:FindFirstChildOfClass("Tool")  
-            local HasKnife = (EquippedTool and EquippedTool.Name == "Knife") or (Backpack and Backpack:FindFirstChild("Knife"))  
-            local HasGun = (EquippedTool and EquippedTool.Name == "Gun") or (Backpack and Backpack:FindFirstChild("Gun"))  
-
-            if TargetRoot and (HasKnife or HasGun) then  
-                local Distance = (LocalRoot.Position - TargetRoot.Position).Magnitude  
-                if Distance < ClosestDistance then  
-                    ClosestPlayer, ClosestDistance = Player, Distance  
-                end  
-            end  
-        end  
-    end  
-    return ClosestPlayer  
-end
-
-    local Target = GetClosestArmedPlayer()  
-    if Target then  
-        local TargetRoot = Target.Character and Target.Character.PrimaryPart  
-        if TargetRoot then  
-            local TargetVelocity = TargetRoot.AssemblyLinearVelocity  
-            local rawDistance = (LocalRoot.Position - TargetRoot.Position).Magnitude  
-            local clampedDistance = math.min(rawDistance, getgenv().MaxDistanceForMultiplier)  
-            local distanceFactorH = (clampedDistance / 20) * getgenv().HorizontalDistanceMultiplier  
-            local Prediction  
-
-            if getgenv().PredictionType == "Dynamic" then  
-                Prediction = TargetRoot.Position + (TargetVelocity * Vector3.new(1, 0, 1) * getgenv().HorizontalOffsetMultiplier * distanceFactorH)  
-            elseif getgenv().PredictionType == "Static" then  
-                Prediction = TargetRoot.Position  
-            elseif getgenv().PredictionType == "With Ping" then  
-                local ping = getPing()
-                local pingOffsetH, pingOffsetV = calculatePingOffset(ping)
-                Prediction = TargetRoot.Position + (TargetVelocity * Vector3.new(1, 0, 1) * pingOffsetH) + Vector3.new(0, pingOffsetV, 0)  
-            else  
-                Prediction = TargetRoot.Position + (TargetVelocity * Vector3.new(1, 0, 1) * getgenv().HorizontalOffsetMultiplier * distanceFactorH)  
-            end  
-
-            if getgenv().GunSharpnessEnabled then  
-                Prediction = Prediction + (TargetVelocity * getgenv().SharpnessMultiplier * clampedDistance / 11)  
-            end  
-
-            return Prediction  
-        end  
-    end  
-    return nil  
-end  
-
-RunService.RenderStepped:Connect(function()  
-    if getgenv().SilentAimEnabled then  
-        getgenv().SilentAim.CurrentPrediction = Rays:GetGunPrediction() or getgenv().SilentAim.CurrentPrediction  
-    end  
+RunService.RenderStepped:Connect(function()
+    if getgenv().KnifeAimEnabled then
+        getgenv().KnifeSilentAim.CurrentPrediction = GetKnifePrediction() or getgenv().KnifeSilentAim.CurrentPrediction
+    end
+    if getgenv().SilentAimEnabled then
+        getgenv().GunSilentAim.CurrentPrediction = GetGunPrediction() or getgenv().GunSilentAim.CurrentPrediction
+    end
 end)
 
-setreadonly(RawMetatable, false)  
-RawMetatable.__namecall = newcclosure(function(Object, ...)  
-    local NamecallMethod = getnamecallmethod()  
-    local Arguments = {...}  
-    if getgenv().SilentAimEnabled then  
-        if NamecallMethod == "InvokeServer" and tostring(Object) == "RemoteFunction" then  
-            local Success, Error = pcall(function()  
-                Arguments[2] = getgenv().SilentAim.CurrentPrediction  
-            end)  
-            if Error then warn("Error! :", Error) end  
-        end  
-    end  
-    if getgenv().KnifeAimEnabled then  
-        if NamecallMethod == "FireServer" and tostring(Object) == "Throw" then  
-            local Success, Error = pcall(function()  
-                Arguments[1] = CFrame.new(getgenv().SilentAim.CurrentPrediction)  
-            end)  
-            if Error then warn("Error! :", Error) end  
-        end  
-    end  
-    return OldNameCall(Object, unpack(Arguments))  
+local OldNameCall
+OldNameCall = hookmetamethod(game, "__namecall", function(Object, ...)
+    local NamecallMethod = getnamecallmethod()
+    local Arguments = {...}
+
+    if getgenv().KnifeAimEnabled and NamecallMethod == "FireServer" and tostring(Object) == "Throw" then
+        local Success, Error = pcall(function()
+            Arguments[1] = CFrame.new(getgenv().KnifeSilentAim.CurrentPrediction)
+        end)
+        if Error then warn("Error! :", Error) end
+        return OldNameCall(Object, unpack(Arguments))
+    end
+
+    if getgenv().SilentAimEnabled and NamecallMethod == "InvokeServer" and tostring(Object) == "RemoteFunction" then
+        local Success, Error = pcall(function()
+            Arguments[2] = getgenv().GunSilentAim.CurrentPrediction
+        end)
+        if Error then warn("Error! :", Error) end
+        return OldNameCall(Object, unpack(Arguments))
+    end
+
+    return OldNameCall(Object, unpack(Arguments))
 end)
 
 Library.addButton(tab1, "Shoot the murderer (Button)", "Disparar al murderer (botton)", function()
@@ -1312,7 +1252,7 @@ local function drawTracerLines()
                     local tracer = tracerContainer[player] or Drawing.new("Line")  
                     tracer.From = Vector2.new(camera.ViewportSize.X / 2, camera.ViewportSize.Y)  
                     tracer.To = Vector2.new(screenPos.X, screenPos.Y)  
-                    tracer.Thickness = 3  
+                    tracer.Thickness = 1
                     tracer.Color = roleColors[role] or roleColors.None  
                     tracer.Visible = true  
                     tracerContainer[player] = tracer  
